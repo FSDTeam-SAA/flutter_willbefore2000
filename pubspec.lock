@@ -95,10 +95,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutx_core
-      sha256: b9cd450a4ed6de52dd7e702267ecdb873ab2074fdaeaa0a1992c1239068a1463
+      sha256: c70ef508481cd8c1cc65f4f698823e204e97d46360a1ac6ade9af650ef5e3772
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.3+1"
+    version: "1.1.0+1"
   google_fonts:
     dependency: "direct main"
     description:

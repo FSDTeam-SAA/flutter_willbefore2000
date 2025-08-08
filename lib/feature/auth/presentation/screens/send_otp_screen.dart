@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutx_core/core/routes/services/go_next_navigation.dart';
 import 'package:flutx_core/flutx_core.dart';
 import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
 import 'package:smilestreats/core/utils/extensions/input_decoration_extensions.dart';
@@ -43,12 +44,7 @@ class _SendOptScreenState extends State<SendOptScreen>
   void _submit() {
     // if (!_formKey.currentState!.validate()) return;
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => VerifyOTPScreen(email: _emailController.text),
-      ),
-    );
+    Go.sailTo(VerifyOTPScreen(email: _emailController.text), transition: TransitionType.slideLeft);
   }
 
   @override

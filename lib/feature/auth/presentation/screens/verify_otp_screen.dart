@@ -80,7 +80,7 @@ class _VerifyOTPScreenState extends State<VerifyOTPScreen> {
                       children: [
                         Gap.h16,
                         // Logo
-                        AppLogo(),
+                        AppLogo(width: 150),
                         Gap.h56,
                         // Title
                         Text('Enter OTP', style: AppTextStyles.text20w700()),
@@ -124,7 +124,30 @@ class _VerifyOTPScreenState extends State<VerifyOTPScreen> {
                             border: Border.all(color: Colors.red),
                           ),
                         ),
-                        Gap.h40,
+                        Gap.h24,
+
+                        // Resend code
+                        Center(
+                          child: RichText(
+                            text: TextSpan(
+                              text: "Didn't get a code? ",
+                              style: TextStyle(
+                                color: AppColors.textPrimaryHintColor,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: 'Resend',
+                                  style: TextStyle(
+                                    color: AppColors.textAppLaurel,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        Gap.h12,
+
                         // Verify button
                         ListenableBuilder(
                           listenable: _authController,
@@ -149,26 +172,6 @@ class _VerifyOTPScreenState extends State<VerifyOTPScreen> {
                               text: "Verify",
                             );
                           },
-                        ),
-                        Gap.h20,
-                        // Resend code
-                        Center(
-                          child: RichText(
-                            text: TextSpan(
-                              text: "Didn't get a code? ",
-                              style: TextStyle(
-                                color: AppColors.textPrimaryHintColor,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: 'Resend',
-                                  style: TextStyle(
-                                    color: AppColors.textAppLaurel,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         ),
                       ],
                     ),

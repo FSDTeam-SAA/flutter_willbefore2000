@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutx_core/core/routes/services/go_next_navigation.dart';
 import 'package:flutx_core/flutx_core.dart';
 import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
 import 'package:smilestreats/core/utils/extensions/input_decoration_extensions.dart';
@@ -57,10 +58,7 @@ class _SignupScreenState extends State<SignupScreen> {
     //   return;
     // }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => SendOptScreen()),
-    );
+    Go.sailTo(SendOptScreen(), transition: TransitionType.slideLeft);
 
     // Implement signup logic here
     // _authController.signUp(
@@ -360,7 +358,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                     ),
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
-                                        Navigator.pop(context);
+                                        Go.backtrack();
                                       },
                                   ),
                                 ],

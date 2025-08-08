@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutx_core/core/routes/config/navigation_config.dart';
 import 'package:smilestreats/core/theme/app_theme.dart';
 import 'package:smilestreats/feature/splash/presentation/screens/splash_screen.dart';
 
@@ -13,8 +14,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: AppTheme.light,
+
+      navigatorKey: NavigationConfig.navigatorKey,
+
       home: SplashScreen(),
     );
   }
