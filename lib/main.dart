@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutx_core/core/routes/config/navigation_config.dart';
 import 'package:smilestreats/core/theme/app_theme.dart';
-import 'package:smilestreats/feature/splash/presentation/screens/splash_screen.dart';
+import 'package:smilestreats/feature/main/presentation/screens/main_nav_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,14 +14,16 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: AppTheme.light,
+    return ProviderScope(
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Flutter Demo',
+        theme: AppTheme.light,
+        
+        navigatorKey: NavigationConfig.navigatorKey,
 
-      navigatorKey: NavigationConfig.navigatorKey,
-
-      home: SplashScreen(),
+        home: MainNavScreen(),
+      ),
     );
   }
 }

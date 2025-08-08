@@ -10,11 +10,8 @@ class AssetsPath {
   static const String phone = '$_baseIconPath/phone.png';
   static const String user = '$_baseIconPath/user.png';
 
-  // static const String location = '$_baseIconPath/location.png';
-  // static const String home = '$_baseIconPath/home.png';
-  // static const String message = '$_baseIconPath/message.png';
-  // static const String notification = '$_baseIconPath/notification.png';
-
-  // static const String google = '$_baseIconPath/google.png';
-  // static const String apple = '$_baseIconPath/apple.png';
+  static const String home = '$_baseIconPath/home.svg';
+  static const String search = '$_baseIconPath/search.svg';
+  static const String cart = '$_baseIconPath/cart.svg';
+  static const String profile = '$_baseIconPath/profile.svg';
 }

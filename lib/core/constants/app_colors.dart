@@ -5,6 +5,9 @@ class AppColors {
 
   static const Color primaryLaurel = Color(0xFF759676);
 
+  static const Color iconSelectedColor = primaryLaurel;
+  static const Color iconDeselectedColor = Color(0xFFB5B5B5);
+
   /// [Text]
   static const Color textAppLaurel = Color(0xFF217400);
   static const Color textAppBlack = Color(0xFF03090D);
