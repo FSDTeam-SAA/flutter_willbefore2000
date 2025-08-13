@@ -21,6 +21,7 @@ dependencies:
 
   riverpod: ^2.6.1
   flutter_riverpod: ^2.6.1
+  firebase_core: ^4.0.0
 
 
 dev_dependencies:
