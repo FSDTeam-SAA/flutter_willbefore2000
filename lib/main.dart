@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutx_core/core/routes/config/navigation_config.dart';
 import 'package:smilestreats/core/theme/app_theme.dart';
-import 'package:smilestreats/feature/main/presentation/screens/main_nav_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'core/routes/route_endpoint.dart';
 import 'firebase_options.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
 );
@@ -20,14 +21,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
-      child: MaterialApp(
+      child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
         theme: AppTheme.light,
-        
-        navigatorKey: NavigationConfig.navigatorKey,
 
-        home: MainNavScreen(),
+        routerConfig: AppRouter.router,
       ),
     );
   }

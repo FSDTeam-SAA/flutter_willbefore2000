@@ -1,9 +1,14 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutx_core/core/routes/services/go_next_navigation.dart';
 import 'package:flutx_core/flutx_core.dart';
+import 'package:go_router/go_router.dart';
+import 'package:smilestreats/core/routes/route_endpoint.dart';
 import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
 import 'package:smilestreats/core/utils/extensions/input_decoration_extensions.dart';
+import 'package:smilestreats/feature/auth/domain/requests/login_request.dart';
+import 'package:smilestreats/feature/auth/presentation/providers/auth_provider.dart';
 import 'package:smilestreats/feature/auth/presentation/screens/signup_screen.dart';
 
 import '../../../../core/common/widgets/app_icons.dart';
@@ -11,16 +16,15 @@ import '../../../../core/common/widgets/app_logo.dart';
 import '../../../../core/common/widgets/app_scaffold.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_icons_const.dart';
-import '../controller/auth_controller.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen>
+class _LoginScreenState extends ConsumerState<LoginScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final FocusNode _emailFocus = FocusNode();
@@ -32,9 +36,6 @@ class _LoginScreenState extends State<LoginScreen>
   final ValueNotifier<bool> _obscurePassword = ValueNotifier<bool>(true);
   final ValueNotifier<bool> _rememberMe = ValueNotifier<bool>(false);
 
-  /// [controller]
-  final AuthController _authController = AuthController();
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -42,17 +43,25 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  void _submit() {
+  void _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(builder: (context) => MainScreen()),
-    // );
+    final data = LoginRequest(
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
+
+    final result = await ref.read(authProvider.notifier).login(data);
+
+    if (result && mounted) {
+      context.pushReplacement(RouteEndpoint.home);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+
     return AppScaffold(
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -134,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       ),
                                     ),
 
-                                validator: Validators.password,
+                                // validator: Validators.password,
                                 autofillHints: const [AutofillHints.password],
                                 onFieldSubmitted: (_) => _submit(),
                               );
@@ -180,15 +189,10 @@ class _LoginScreenState extends State<LoginScreen>
                           Gap.h16,
 
                           /// [Button] Sign In
-                          ListenableBuilder(
-                            listenable: _authController,
-                            builder: (context, _) {
-                              return context.primaryButton(
-                                isLoading: _authController.isLoading,
-                                onPressed: _submit,
-                                text: "Sign In",
-                              );
-                            },
+                          context.primaryButton(
+                            isLoading: authState.isLoading,
+                            onPressed: _submit,
+                            text: "Sign In",
                           ),
                           Gap.h24,
                           // Signup link
@@ -207,7 +211,10 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
-                                        Go.sailTo(SignupScreen(), transition: TransitionType.slideLeft);
+                                        // Go.sailTo(
+                                        //   SignupScreen(),
+                                        //   transition: TransitionType.slideLeft,
+                                        // );
                                       },
                                   ),
                                 ],

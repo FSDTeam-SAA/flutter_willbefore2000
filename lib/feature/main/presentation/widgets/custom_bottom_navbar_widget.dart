@@ -6,13 +6,13 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_icons_const.dart';
 import '../provider/bottom_nav_provider.dart';
 
-class CustomBottomNavBar extends ConsumerWidget {
+class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
-  const CustomBottomNavBar({super.key, required this.currentIndex});
+  final Function(int)? onTap;
+  const CustomBottomNavBar({super.key, required this.currentIndex, this.onTap});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -26,10 +26,10 @@ class CustomBottomNavBar extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(0, 'Home', AssetsPath.home, currentIndex, ref),
-          _buildNavItem(1, 'Search', AssetsPath.search, currentIndex, ref),
-          _buildNavItem(2, 'Cart', AssetsPath.cart, currentIndex, ref),
-          _buildNavItem(3, 'Profile', AssetsPath.profile, currentIndex, ref),
+          _buildNavItem(0, 'Home', AssetsPath.home, currentIndex, onTap),
+          _buildNavItem(1, 'Search', AssetsPath.search, currentIndex, onTap),
+          _buildNavItem(2, 'Cart', AssetsPath.cart, currentIndex, onTap),
+          _buildNavItem(3, 'Profile', AssetsPath.profile, currentIndex, onTap),
         ],
       ),
     );
@@ -40,12 +40,16 @@ class CustomBottomNavBar extends ConsumerWidget {
     String label,
     String iconPath,
     int currentIndex,
-    WidgetRef ref,
+    Function(int)? onTap,
   ) {
     final isSelected = index == currentIndex;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => ref.read(bottomNavIndexProvider.notifier).state = index,
+      onTap: () {
+        if (onTap != null) {
+          onTap(index);
+        }
+      },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

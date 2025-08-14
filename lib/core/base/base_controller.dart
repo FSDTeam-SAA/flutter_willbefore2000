@@ -1,60 +1,23 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-abstract class BaseController with ChangeNotifier {
-  bool _isLoading = false;
-  String _errorMessage = '';
+import 'base_state.dart';
 
-  bool get isLoading => _isLoading;
-  String get errorMessage => _errorMessage;
+abstract class BaseController extends StateNotifier<BaseState> {
+
+  BaseController(BaseState baseState) : super(const BaseState());
+
+  bool get isLoading => state.isLoading;
+  String get errorMessage => state.errorMessage;
 
   void setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
+    state = state.copyWith(isLoading: value);
   }
 
   void setError(String message) {
-    _errorMessage = message;
-    notifyListeners();
+    state = state.copyWith(errorMessage: message);
   }
 
   void clearError() {
-    _errorMessage = '';
-    notifyListeners();
+    state = state.copyWith(errorMessage: '');
   }
-
-  /// Helper method to handle API results consistently
-  // void handleApiResult<T>(
-  //   ApiResult<T> result, {
-  //   required void Function(T? data, String message) onSuccess,
-  //   void Function(String message)? onError,
-  // }) {
-  //   if (result.isSuccess) {
-  //     final success = result as ApiSuccess<T>;
-  //     onSuccess(success.data, success.message);
-  //   } else {
-  //     final errorMessage = result.message;
-  //     setError(errorMessage);
-  //     onError?.call(errorMessage);
-  //   }
-  // }
-
-  /// Show success message
-  // void showSuccess(String message) {
-  //   SnackbarService.showSuccess(message);
-  // }
-
-  // /// Show error message
-  // void showError(String message) {
-  //   SnackbarService.showError(message);
-  // }
-
-  // /// Show warning message
-  // void showWarning(String message) {
-  //   SnackbarService.showWarning(message);
-  // }
-
-  // /// Show info message
-  // void showInfo(String message) {
-  //   SnackbarService.showInfo(message);
-  // }
 }

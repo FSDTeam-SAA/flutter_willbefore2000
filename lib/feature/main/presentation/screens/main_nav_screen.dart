@@ -1,30 +1,50 @@
+// main_nav_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:smilestreats/feature/main/presentation/widgets/custom_bottom_navbar_widget.dart';
+import 'package:go_router/go_router.dart';
+import 'package:smilestreats/core/routes/route_endpoint.dart';
 
 import '../provider/bottom_nav_provider.dart';
+import '../widgets/custom_bottom_navbar_widget.dart';
 
-final List<Widget> _screens = [
-  Center(child: Text('Home Screen')),
-  Center(child: Text('Search Screen')),
-  Center(child: Text('Cart Screen')),
-  Center(child: Text('Profile Screen')),
-];
-
-class MainNavScreen extends ConsumerWidget {
-  const MainNavScreen({super.key});
+class MainNavScreen extends ConsumerStatefulWidget {
+  final Widget child;
+  const MainNavScreen({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MainNavScreen> createState() => _MainNavScreenState();
+}
+
+class _MainNavScreenState extends ConsumerState<MainNavScreen> {
+  @override
+  Widget build(BuildContext context) {
     final currentIndex = ref.watch(bottomNavIndexProvider);
 
     return Scaffold(
-      body: _screens[currentIndex],
-      bottomNavigationBar: CustomBottomNavBar(currentIndex: currentIndex,),
+      body: widget.child,
+      bottomNavigationBar: CustomBottomNavBar(
+        currentIndex: currentIndex,
+        onTap: (index) => _onItemTapped(index, context),
+      ),
     );
   }
-}
 
-// "35k"
-// wrk : 29K
+  void _onItemTapped(int index, BuildContext context) {
+    ref.read(bottomNavIndexProvider.notifier).state = index;
+    
+    switch (index) {
+      case 0:
+        context.go(RouteEndpoint.home);
+        break;
+      case 1:
+        context.go(RouteEndpoint.search);
+        break;
+      case 2:
+        context.go(RouteEndpoint.cart);
+        break;
+      case 3:
+        context.go(RouteEndpoint.profile);
+        break;
+    }
+  }
+}

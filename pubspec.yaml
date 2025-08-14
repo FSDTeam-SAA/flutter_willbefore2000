@@ -14,14 +14,25 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
+  
+
+  # UI
   flutx_core: ^1.1.0+1
   google_fonts: ^6.3.0
   flutter_svg: ^2.2.0
   pinput: ^5.0.1
 
-  riverpod: ^2.6.1
+  # Routing
+  go_router: ^16.1.0
+
+  # State managment
   flutter_riverpod: ^2.6.1
+
+  # Firebase
   firebase_core: ^4.0.0
+  firebase_auth: ^6.0.1
+  firebase_storage: ^13.0.0
+  cloud_firestore: ^6.0.0
 
 
 dev_dependencies:
