@@ -1,15 +1,240 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-class CartScreen extends StatefulWidget {
+import '../../../../core/constants/app_colors.dart';
+import '../providers/cart_provider.dart';
+import '../widgets/cart_item_widget.dart';
+
+class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 
   @override
-  State<CartScreen> createState() => _CartScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cartState = ref.watch(cartProvider);
 
-class _CartScreenState extends State<CartScreen> {
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        title: Text(
+          'Cart',
+          style: GoogleFonts.notoSansKr(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textAppBlack,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
+      body: cartState.items.isEmpty
+          ? _buildEmptyCart()
+          : Column(
+              children: [
+                // Cart Items
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: cartState.items.length,
+                    itemBuilder: (context, index) {
+                      final item = cartState.items[index];
+                      return CartItemWidget(
+                        item: item,
+                        onQuantityChanged: (newQuantity) {
+                          ref.read(cartProvider.notifier).updateQuantity(
+                                item.id,
+                                newQuantity,
+                              );
+                        },
+                        onRemove: () {
+                          ref.read(cartProvider.notifier).removeFromCart(item.id);
+                        },
+                      );
+                    },
+                  ),
+                ),
+
+                // Order Summary
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
+                  ),
+                  child: SafeArea(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Order Summary',
+                          style: GoogleFonts.notoSansKr(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textAppBlack,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Subtotal',
+                              style: GoogleFonts.notoSansKr(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.textSecondaryColor,
+                              ),
+                            ),
+                            Text(
+                              '\$${cartState.subtotal.toStringAsFixed(2)}',
+                              style: GoogleFonts.notoSansKr(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textAppBlack,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Tax',
+                              style: GoogleFonts.notoSansKr(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.textSecondaryColor,
+                              ),
+                            ),
+                            Text(
+                              '\$${cartState.tax.toStringAsFixed(2)}',
+                              style: GoogleFonts.notoSansKr(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textAppBlack,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Divider(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Total',
+                              style: GoogleFonts.notoSansKr(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textAppBlack,
+                              ),
+                            ),
+                            Text(
+                              '\$${cartState.total.toStringAsFixed(2)}',
+                              style: GoogleFonts.notoSansKr(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textAppBlack,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // Checkout logic
+                              _showCheckoutDialog(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryLaurel,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              'Continue Shopping',
+                              style: GoogleFonts.notoSansKr(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildEmptyCart() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.shopping_cart_outlined,
+            size: 80,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Your cart is empty',
+            style: GoogleFonts.notoSansKr(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondaryColor,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Add some products to get started',
+            style: GoogleFonts.notoSansKr(
+              fontSize: 14,
+              color: AppColors.textSecondaryHintColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCheckoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Checkout',
+          style: GoogleFonts.notoSansKr(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Text(
+          'Checkout functionality will be implemented soon!',
+          style: GoogleFonts.notoSansKr(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: Text(
+              'OK',
+              style: GoogleFonts.notoSansKr(
+                color: AppColors.primaryLaurel,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

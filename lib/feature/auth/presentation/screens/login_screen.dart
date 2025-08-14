@@ -54,7 +54,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     final result = await ref.read(authProvider.notifier).login(data);
 
     if (result && mounted) {
-      context.pushReplacement(RouteEndpoint.home);
+      context.pushReplacement(RoutePaths.home);
     }
   }
 

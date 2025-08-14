@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:flutx_core/core/theme/text/app_text_style.dart';
 
 import '../../constants/app_colors.dart';
@@ -60,6 +61,10 @@ extension ButtonStyleExtensions on BuildContext {
     Color? backgroundColor,
     double borderRadius = 6.0,
     double borderWidth = 1.0,
+    String? prefixIconPath, // SVG path for prefix icon
+    String? suffixIconPath, // SVG path for suffix icon
+    double iconSize = 24.0, // Size for both icons
+    double iconGap = 8.0, // Space between icon and text
   }) {
     return GestureDetector(
       onTap: isLoading ? null : onPressed,
@@ -85,11 +90,42 @@ extension ButtonStyleExtensions on BuildContext {
                       valueColor: AlwaysStoppedAnimation<Color>(textColor),
                     ),
                   )
-                : Text(
-                    text,
-                    style: AppTextStyles.text16w500().copyWith(
-                      color: textColor,
-                    ),
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (prefixIconPath != null)
+                        Padding(
+                          padding: EdgeInsets.only(right: iconGap),
+                          child: SvgPicture.asset(
+                            prefixIconPath,
+                            width: iconSize,
+                            height: iconSize,
+                            colorFilter: ColorFilter.mode(
+                              textColor,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                      Text(
+                        text,
+                        style: AppTextStyles.text16w600().copyWith(
+                          color: textColor,
+                        ),
+                      ),
+                      if (suffixIconPath != null)
+                        Padding(
+                          padding: EdgeInsets.only(left: iconGap),
+                          child: SvgPicture.asset(
+                            suffixIconPath,
+                            width: iconSize,
+                            height: iconSize,
+                            colorFilter: ColorFilter.mode(
+                              textColor,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
           ),
         ),
