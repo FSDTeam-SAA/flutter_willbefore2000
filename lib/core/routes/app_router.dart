@@ -91,7 +91,7 @@ class AppRouter {
             path: RoutePaths.search,
             name: "Search",
             pageBuilder: (context, state) =>
-                MaterialPage(key: state.pageKey, child: const SearchScreen()),
+                MaterialPage(key: state.pageKey, child: const AdvancedSearchScreen()),
           ),
           GoRoute(
             path: RoutePaths.cart,

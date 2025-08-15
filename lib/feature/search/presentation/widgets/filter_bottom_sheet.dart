@@ -258,7 +258,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
   }
 
   Widget _buildSortOption(String sort) {
-    final isSelected = _sortBy == sort;
+    // final isSelected = _sortBy == sort;
     return RadioListTile<String>(
       title: Text(
         sort,

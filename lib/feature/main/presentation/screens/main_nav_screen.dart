@@ -7,7 +7,7 @@ import 'package:smilestreats/core/routes/route_endpoint.dart';
 import '../../../cart/presentation/screens/cart_screen.dart';
 import '../../../home/presentation/screens/home_screen.dart';
 import '../../../profile/presentation/screen/profile_screen.dart';
-import '../../../search/presentation/screens/search_screen.dart';
+import '../../../search/presentation/screens/advance_search_screen.dart';
 import '../provider/bottom_nav_provider.dart';
 import '../widgets/custom_bottom_navbar_widget.dart';
 
@@ -64,7 +64,7 @@ class _MainNavScreenState extends ConsumerState<MainNavScreen> {
         },
         children: const [
           HomeScreen(),
-          SearchScreen(),
+          AdvancedSearchScreen(),
           CartScreen(),
           ProfileScreen(),
         ],
