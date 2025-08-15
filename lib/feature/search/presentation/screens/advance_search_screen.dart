@@ -113,11 +113,11 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
         children: [
           Row(
             children: [
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back_ios, size: 20),
-                color: AppColors.textAppBlack,
-              ),
+              // IconButton(
+              //   onPressed: () => Navigator.pop(context),
+              //   icon: const Icon(Icons.arrow_back_ios, size: 20),
+              //   color: AppColors.textAppBlack,
+              // ),
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(

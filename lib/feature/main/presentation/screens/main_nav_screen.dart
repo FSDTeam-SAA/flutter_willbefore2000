@@ -21,7 +21,6 @@ class MainNavScreen extends ConsumerStatefulWidget {
 
 class _MainNavScreenState extends ConsumerState<MainNavScreen> {
   late PageController _pageController;
-  bool _isSwiping = false;
 
   @override
   void initState() {
@@ -39,29 +38,21 @@ class _MainNavScreenState extends ConsumerState<MainNavScreen> {
   Widget build(BuildContext context) {
     final currentIndex = ref.watch(bottomNavIndexProvider);
 
-    // Sync PageController with bottom nav
-    if (!_isSwiping) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+    ref.listen(bottomNavIndexProvider, (previous, next) {
+      if (previous != next) {
         _pageController.animateToPage(
-          currentIndex,
+          next,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
-      });
-    }
+      }
+    });
+
 
     return Scaffold(
       body: PageView(
         controller: _pageController,
-        physics: const ClampingScrollPhysics(),
-        onPageChanged: (index) {
-          setState(() => _isSwiping = true);
-          ref.read(bottomNavIndexProvider.notifier).state = index;
-          _navigateToIndex(index, context);
-          Future.delayed(const Duration(milliseconds: 300), () {
-            setState(() => _isSwiping = false);
-          });
-        },
+        physics: const NeverScrollableScrollPhysics(),
         children: const [
           HomeScreen(),
           AdvancedSearchScreen(),
@@ -78,11 +69,6 @@ class _MainNavScreenState extends ConsumerState<MainNavScreen> {
 
   void _onItemTapped(int index, BuildContext context) {
     ref.read(bottomNavIndexProvider.notifier).state = index;
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
     _navigateToIndex(index, context);
   }
 
