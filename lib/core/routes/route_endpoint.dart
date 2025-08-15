@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:smilestreats/feature/home/presentation/screens/home_screach_screen.dart';
 import 'package:smilestreats/feature/main/presentation/screens/main_nav_screen.dart';
 
 import '../../feature/auth/presentation/providers/auth_provider.dart';
@@ -24,11 +25,12 @@ class RoutePaths {
 
   // Main navigation routes
   static const String home = '/';
+  static const String homeSearch = '/home-search';
   static const String search = '/search';
   static const String cart = '/cart';
   static const String profile = '/profile';
 
-  static const String product = '/product';
+  static const String product = '/product-details';
   static const String productList = '/products';
   static const String categories = '/categories';
   static const String orders = '/orders';

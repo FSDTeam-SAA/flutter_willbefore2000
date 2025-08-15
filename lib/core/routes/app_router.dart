@@ -79,7 +79,7 @@ class AppRouter {
         routes: [
           GoRoute(
             path: RoutePaths.home,
-            name: RoutePaths.home,
+            name: "Home",
             builder: (context, state) => const HomeScreen(),
             // pageBuilder: (context, state) => AppTransitions.slideTransition(
             //   context: context,
@@ -89,13 +89,9 @@ class AppRouter {
           ),
           GoRoute(
             path: RoutePaths.search,
-            name: RoutePaths.search,
-            builder: (context, state) => const SearchScreen(),
-            // pageBuilder: (context, state) => AppTransitions.slideTransition(
-            //   context: context,
-            //   child: const SearchScreen(),
-            //   state: state,
-            // ),
+            name: "Search",
+            pageBuilder: (context, state) =>
+                MaterialPage(key: state.pageKey, child: const SearchScreen()),
           ),
           GoRoute(
             path: RoutePaths.cart,
@@ -123,9 +119,13 @@ class AppRouter {
       GoRoute(
         path: '${RoutePaths.product}/:id',
         name: 'product-detail',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final productId = state.pathParameters['id']!;
-          return ProductDetailScreen(productId: productId);
+          return AppTransitions.slideTransition(
+            context: context,
+            child: ProductDetailScreen(productId: productId),
+            state: state,
+          );
         },
       ),
       // GoRoute(
@@ -137,6 +137,13 @@ class AppRouter {
       //     return ProductListScreen(type: type, title: title);
       //   },
       // ),
+      GoRoute(
+        path: RoutePaths.homeSearch,
+        name: 'home-search',
+        builder: (context, state) {
+          return HomeSearchScreen();
+        },
+      ),
       // GoRoute(
       //   path: RoutePaths.categories,
       //   name: 'categories',

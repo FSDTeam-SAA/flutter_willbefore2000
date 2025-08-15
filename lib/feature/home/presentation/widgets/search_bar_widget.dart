@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutx_core/flutx_core.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/routes/route_endpoint.dart';
 
-class SearchBarWidget extends StatelessWidget {
+class HomeSearchBarWidget extends StatelessWidget {
   final VoidCallback? onTap;
   final String? hintText;
 
-  const SearchBarWidget({super.key, this.onTap, this.hintText});
+  const HomeSearchBarWidget({super.key, this.onTap, this.hintText});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +17,17 @@ class SearchBarWidget extends StatelessWidget {
     final isTablet = screenWidth > 600;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        try {
+          if (onTap != null) {
+            onTap!();
+          } else {
+            context.push(RoutePaths.homeSearch);
+          }
+        } catch (e) {
+          DPrint.error("Navigate to search fail : $e");
+        }
+      },
       child: Container(
         width: double.infinity,
         height: isTablet ? 56 : 50,
@@ -50,20 +62,6 @@ class SearchBarWidget extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            Container(
-              width: isTablet ? 36 : 32,
-              height: isTablet ? 36 : 32,
-              decoration: BoxDecoration(
-                color: AppColors.primaryLaurel.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(isTablet ? 10 : 8),
-              ),
-              child: Icon(
-                Icons.tune,
-                color: AppColors.primaryLaurel,
-                size: isTablet ? 18 : 16,
-              ),
-            ),
-            SizedBox(width: isTablet ? 16 : 12),
           ],
         ),
       ),

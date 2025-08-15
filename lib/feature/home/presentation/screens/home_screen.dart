@@ -63,10 +63,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       SizedBox(height: isTablet ? 24 : 20),
                       Hero(
                         tag: 'search-bar',
+                        createRectTween: (begin, end) {
+                          return MaterialRectCenterArcTween(
+                            begin: begin,
+                            end: end,
+                          );
+                        },
                         child: Material(
                           color: Colors.transparent,
-                          child: SearchBarWidget(
-                            onTap: () => context.go(RoutePaths.search),
+                          child: HomeSearchBarWidget(
+                            onTap: () => context.push(RoutePaths.homeSearch),
                           ),
                         ),
                       ),

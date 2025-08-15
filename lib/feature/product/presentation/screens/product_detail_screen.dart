@@ -85,7 +85,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           // Product Images
           SliverToBoxAdapter(
             child: Hero(
-              tag: 'product-detail-${product.id}',
+              tag: 'product-${product.id}',
               child: _buildImageSection(product),
             ),
           ),

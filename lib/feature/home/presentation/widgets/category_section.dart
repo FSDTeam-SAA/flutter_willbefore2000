@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
 import 'package:smilestreats/feature/home/domain/models/category_model.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -45,8 +46,8 @@ class CategorySection extends StatelessWidget {
             child: isLoading
                 ? _buildLoadingState(isTablet)
                 : categories.isEmpty
-                    ? _buildEmptyState(isTablet)
-                    : _buildCategoryList(isTablet),
+                ? _buildEmptyState(isTablet)
+                : _buildCategoryList(isTablet),
           ),
         ],
       ),
@@ -56,7 +57,7 @@ class CategorySection extends StatelessWidget {
   Widget _buildLoadingState(bool isTablet) {
     final itemWidth = isTablet ? 100.0 : 80.0;
     final iconSize = isTablet ? 60.0 : 50.0;
-    
+
     return ListView.builder(
       scrollDirection: Axis.horizontal,
       padding: EdgeInsets.symmetric(horizontal: isTablet ? 24 : 16),
@@ -108,8 +109,7 @@ class CategorySection extends StatelessWidget {
   Widget _buildCategoryList(bool isTablet) {
     final itemWidth = isTablet ? 100.0 : 80.0;
     final iconSize = isTablet ? 60.0 : 50.0;
-    final iconInnerSize = isTablet ? 28.0 : 24.0;
-    
+
     return ListView.builder(
       scrollDirection: Axis.horizontal,
       padding: EdgeInsets.symmetric(horizontal: isTablet ? 24 : 16),
@@ -130,19 +130,27 @@ class CategorySection extends StatelessWidget {
                 Container(
                   width: iconSize,
                   height: iconSize,
+                  clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     color: AppColors.primaryLaurel.withOpacity(0.1),
-                    shape: BoxShape.circle,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.circular(4),
                     border: Border.all(
                       color: AppColors.primaryLaurel.withOpacity(0.2),
                       width: 1,
                     ),
                   ),
-                  child: Icon(
-                    _getCategoryIcon(category.name),
-                    color: AppColors.primaryLaurel,
-                    size: iconInnerSize,
+                  child: AppCachedImage(
+                    imageUrl: category.imageUrl ?? "",
+                    width: 75,
+                    height: 80,
                   ),
+
+                  // Icon(
+                  //   _getCategoryIcon(category.name),
+                  //   color: AppColors.primaryLaurel,
+                  //   size: iconInnerSize,
+                  // ),
                 ),
                 SizedBox(height: isTablet ? 8 : 6),
                 Text(
@@ -162,28 +170,5 @@ class CategorySection extends StatelessWidget {
         );
       },
     );
-  }
-
-  IconData _getCategoryIcon(String categoryName) {
-    switch (categoryName.toLowerCase()) {
-      case 'electronics':
-        return Icons.devices;
-      case 'clothing':
-        return Icons.checkroom;
-      case 'books':
-        return Icons.menu_book;
-      case 'home':
-        return Icons.home;
-      case 'sports':
-        return Icons.sports_soccer;
-      case 'beauty':
-        return Icons.face_retouching_natural;
-      case 'food':
-        return Icons.restaurant;
-      case 'toys':
-        return Icons.toys;
-      default:
-        return Icons.category;
-    }
   }
 }

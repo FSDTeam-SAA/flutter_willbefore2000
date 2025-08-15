@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:smilestreats/core/styles/decorations.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../product/domain/entrity/product.dart';
@@ -103,7 +104,9 @@ class ProductSection extends StatelessWidget {
           children: List.generate(
             4,
             (index) => SizedBox(
-              width: (MediaQuery.of(context).size.width - (isTablet ? 64 : 44)) / 2,
+              width:
+                  (MediaQuery.of(context).size.width - (isTablet ? 64 : 44)) /
+                  2,
               child: _buildShimmerCard(isTablet),
             ),
           ),
@@ -209,12 +212,13 @@ class ProductSection extends StatelessWidget {
     final cardHeight = isTablet ? 280.0 : 240.0;
 
     if (isHorizontal) {
-      return SizedBox(
+      return Container(
         height: cardHeight,
+        color: AppColors.bgColor,
+        decoration: AppDecorations.cardDecoration,
         child: ListView.builder(
-          scrollDirection: Axis.horizontal,
           padding: EdgeInsets.symmetric(horizontal: isTablet ? 24 : 16),
-          itemCount: products.length,
+          itemCount: 2,
           itemBuilder: (context, index) {
             final product = products[index];
             return Container(
@@ -237,7 +241,9 @@ class ProductSection extends StatelessWidget {
           children: products.map((product) {
             final index = products.indexOf(product);
             return SizedBox(
-              width: (MediaQuery.of(context).size.width - (isTablet ? 64 : 44)) / 2,
+              width:
+                  (MediaQuery.of(context).size.width - (isTablet ? 64 : 44)) /
+                  2,
               child: ProductCard(
                 product: product,
                 heroTag: '${title.toLowerCase().replaceAll(' ', '-')}-$index',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:smilestreats/core/styles/decorations.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entrity/product.dart';
@@ -75,10 +76,7 @@ class ProductSection extends StatelessWidget {
           return Container(
             width: 160,
             margin: const EdgeInsets.only(right: 12),
-            child: ProductCard(
-              product: product,
-              isHorizontal: true,
-            ),
+            child: ProductCard(product: product, isHorizontal: true),
           );
         },
       ),
@@ -86,16 +84,26 @@ class ProductSection extends StatelessWidget {
   }
 
   Widget _buildVerticalProducts() {
-    return Column(
-      children: products.take(4).map((product) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: ProductCard(
-            product: product,
-            isHorizontal: false,
-          ),
-        );
-      }).toList(),
+    final items = products.take(2).toList();
+
+    return Container(
+      decoration: AppDecorations.cardDecoration,
+      padding: EdgeInsets.all(10),
+      child: Column(
+        children: items.asMap().entries.map((entry) {
+          final index = entry.key;
+          final product = entry.value;
+
+          return Container(
+            margin: EdgeInsets.only(bottom: index == items.length - 1 ? 0 : 12),
+            child: ProductCard(
+              product: product,
+              isHorizontal: false,
+              heroTag: "product-card-${product.id}",
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 
