@@ -21,6 +21,7 @@ dependencies:
   google_fonts: ^6.3.0
   flutter_svg: ^2.2.0
   pinput: ^5.0.1
+  flutter_html: ^3.0.0
 
   # Routing
   go_router: ^16.1.0

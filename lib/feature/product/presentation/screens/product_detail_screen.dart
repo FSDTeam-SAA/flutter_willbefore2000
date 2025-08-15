@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
 
+import '../../../../core/common/widgets/html_content_widget.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/hero_tag_manager.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
@@ -13,7 +14,7 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
   final String? heroTag; // Added heroTag parameter to receive from navigation
 
   const ProductDetailScreen({
-    super.key, 
+    super.key,
     required this.productId,
     this.heroTag, // Optional heroTag for Hero animation
   });
@@ -50,10 +51,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       orElse: () => throw Exception('Product not found'),
     );
 
-    final effectiveHeroTag = widget.heroTag ?? 
+    final effectiveHeroTag =
+        widget.heroTag ??
         HeroTagManager.generateProductHeroTag(
-          productId: product.id, 
-          context: 'detail-fallback'
+          productId: product.id,
+          context: 'detail-fallback',
         );
 
     return Scaffold(
@@ -170,18 +172,45 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    product.description.isNotEmpty
+                  ProductDescriptionHtml(
+                    htmlData: product.description.isNotEmpty
                         ? product.description
-                        : 'A beautiful floral summer dress perfect for warm weather. Made with lightweight, breathable fabric for maximum comfort.',
-                    style: GoogleFonts.notoSansKr(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.textSecondaryColor,
-                      height: 1.5,
-                    ),
+                        : '<p>A beautiful floral summer dress perfect for warm weather. Made with lightweight, breathable fabric for maximum comfort.</p>',
+                    padding: EdgeInsets.zero,
+                    // defaultTextStyle: GoogleFonts.notoSansKr(
+                    //   fontSize: 14,
+                    //   fontWeight: FontWeight.w400,
+                    //   color: AppColors.textSecondaryColor,
+                    //   height: 1.5,
+                    // ),
+                    // customStyle: {
+                    //   "h1, h2, h3, h4, h5, h6": Style(
+                    //     color: AppColors.textAppBlack,
+                    //     fontWeight: FontWeight.w600,
+                    //     margin: Margins.only(top: 16, bottom: 8),
+                    //   ),
+                    //   "strong, b": Style(
+                    //     fontWeight: FontWeight.w600,
+                    //     color: AppColors.textAppBlack,
+                    //   ),
+                    //   "a": Style(
+                    //     color: AppColors.primaryLaurel,
+                    //     textDecoration: TextDecoration.underline,
+                    //   ),
+                    // },
                   ),
 
+                  // Text(
+                  //   product.description.isNotEmpty
+                  //       ? product.description
+                  //       : 'A beautiful floral summer dress perfect for warm weather. Made with lightweight, breathable fabric for maximum comfort.',
+                  //   style: GoogleFonts.notoSansKr(
+                  //     fontSize: 14,
+                  //     fontWeight: FontWeight.w400,
+                  //     color: AppColors.textSecondaryColor,
+                  //     height: 1.5,
+                  //   ),
+                  // ),
                   const SizedBox(height: 24),
 
                   // Features
