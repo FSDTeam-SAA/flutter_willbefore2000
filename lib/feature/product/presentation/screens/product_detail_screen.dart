@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
 
 import '../../../../core/constants/app_colors.dart';
-
+import '../../../../core/utils/hero_tag_manager.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 import '../providers/products_providers.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
+  final String? heroTag; // Added heroTag parameter to receive from navigation
 
   const ProductDetailScreen({
-    super.key,
+    super.key, 
     required this.productId,
+    this.heroTag, // Optional heroTag for Hero animation
   });
 
   @override
-  ConsumerState<ProductDetailScreen> createState() => _ProductDetailScreenState();
+  ConsumerState<ProductDetailScreen> createState() =>
+      _ProductDetailScreenState();
 }
 
 class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
@@ -36,17 +40,21 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final productsState = ref.watch(productsProvider);
-    
+
     if (productsState.isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final product = productsState.products.firstWhere(
       (p) => p.id == widget.productId,
       orElse: () => throw Exception('Product not found'),
     );
+
+    final effectiveHeroTag = widget.heroTag ?? 
+        HeroTagManager.generateProductHeroTag(
+          productId: product.id, 
+          context: 'detail-fallback'
+        );
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -59,10 +67,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             pinned: true,
             leading: IconButton(
               onPressed: () => Navigator.pop(context),
-              icon: const Icon(
-                Icons.arrow_back,
-                color: AppColors.textAppBlack,
-              ),
+              icon: const Icon(Icons.arrow_back, color: AppColors.textAppBlack),
             ),
             actions: [
               IconButton(
@@ -74,10 +79,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               ),
               IconButton(
                 onPressed: () {},
-                icon: const Icon(
-                  Icons.share,
-                  color: AppColors.textAppBlack,
-                ),
+                icon: const Icon(Icons.share, color: AppColors.textAppBlack),
               ),
             ],
           ),
@@ -85,7 +87,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           // Product Images
           SliverToBoxAdapter(
             child: Hero(
-              tag: 'product-${product.id}',
+              tag: effectiveHeroTag, // Use the effective hero tag
               child: _buildImageSection(product),
             ),
           ),
@@ -134,11 +136,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(
-                        Icons.star,
-                        size: 20,
-                        color: Colors.amber,
-                      ),
+                      const Icon(Icons.star, size: 20, color: Colors.amber),
                       const SizedBox(width: 4),
                       Text(
                         '4.8',
@@ -173,8 +171,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    product.description.isNotEmpty 
-                        ? product.description 
+                    product.description.isNotEmpty
+                        ? product.description
                         : 'A beautiful floral summer dress perfect for warm weather. Made with lightweight, breathable fabric for maximum comfort.',
                     style: GoogleFonts.notoSansKr(
                       fontSize: 14,
@@ -227,7 +225,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           // Main Image
           Expanded(
             child: PageView.builder(
-              itemCount: product.imageUrls.isNotEmpty ? product.imageUrls.length : 1,
+              itemCount: product.imageUrls.isNotEmpty
+                  ? product.imageUrls.length
+                  : 1,
               onPageChanged: (index) {
                 setState(() {
                   _currentImageIndex = index;
@@ -242,22 +242,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: Image.network(
-                      product.imageUrls.isNotEmpty
-                          ? product.imageUrls[index]
-                          : '/placeholder.svg?height=400&width=400',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[200],
-                          child: const Icon(
-                            Icons.image,
-                            size: 80,
-                            color: Colors.grey,
-                          ),
-                        );
-                      },
-                    ),
+                    child: AppCachedImage(imageUrl: product.imageUrls[index]),
                   ),
                 );
               },
@@ -346,11 +331,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
         const SizedBox(height: 12),
         Row(
           children: [
-            const Icon(
-              Icons.refresh,
-              size: 20,
-              color: AppColors.primaryLaurel,
-            ),
+            const Icon(Icons.refresh, size: 20, color: AppColors.primaryLaurel),
             const SizedBox(width: 12),
             Text(
               '30-day free returns',
@@ -440,7 +421,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             final index = entry.key;
             final colorName = entry.value;
             final isSelected = _selectedColor == colorName;
-            
+
             // Get color from colorCodes if available
             Color color = Colors.grey;
             if (index < product.colorCodes.length) {
@@ -463,7 +444,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                 });
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: color,
                   borderRadius: BorderRadius.circular(8),
@@ -524,10 +508,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   color: Colors.grey[100],
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
-                  Icons.remove,
-                  color: AppColors.textAppBlack,
-                ),
+                child: const Icon(Icons.remove, color: AppColors.textAppBlack),
               ),
             ),
             const SizedBox(width: 16),
@@ -553,10 +534,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   color: AppColors.primaryLaurel,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.add, color: Colors.white),
               ),
             ),
             const Spacer(),
@@ -581,13 +559,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           child: OutlinedButton(
             onPressed: () {
               // Add to cart logic
-              ref.read(cartProvider.notifier).addToCart(
-                product,
-                _quantity,
-                _selectedSize,
-                _selectedColor,
-              );
-              
+              ref
+                  .read(cartProvider.notifier)
+                  .addToCart(product, _quantity, _selectedSize, _selectedColor);
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(

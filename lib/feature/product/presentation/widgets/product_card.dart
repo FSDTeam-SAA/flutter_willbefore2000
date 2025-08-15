@@ -6,7 +6,7 @@ import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routes/route_endpoint.dart';
-
+import '../../../../core/utils/hero_tag_manager.dart';
 import '../../domain/entrity/product.dart';
 
 class ProductCard extends StatelessWidget {
@@ -23,60 +23,48 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final uniqueHeroTag = heroTag ?? 'product-${product.id}';
+    final uniqueHeroTag = heroTag ?? 
+        HeroTagManager.generateProductHeroTag(
+          productId: product.id, 
+          context: 'fallback'
+        );
 
     return GestureDetector(
       onTap: () => context.push(
         '${RoutePaths.product}/${product.id}',
-        extra: uniqueHeroTag,
+        extra: uniqueHeroTag, // Pass the hero tag as extra data
       ),
-      child: Hero(
-        tag: uniqueHeroTag,
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            child: isHorizontal ? _buildHorizontalCard() : _buildVerticalCard(),
-          ),
-        ),
+      child: Container(
+        child: isHorizontal ? _buildHorizontalCard(uniqueHeroTag) : _buildVerticalCard(uniqueHeroTag),
       ),
     );
   }
 
-  Widget _buildHorizontalCard() {
+  Widget _buildHorizontalCard(String uniqueHeroTag) {
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Column(
         children: [
           // Product Image
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.grey[100],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: AppCachedImage(
-                imageUrl: product.imageUrls.first,
-                fit: BoxFit.cover,
+          Hero(
+            tag: uniqueHeroTag,
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.grey[100],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: AppCachedImage(
+                    imageUrl: product.imageUrls.first,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
-              // Image.network(
-              //   product.imageUrls.isNotEmpty
-              //       ? product.imageUrls.first
-              //       : '/placeholder.svg?height=80&width=80',
-              //   fit: BoxFit.cover,
-              //   errorBuilder: (context, error, stackTrace) {
-              //     return Container(
-              //       color: Colors.grey[200],
-              //       child: const Icon(
-              //         Icons.image,
-              //         size: 30,
-              //         color: Colors.grey,
-              //       ),
-              //     );
-              //   },
-              // ),
             ),
           ),
           const SizedBox(width: 12),
@@ -162,9 +150,8 @@ class ProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildVerticalCard() {
+  Widget _buildVerticalCard(String uniqueHeroTag) {
     return SizedBox(
-      // height: 180,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -174,21 +161,27 @@ class ProductCard extends StatelessWidget {
             children: [
               // Product Image
               SizedBox(
-                height: 80, // Fixed height for image section
+                height: 80,
                 width: 80,
                 child: Stack(
                   children: [
-                    Container(
-                      width: 80,
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppColors.borderColor),
-                        color: Colors.grey[100],
-                      ),
-                      child: AppCachedImage(
-                        imageUrl: product.imageUrls.first,
-                        fit: BoxFit.cover,
+                    Hero(
+                      tag: uniqueHeroTag, // Add Hero widget to vertical card image
+                      child: Material(
+                        color: Colors.transparent,
+                        child: Container(
+                          width: 80,
+                          clipBehavior: Clip.antiAlias,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.borderColor),
+                            color: Colors.grey[100],
+                          ),
+                          child: AppCachedImage(
+                            imageUrl: product.imageUrls.first,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
                     ),
                     if (product.isOnSale)
@@ -300,7 +293,6 @@ class ProductCard extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              // color: AppColors.primaryLaurel,
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(Icons.add, color: AppColors.black, size: 18),

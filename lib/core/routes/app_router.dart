@@ -116,18 +116,27 @@ class AppRouter {
         ],
       ),
 
-      GoRoute(
-        path: '${RoutePaths.product}/:id',
-        name: 'product-detail',
-        pageBuilder: (context, state) {
-          final productId = state.pathParameters['id']!;
-          return AppTransitions.slideTransition(
-            context: context,
-            child: ProductDetailScreen(productId: productId),
-            state: state,
-          );
-        },
-      ),
+       GoRoute(
+      path: '${RoutePaths.product}/:productId',
+      pageBuilder: (context, state) {
+        final productId = state.pathParameters['productId']!;
+        final heroTag = state.extra as String?; // Get Hero tag from extra data
+        
+        return CustomTransitionPage<void>(
+          key: state.pageKey,
+          child: ProductDetailScreen(
+            productId: productId,
+            heroTag: heroTag, // Pass Hero tag to product detail screen
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+        );
+      },
+    ),
       // GoRoute(
       //   path: '${RoutePaths.productList}/:type',
       //   name: 'product-list',

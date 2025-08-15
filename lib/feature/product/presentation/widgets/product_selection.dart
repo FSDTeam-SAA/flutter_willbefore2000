@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:smilestreats/core/styles/decorations.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/hero_tag_manager.dart';
 import '../../domain/entrity/product.dart';
 import 'product_card.dart';
 
@@ -73,10 +74,29 @@ class ProductSection extends StatelessWidget {
         itemCount: products.length,
         itemBuilder: (context, index) {
           final product = products[index];
+          String heroTag;
+          switch (title.toLowerCase()) {
+            case 'most popular':
+              heroTag = HeroTagManager.forHomePopular(product.id, index);
+              break;
+            case 'new arrivals':
+              heroTag = HeroTagManager.forHomeNewArrivals(product.id, index);
+              break;
+            case 'for you':
+              heroTag = HeroTagManager.forHomeForYou(product.id, index);
+              break;
+            default:
+              heroTag = HeroTagManager.forProductList(product.id, index);
+          }
+
           return Container(
             width: 160,
             margin: const EdgeInsets.only(right: 12),
-            child: ProductCard(product: product, isHorizontal: true),
+            child: ProductCard(
+              product: product,
+              isHorizontal: true,
+              heroTag: heroTag, // Pass context-specific hero tag
+            ),
           );
         },
       ),
@@ -94,12 +114,27 @@ class ProductSection extends StatelessWidget {
           final index = entry.key;
           final product = entry.value;
 
+          String heroTag;
+          switch (title.toLowerCase()) {
+            case 'most popular':
+              heroTag = HeroTagManager.forHomePopular(product.id, index);
+              break;
+            case 'new arrivals':
+              heroTag = HeroTagManager.forHomeNewArrivals(product.id, index);
+              break;
+            case 'for you':
+              heroTag = HeroTagManager.forHomeForYou(product.id, index);
+              break;
+            default:
+              heroTag = HeroTagManager.forProductList(product.id, index);
+          }
+
           return Container(
             margin: EdgeInsets.only(bottom: index == items.length - 1 ? 0 : 12),
             child: ProductCard(
               product: product,
               isHorizontal: false,
-              heroTag: "product-card-${product.id}",
+              heroTag: heroTag, // Pass context-specific hero tag
             ),
           );
         }).toList(),
