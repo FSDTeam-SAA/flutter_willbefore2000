@@ -67,10 +67,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             backgroundColor: Colors.white,
             elevation: 0,
             pinned: true,
-            leading: IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back, color: AppColors.textAppBlack),
-            ),
+            automaticallyImplyLeading: true,
+            // leading: IconButton(
+            //   onPressed: () => Navigator.pop(context),
+            //   icon: const Icon(Icons.arrow_back, color: AppColors.textAppBlack),
+            // ),
             actions: [
               IconButton(
                 onPressed: () {},

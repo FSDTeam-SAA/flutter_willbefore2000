@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../product/presentation/providers/products_providers.dart';
@@ -66,9 +67,9 @@ class HomeSearchNotifier extends StateNotifier<HomeSearchState> {
 
   Future<void> _loadRecentSearches() async {
     try {
-      // final prefs = await SharedPreferences.getInstance();
-      // final recentSearches = prefs.getStringList(_recentSearchesKey) ?? [];
-      // state = state.copyWith(recentSearches: recentSearches);
+      final prefs = await SharedPreferences.getInstance();
+      final recentSearches = prefs.getStringList(_recentSearchesKey) ?? [];
+      state = state.copyWith(recentSearches: recentSearches);
     } catch (e) {
       // Handle error silently
     }
@@ -76,22 +77,22 @@ class HomeSearchNotifier extends StateNotifier<HomeSearchState> {
 
   Future<void> addToRecentSearches(String query) async {
     try {
-      // final prefs = await SharedPreferences.getInstance();
-      // final recentSearches = List<String>.from(state.recentSearches);
+      final prefs = await SharedPreferences.getInstance();
+      final recentSearches = List<String>.from(state.recentSearches);
 
-      // // Remove if already exists
-      // recentSearches.remove(query);
+      // Remove if already exists
+      recentSearches.remove(query);
 
-      // // Add to beginning
-      // recentSearches.insert(0, query);
+      // Add to beginning
+      recentSearches.insert(0, query);
 
-      // // Keep only last 10 searches
-      // if (recentSearches.length > 10) {
-      //   recentSearches.removeRange(10, recentSearches.length);
-      // }
+      // Keep only last 10 searches
+      if (recentSearches.length > 10) {
+        recentSearches.removeRange(10, recentSearches.length);
+      }
 
-      // await prefs.setStringList(_recentSearchesKey, recentSearches);
-      // state = state.copyWith(recentSearches: recentSearches);
+      await prefs.setStringList(_recentSearchesKey, recentSearches);
+      state = state.copyWith(recentSearches: recentSearches);
     } catch (e) {
       // Handle error silently
     }
@@ -99,9 +100,9 @@ class HomeSearchNotifier extends StateNotifier<HomeSearchState> {
 
   Future<void> clearRecentSearches() async {
     try {
-      // final prefs = await SharedPreferences.getInstance();
-      // await prefs.remove(_recentSearchesKey);
-      // state = state.copyWith(recentSearches: []);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_recentSearchesKey);
+      state = state.copyWith(recentSearches: []);
     } catch (e) {
       // Handle error silently
     }

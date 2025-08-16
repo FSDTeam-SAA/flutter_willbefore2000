@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/utils/fuzzy_search.dart';
 import '../../../product/domain/entrity/product.dart';
@@ -215,7 +216,7 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
   Future<void> addToSearchHistory(String query) async {
     if (query.trim().isEmpty) return;
     
-    // final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     final history = state.searchHistory.toList();
     
     history.remove(query);
@@ -225,7 +226,7 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
       history.removeRange(10, history.length);
     }
     
-    // await prefs.setStringList('search_history', history);
+    await prefs.setStringList('search_history', history);
     state = state.copyWith(searchHistory: history);
   }
 
@@ -253,7 +254,7 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
         break;
       // case 'rating':
       //   filtered.sort((a, b) => b.rating.compareTo(a.rating));
-      //   break;
+        // break;
       case 'newest':
         filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
         break;
@@ -277,10 +278,10 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
     );
   }
 
-  // Future<List<String>> _loadSearchHistory() async {
-  //   // final prefs = await SharedPreferences.getInstance();
-  //   return prefs.getStringList('search_history') ?? [];
-  // }
+  Future<List<String>> _loadSearchHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList('search_history') ?? [];
+  }
 
   Future<List<String>> _loadPopularSearches() async {
     return [
