@@ -14,7 +14,8 @@ class AdvancedSearchScreen extends ConsumerStatefulWidget {
   const AdvancedSearchScreen({super.key});
 
   @override
-  ConsumerState<AdvancedSearchScreen> createState() => _AdvancedSearchScreenState();
+  ConsumerState<AdvancedSearchScreen> createState() =>
+      _AdvancedSearchScreenState();
 }
 
 class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
@@ -22,7 +23,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
   final ScrollController _scrollController = ScrollController();
   final FocusNode _searchFocusNode = FocusNode();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  
+
   bool _showSuggestions = false;
   bool _isLoadingMore = false;
 
@@ -31,7 +32,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
     super.initState();
     _scrollController.addListener(_onScroll);
     _searchFocusNode.addListener(_onFocusChange);
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(advancedSearchProvider.notifier).loadInitialData();
     });
@@ -46,7 +47,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= 
+    if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       _loadMoreProducts();
     }
@@ -54,7 +55,8 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
 
   void _onFocusChange() {
     setState(() {
-      _showSuggestions = _searchFocusNode.hasFocus && _searchController.text.isEmpty;
+      _showSuggestions =
+          _searchFocusNode.hasFocus && _searchController.text.isEmpty;
     });
   }
 
@@ -70,7 +72,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
   @override
   Widget build(BuildContext context) {
     final searchState = ref.watch(advancedSearchProvider);
-    
+
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Colors.grey[50],
@@ -124,8 +126,8 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                     color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(25),
                     border: Border.all(
-                      color: _searchFocusNode.hasFocus 
-                          ? AppColors.primaryLaurel 
+                      color: _searchFocusNode.hasFocus
+                          ? AppColors.primaryLaurel
                           : Colors.transparent,
                       width: 2,
                     ),
@@ -209,8 +211,14 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
           ),
           items: const [
             DropdownMenuItem(value: 'relevance', child: Text('Relevance')),
-            DropdownMenuItem(value: 'price_low', child: Text('Price: Low to High')),
-            DropdownMenuItem(value: 'price_high', child: Text('Price: High to Low')),
+            DropdownMenuItem(
+              value: 'price_low',
+              child: Text('Price: Low to High'),
+            ),
+            DropdownMenuItem(
+              value: 'price_high',
+              child: Text('Price: High to Low'),
+            ),
             DropdownMenuItem(value: 'rating', child: Text('Rating')),
             DropdownMenuItem(value: 'newest', child: Text('Newest')),
           ],
@@ -251,7 +259,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  searchState.isSearchMode 
+                  searchState.isSearchMode
                       ? 'Search Results (${searchState.totalResults})'
                       : 'All Products (${searchState.totalResults})',
                   style: GoogleFonts.notoSansKr(
@@ -284,20 +292,18 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
             ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final product = searchState.products[index];
-                final heroTag = HeroTagManager.forSearchResults(
-                  product.id,
-                  index,
-                );
-                return ProductCard(
-                  product: product,
-                  heroTag: heroTag,
-                );
-              },
-              childCount: searchState.products.length,
-            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final product = searchState.products[index];
+              final heroTag = HeroTagManager.forSearchResults(
+                product.id,
+                index,
+              );
+              return ProductCard(
+                product: product,
+                heroTag: heroTag,
+                isHorizontal: true,
+              );
+            }, childCount: searchState.products.length),
           ),
         ),
         if (_isLoadingMore)
@@ -316,11 +322,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.search_off,
-            size: 80,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.search_off, size: 80, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             'No products found',
@@ -364,7 +366,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
     setState(() {
       _showSuggestions = query.isEmpty && _searchFocusNode.hasFocus;
     });
-    
+
     if (query.isNotEmpty) {
       ref.read(advancedSearchProvider.notifier).searchProducts(query);
     } else {
