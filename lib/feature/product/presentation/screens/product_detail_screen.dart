@@ -2,22 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
+import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
 
 import '../../../../core/common/widgets/html_content_widget.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/hero_tag_manager.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
+import '../providers/products_details_provider.dart';
 import '../providers/products_providers.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
-  final String? heroTag; // Added heroTag parameter to receive from navigation
+  final String? heroTag;
 
-  const ProductDetailScreen({
-    super.key,
-    required this.productId,
-    this.heroTag, // Optional heroTag for Hero animation
-  });
+  const ProductDetailScreen({super.key, required this.productId, this.heroTag});
 
   @override
   ConsumerState<ProductDetailScreen> createState() =>
@@ -25,22 +23,49 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
-  int _currentImageIndex = 0;
-  String? _selectedSize;
-  String? _selectedColor;
-  int _quantity = 1;
+  late PageController _pageController;
+  bool _isPageViewChanging = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(productsProvider.notifier).fetchProducts();
-    });
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final productsState = ref.watch(productsProvider);
+    final productDetailState = ref.watch(productDetailProvider);
+
+    ref.listen(
+      productDetailProvider.select((state) => state.currentImageIndex),
+      (previous, next) {
+        if (!_isPageViewChanging &&
+            _pageController.hasClients &&
+            previous != next) {
+          _pageController.animateToPage(
+            next,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      },
+    );
+
+    // Initialize products if needed
+    ref.listen(productsProvider, (previous, next) {
+      if (previous?.products.isEmpty == true && next.products.isEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref.read(productsProvider.notifier).fetchProducts();
+        });
+      }
+    });
 
     if (productsState.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -68,30 +93,31 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             elevation: 0,
             pinned: true,
             automaticallyImplyLeading: true,
-            // leading: IconButton(
-            //   onPressed: () => Navigator.pop(context),
-            //   icon: const Icon(Icons.arrow_back, color: AppColors.textAppBlack),
-            // ),
             actions: [
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.favorite_border,
-                  color: AppColors.textAppBlack,
-                ),
-              ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.share, color: AppColors.textAppBlack),
-              ),
+              // IconButton(
+              //   onPressed: () {},
+              //   icon: const Icon(
+              //     Icons.favorite_border,
+              //     color: AppColors.textAppBlack,
+              //   ),
+              // ),
+              // IconButton(
+              //   onPressed: () {},
+              //   icon: const Icon(Icons.share, color: AppColors.textAppBlack),
+              // ),
             ],
           ),
 
           // Product Images
           SliverToBoxAdapter(
             child: Hero(
-              tag: effectiveHeroTag, // Use the effective hero tag
-              child: _buildImageSection(product),
+              tag: effectiveHeroTag,
+              child: _buildImageSection(
+                context,
+                ref,
+                product,
+                productDetailState,
+              ),
             ),
           ),
 
@@ -178,40 +204,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         ? product.description
                         : '<p>A beautiful floral summer dress perfect for warm weather. Made with lightweight, breathable fabric for maximum comfort.</p>',
                     padding: EdgeInsets.zero,
-                    // defaultTextStyle: GoogleFonts.notoSansKr(
-                    //   fontSize: 14,
-                    //   fontWeight: FontWeight.w400,
-                    //   color: AppColors.textSecondaryColor,
-                    //   height: 1.5,
-                    // ),
-                    // customStyle: {
-                    //   "h1, h2, h3, h4, h5, h6": Style(
-                    //     color: AppColors.textAppBlack,
-                    //     fontWeight: FontWeight.w600,
-                    //     margin: Margins.only(top: 16, bottom: 8),
-                    //   ),
-                    //   "strong, b": Style(
-                    //     fontWeight: FontWeight.w600,
-                    //     color: AppColors.textAppBlack,
-                    //   ),
-                    //   "a": Style(
-                    //     color: AppColors.primaryLaurel,
-                    //     textDecoration: TextDecoration.underline,
-                    //   ),
-                    // },
                   ),
 
-                  // Text(
-                  //   product.description.isNotEmpty
-                  //       ? product.description
-                  //       : 'A beautiful floral summer dress perfect for warm weather. Made with lightweight, breathable fabric for maximum comfort.',
-                  //   style: GoogleFonts.notoSansKr(
-                  //     fontSize: 14,
-                  //     fontWeight: FontWeight.w400,
-                  //     color: AppColors.textSecondaryColor,
-                  //     height: 1.5,
-                  //   ),
-                  // ),
                   const SizedBox(height: 24),
 
                   // Features
@@ -220,22 +214,44 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   const SizedBox(height: 24),
 
                   // Size Selection
-                  if (product.sizes.isNotEmpty) _buildSizeSelection(product),
+                  if (product.sizes.isNotEmpty)
+                    _buildSizeSelection(
+                      context,
+                      ref,
+                      product,
+                      productDetailState,
+                    ),
 
                   const SizedBox(height: 24),
 
                   // Color Selection
-                  if (product.colors.isNotEmpty) _buildColorSelection(product),
+                  if (product.colors.isNotEmpty)
+                    _buildColorSelection(
+                      context,
+                      ref,
+                      product,
+                      productDetailState,
+                    ),
 
                   const SizedBox(height: 24),
 
                   // Quantity Selection
-                  _buildQuantitySelection(product),
+                  _buildQuantitySelection(
+                    context,
+                    ref,
+                    product,
+                    productDetailState,
+                  ),
 
                   const SizedBox(height: 32),
 
                   // Action Buttons
-                  _buildActionButtons(product),
+                  _buildActionButtons(
+                    context,
+                    ref,
+                    product,
+                    productDetailState,
+                  ),
 
                   const SizedBox(height: 100),
                 ],
@@ -247,20 +263,30 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  Widget _buildImageSection(product) {
-    return Container(
+  Widget _buildImageSection(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic product,
+    ProductDetailState state,
+  ) {
+    return SizedBox(
       height: 400,
       child: Column(
         children: [
           // Main Image
           Expanded(
             child: PageView.builder(
+              controller: _pageController, // Added PageController
               itemCount: product.imageUrls.isNotEmpty
                   ? product.imageUrls.length
                   : 1,
               onPageChanged: (index) {
-                setState(() {
-                  _currentImageIndex = index;
+                _isPageViewChanging = true;
+                ref
+                    .read(productDetailProvider.notifier)
+                    .updateImageIndex(index);
+                Future.delayed(const Duration(milliseconds: 100), () {
+                  _isPageViewChanging = false;
                 });
               },
               itemBuilder: (context, index) {
@@ -290,12 +316,12 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: product.imageUrls.length,
                 itemBuilder: (context, index) {
-                  final isSelected = index == _currentImageIndex;
+                  final isSelected = index == state.currentImageIndex;
                   return GestureDetector(
                     onTap: () {
-                      setState(() {
-                        _currentImageIndex = index;
-                      });
+                      ref
+                          .read(productDetailProvider.notifier)
+                          .updateImageIndex(index);
                     },
                     child: Container(
                       width: 80,
@@ -312,19 +338,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                          product.imageUrls[index],
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey[200],
-                              child: const Icon(
-                                Icons.image,
-                                size: 30,
-                                color: Colors.grey,
-                              ),
-                            );
-                          },
+                        child: AppCachedImage(
+                          imageUrl: product.imageUrls.isNotEmpty
+                              ? product.imageUrls[index]
+                              : '/placeholder.svg?height=80&width=80',
                         ),
                       ),
                     ),
@@ -377,7 +394,12 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  Widget _buildSizeSelection(product) {
+  Widget _buildSizeSelection(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic product,
+    ProductDetailState state,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -394,12 +416,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           spacing: 12,
           runSpacing: 8,
           children: product.sizes.map<Widget>((size) {
-            final isSelected = _selectedSize == size;
+            final isSelected = state.selectedSize == size;
             return GestureDetector(
               onTap: () {
-                setState(() {
-                  _selectedSize = size;
-                });
+                ref.read(productDetailProvider.notifier).selectSize(size);
               },
               child: Container(
                 width: 50,
@@ -431,7 +451,12 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  Widget _buildColorSelection(product) {
+  Widget _buildColorSelection(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic product,
+    ProductDetailState state,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -450,14 +475,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           children: product.colors.asMap().entries.map<Widget>((entry) {
             final index = entry.key;
             final colorName = entry.value;
-            final isSelected = _selectedColor == colorName;
+            final isSelected = state.selectedColor == colorName;
 
             // Get color from colorCodes if available
             Color color = Colors.grey;
             if (index < product.colorCodes.length) {
               try {
                 final colorCode = product.colorCodes[index];
-                // Remove # if present and ensure it's a valid hex color
                 final cleanColorCode = colorCode.replaceAll('#', '');
                 if (cleanColorCode.length == 6) {
                   color = Color(int.parse('FF$cleanColorCode', radix: 16));
@@ -469,9 +493,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
             return GestureDetector(
               onTap: () {
-                setState(() {
-                  _selectedColor = colorName;
-                });
+                ref.read(productDetailProvider.notifier).selectColor(colorName);
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -503,12 +525,16 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   }
 
   Color _getTextColorForBackground(Color backgroundColor) {
-    // Calculate luminance to determine if text should be black or white
     final luminance = backgroundColor.computeLuminance();
     return luminance > 0.5 ? Colors.black : Colors.white;
   }
 
-  Widget _buildQuantitySelection(product) {
+  Widget _buildQuantitySelection(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic product,
+    ProductDetailState state,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -525,11 +551,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           children: [
             GestureDetector(
               onTap: () {
-                if (_quantity > 1) {
-                  setState(() {
-                    _quantity--;
-                  });
-                }
+                ref.read(productDetailProvider.notifier).decrementQuantity();
               },
               child: Container(
                 width: 40,
@@ -543,7 +565,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             ),
             const SizedBox(width: 16),
             Text(
-              _quantity.toString(),
+              state.quantity.toString(),
               style: GoogleFonts.notoSansKr(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -553,9 +575,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             const SizedBox(width: 16),
             GestureDetector(
               onTap: () {
-                setState(() {
-                  _quantity++;
-                });
+                ref.read(productDetailProvider.notifier).incrementQuantity();
               },
               child: Container(
                 width: 40,
@@ -569,7 +589,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             ),
             const Spacer(),
             Text(
-              'Total: \$${(product.effectivePrice * _quantity).toStringAsFixed(2)}',
+              'Total: \$${(product.effectivePrice * state.quantity).toStringAsFixed(2)}',
               style: GoogleFonts.notoSansKr(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -582,16 +602,26 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  Widget _buildActionButtons(product) {
+  Widget _buildActionButtons(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic product,
+    ProductDetailState state,
+  ) {
     return Row(
       children: [
         Expanded(
-          child: OutlinedButton(
+          child: context.secondaryButton(
+            isLoading: ref.watch(cartProvider).isLoading,
             onPressed: () {
-              // Add to cart logic
               ref
                   .read(cartProvider.notifier)
-                  .addToCart(product, _quantity, _selectedSize, _selectedColor);
+                  .addToCart(
+                    product,
+                    state.quantity,
+                    state.selectedSize,
+                    state.selectedColor,
+                  );
 
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -603,45 +633,12 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                 ),
               );
             },
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              side: const BorderSide(color: AppColors.primaryLaurel),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              'Add to Cart',
-              style: GoogleFonts.notoSansKr(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primaryLaurel,
-              ),
-            ),
+            text: "Added to cart",
           ),
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: ElevatedButton(
-            onPressed: () {
-              // Buy now logic
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryLaurel,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              'Buy Now',
-              style: GoogleFonts.notoSansKr(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ),
+          child: context.primaryButton(onPressed: () {}, text: "Buy Now"),
         ),
       ],
     );

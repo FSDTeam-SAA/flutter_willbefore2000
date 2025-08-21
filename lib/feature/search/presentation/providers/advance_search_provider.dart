@@ -5,9 +5,10 @@ import '../../../../core/utils/fuzzy_search.dart';
 import '../../../product/domain/entrity/product.dart';
 import '../../../product/presentation/providers/products_providers.dart';
 
-final advancedSearchProvider = StateNotifierProvider<AdvancedSearchNotifier, AdvancedSearchState>((ref) {
-  return AdvancedSearchNotifier(ref);
-});
+final advancedSearchProvider =
+    StateNotifierProvider<AdvancedSearchNotifier, AdvancedSearchState>((ref) {
+      return AdvancedSearchNotifier(ref);
+    });
 
 class AdvancedSearchState {
   final List<Product> products;
@@ -85,21 +86,21 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
 
   Future<void> loadInitialData() async {
     state = state.copyWith(isLoading: true);
-    
+
     final productsState = ref.read(productsProvider);
     await ref.read(productsProvider.notifier).fetchProducts();
-    
-    // final searchHistory = await _loadSearchHistory();
+
+    final searchHistory = await _loadSearchHistory();
     final popularSearches = await _loadPopularSearches();
-    
+
     final allProducts = productsState.products;
     final filteredProducts = _applyFiltersAndSort(allProducts);
     final initialProducts = _paginateResults(filteredProducts, 1);
-    
+
     state = state.copyWith(
       allProducts: allProducts,
       products: initialProducts,
-      // searchHistory: searchHistory,
+      searchHistory: searchHistory,
       popularSearches: popularSearches,
       totalResults: filteredProducts.length,
       hasMoreData: filteredProducts.length > _pageSize,
@@ -123,11 +124,11 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
 
     final fuzzySearch = FuzzySearch(state.allProducts);
     final searchResults = fuzzySearch.search(query);
-    
+
     final filteredResults = _applyFiltersAndSort(searchResults);
-    
+
     final paginatedResults = _paginateResults(filteredResults, 1);
-    
+
     state = state.copyWith(
       products: paginatedResults,
       totalResults: filteredResults.length,
@@ -141,7 +142,7 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
 
     final nextPage = state.currentPage + 1;
     List<Product> filteredResults;
-    
+
     if (state.isSearchMode) {
       final fuzzySearch = FuzzySearch(state.allProducts);
       final searchResults = fuzzySearch.search(state.searchQuery);
@@ -149,9 +150,9 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
     } else {
       filteredResults = _applyFiltersAndSort(state.allProducts);
     }
-    
+
     final newProducts = _paginateResults(filteredResults, nextPage);
-    
+
     if (newProducts.isNotEmpty) {
       state = state.copyWith(
         products: [...state.products, ...newProducts],
@@ -163,18 +164,14 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
     }
   }
 
-  void updateFilters({
-    String? category,
-    double? minPrice,
-    double? maxPrice,
-  }) {
+  void updateFilters({String? category, double? minPrice, double? maxPrice}) {
     state = state.copyWith(
       selectedCategory: category ?? state.selectedCategory,
       minPrice: minPrice ?? state.minPrice,
       maxPrice: maxPrice ?? state.maxPrice,
       currentPage: 1,
     );
-    
+
     if (state.isSearchMode) {
       searchProducts(state.searchQuery);
     } else {
@@ -184,7 +181,7 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
 
   void updateSortBy(String sortBy) {
     state = state.copyWith(sortBy: sortBy, currentPage: 1);
-    
+
     if (state.isSearchMode) {
       searchProducts(state.searchQuery);
     } else {
@@ -194,16 +191,13 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
 
   void clearSearch() {
     _loadAllProductsWithFilters();
-    state = state.copyWith(
-      searchQuery: '',
-      isSearchMode: false,
-    );
+    state = state.copyWith(searchQuery: '', isSearchMode: false);
   }
 
   void _loadAllProductsWithFilters() {
     final filteredProducts = _applyFiltersAndSort(state.allProducts);
     final paginatedProducts = _paginateResults(filteredProducts, 1);
-    
+
     state = state.copyWith(
       products: paginatedProducts,
       currentPage: 1,
@@ -215,33 +209,33 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
 
   Future<void> addToSearchHistory(String query) async {
     if (query.trim().isEmpty) return;
-    
+
     final prefs = await SharedPreferences.getInstance();
     final history = state.searchHistory.toList();
-    
+
     history.remove(query);
     history.insert(0, query);
-    
+
     if (history.length > 10) {
       history.removeRange(10, history.length);
     }
-    
+
     await prefs.setStringList('search_history', history);
     state = state.copyWith(searchHistory: history);
   }
 
   List<Product> _applyFiltersAndSort(List<Product> products) {
     var filtered = products.where((product) {
-      if (state.selectedCategory != 'All' && 
+      if (state.selectedCategory != 'All' &&
           product.categoryId != state.selectedCategory) {
         return false;
       }
-      
-      if (product.effectivePrice < state.minPrice || 
+
+      if (product.effectivePrice < state.minPrice ||
           product.effectivePrice > state.maxPrice) {
         return false;
       }
-      
+
       return true;
     }).toList();
 
@@ -254,7 +248,7 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
         break;
       // case 'rating':
       //   filtered.sort((a, b) => b.rating.compareTo(a.rating));
-        // break;
+      // break;
       case 'newest':
         filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
         break;
@@ -269,9 +263,9 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
   List<Product> _paginateResults(List<Product> products, int page) {
     final startIndex = (page - 1) * _pageSize;
     final endIndex = startIndex + _pageSize;
-    
+
     if (startIndex >= products.length) return [];
-    
+
     return products.sublist(
       startIndex,
       endIndex > products.length ? products.length : endIndex,

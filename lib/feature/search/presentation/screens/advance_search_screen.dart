@@ -1,31 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutx_core/flutx_core.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
 
+import '../../../../core/common/widgets/app_scaffold.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/hero_tag_manager.dart';
 import '../../../product/presentation/widgets/product_card.dart';
 import '../providers/advance_search_provider.dart';
+import '../providers/search_ui_provider.dart';
 import '../widgets/search_filter_drawer.dart';
 import '../widgets/category_chips.dart';
 import '../widgets/search_suggestions_overlay.dart';
 
-class AdvancedSearchScreen extends ConsumerStatefulWidget {
+class AdvancedSearchScreen extends ConsumerWidget {
   const AdvancedSearchScreen({super.key});
 
   @override
-  ConsumerState<AdvancedSearchScreen> createState() =>
-      _AdvancedSearchScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final searchState = ref.watch(advancedSearchProvider);
+    final uiState = ref.watch(searchUIProvider);
+    
+    return _AdvancedSearchView(
+      searchState: searchState,
+      uiState: uiState,
+    );
+  }
 }
 
-class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
+class _AdvancedSearchView extends ConsumerStatefulWidget {
+  final AdvancedSearchState searchState;
+  final SearchUIState uiState;
+
+  const _AdvancedSearchView({
+    required this.searchState,
+    required this.uiState,
+  });
+
+  @override
+  ConsumerState<_AdvancedSearchView> createState() => _AdvancedSearchViewState();
+}
+
+class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _searchFocusNode = FocusNode();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  bool _showSuggestions = false;
-  bool _isLoadingMore = false;
 
   @override
   void initState() {
@@ -54,84 +75,64 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
   }
 
   void _onFocusChange() {
-    setState(() {
-      _showSuggestions =
-          _searchFocusNode.hasFocus && _searchController.text.isEmpty;
-    });
+    ref.read(searchUIProvider.notifier).updateShowSuggestions(
+      _searchFocusNode.hasFocus && _searchController.text.isEmpty,
+    );
   }
 
   void _loadMoreProducts() {
-    if (!_isLoadingMore) {
-      setState(() => _isLoadingMore = true);
+    final uiState = ref.read(searchUIProvider);
+    if (!uiState.isLoadingMore) {
+      ref.read(searchUIProvider.notifier).updateLoadingMore(true);
       ref.read(advancedSearchProvider.notifier).loadMoreProducts().then((_) {
-        if (mounted) setState(() => _isLoadingMore = false);
+        if (mounted) {
+          ref.read(searchUIProvider.notifier).updateLoadingMore(false);
+        }
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final searchState = ref.watch(advancedSearchProvider);
-
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Colors.grey[50],
       endDrawer: const SearchFilterDrawer(),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                _buildSearchHeader(),
-                if (!_showSuggestions) _buildCategorySection(),
-                Expanded(child: _buildSearchResults(searchState)),
-              ],
-            ),
-            if (_showSuggestions)
-              SearchSuggestionsOverlay(
-                onSuggestionTap: _onSuggestionTap,
-                onDismiss: () => setState(() => _showSuggestions = false),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18.0),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  _buildSearchHeader(),
+                  _menuBar(),
+                  if (!widget.uiState.showSuggestions) _buildCategorySection(),
+                  Expanded(child: _buildSearchResults(widget.searchState)),
+                ],
               ),
-          ],
+              if (widget.uiState.showSuggestions)
+                SearchSuggestionsOverlay(
+                  onSuggestionTap: _onSuggestionTap,
+                  onDismiss: () => ref.read(searchUIProvider.notifier).hideSuggestions(),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 
+
   Widget _buildSearchHeader() {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: BoxDecoration(),
       child: Column(
         children: [
           Row(
             children: [
-              // IconButton(
-              //   onPressed: () => Navigator.pop(context),
-              //   icon: const Icon(Icons.arrow_back_ios, size: 20),
-              //   color: AppColors.textAppBlack,
-              // ),
               Expanded(
                 child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(
-                      color: _searchFocusNode.hasFocus
-                          ? AppColors.primaryLaurel
-                          : Colors.transparent,
-                      width: 2,
-                    ),
-                  ),
+                  decoration: BoxDecoration(),
                   child: TextField(
                     controller: _searchController,
                     focusNode: _searchFocusNode,
@@ -158,7 +159,6 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                               ),
                             )
                           : null,
-                      border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 12,
@@ -168,17 +168,6 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              IconButton(
-                onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
-                icon: const Icon(Icons.tune),
-                color: AppColors.primaryLaurel,
-                style: IconButton.styleFrom(
-                  backgroundColor: AppColors.primaryLaurel.withOpacity(0.1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
             ],
           ),
           if (_searchController.text.isNotEmpty) ...[
@@ -233,10 +222,33 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
   }
 
   Widget _buildCategorySection() {
+    return SizedBox(
+      height: 50,
+      child: const CategoryChips(),
+    );
+  }
+
+  Widget _menuBar() {
     return Container(
       height: 50,
       color: Colors.white,
-      child: const CategoryChips(),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          "Menu".text16w700(),
+          IconButton(
+            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+            icon: const Icon(Icons.tune),
+            color: AppColors.primaryLaurel,
+            style: IconButton.styleFrom(
+              backgroundColor: AppColors.primaryLaurel.withOpacity(0.1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -253,60 +265,51 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
       controller: _scrollController,
       slivers: [
         SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  searchState.isSearchMode
-                      ? 'Search Results (${searchState.totalResults})'
-                      : 'All Products (${searchState.totalResults})',
-                  style: GoogleFonts.notoSansKr(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textAppBlack,
-                  ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                searchState.isSearchMode
+                    ? 'Search Results (${searchState.totalResults})'
+                    : 'All Products (${searchState.totalResults})',
+                style: GoogleFonts.notoSansKr(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textAppBlack,
                 ),
-                if (searchState.isSearchMode)
-                  TextButton(
-                    onPressed: _clearSearch,
-                    child: Text(
-                      'View All',
-                      style: GoogleFonts.notoSansKr(
-                        color: AppColors.primaryLaurel,
-                        fontWeight: FontWeight.w600,
-                      ),
+              ),
+              if (searchState.isSearchMode)
+                TextButton(
+                  onPressed: _clearSearch,
+                  child: Text(
+                    'View All',
+                    style: GoogleFonts.notoSansKr(
+                      color: AppColors.primaryLaurel,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.75,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-            ),
-            delegate: SliverChildBuilderDelegate((context, index) {
-              final product = searchState.products[index];
-              final heroTag = HeroTagManager.forSearchResults(
-                product.id,
-                index,
-              );
-              return ProductCard(
-                product: product,
-                heroTag: heroTag,
-                isHorizontal: true,
-              );
-            }, childCount: searchState.products.length),
+        SliverGrid(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 0.75,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
           ),
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final product = searchState.products[index];
+            final heroTag = HeroTagManager.forSearchResults(product.id, index);
+            return ProductCard(
+              product: product,
+              heroTag: heroTag,
+              isHorizontal: true,
+            );
+          }, childCount: searchState.products.length),
         ),
-        if (_isLoadingMore)
+        if (widget.uiState.isLoadingMore)
           const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.all(16),
@@ -341,31 +344,16 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _clearSearch,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryLaurel,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
-              ),
-            ),
-            child: Text(
-              'Clear Search',
-              style: GoogleFonts.notoSansKr(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+          context.primaryButton(onPressed: _clearSearch, text: "Clear Search"),
         ],
       ),
     );
   }
 
   void _onSearchChanged(String query) {
-    setState(() {
-      _showSuggestions = query.isEmpty && _searchFocusNode.hasFocus;
-    });
+    ref.read(searchUIProvider.notifier).updateShowSuggestions(
+      query.isEmpty && _searchFocusNode.hasFocus,
+    );
 
     if (query.isNotEmpty) {
       ref.read(advancedSearchProvider.notifier).searchProducts(query);
@@ -376,7 +364,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
 
   void _onSearchSubmitted(String query) {
     _searchFocusNode.unfocus();
-    setState(() => _showSuggestions = false);
+    ref.read(searchUIProvider.notifier).hideSuggestions();
     ref.read(advancedSearchProvider.notifier).addToSearchHistory(query);
   }
 
@@ -388,6 +376,6 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
   void _clearSearch() {
     _searchController.clear();
     ref.read(advancedSearchProvider.notifier).clearSearch();
-    setState(() => _showSuggestions = false);
+    ref.read(searchUIProvider.notifier).hideSuggestions();
   }
 }

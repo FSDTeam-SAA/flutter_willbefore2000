@@ -47,18 +47,24 @@ class CartNotifier extends StateNotifier<CartState> {
   CartNotifier() : super(const CartState());
 
   void addToCart(Product product, int quantity, String? size, String? color) {
-    final existingItemIndex = state.items.indexWhere((item) =>
-        item.product.id == product.id &&
-        item.selectedSize == size &&
-        item.selectedColor == color);
+    // start loading
+    state = state.copyWith(isLoading: true);
+
+    final existingItemIndex = state.items.indexWhere(
+      (item) =>
+          item.product.id == product.id &&
+          item.selectedSize == size &&
+          item.selectedColor == color,
+    );
 
     if (existingItemIndex != -1) {
       // Update existing item
       final updatedItems = List<CartItem>.from(state.items);
-      updatedItems[existingItemIndex] = updatedItems[existingItemIndex].copyWith(
-        quantity: updatedItems[existingItemIndex].quantity + quantity,
-      );
-      state = state.copyWith(items: updatedItems);
+      updatedItems[existingItemIndex] = updatedItems[existingItemIndex]
+          .copyWith(
+            quantity: updatedItems[existingItemIndex].quantity + quantity,
+          );
+      state = state.copyWith(items: updatedItems, isLoading: false);
     } else {
       // Add new item
       final newItem = CartItem(
@@ -68,7 +74,10 @@ class CartNotifier extends StateNotifier<CartState> {
         selectedSize: size,
         selectedColor: color,
       );
-      state = state.copyWith(items: [...state.items, newItem]);
+      state = state.copyWith(
+        items: [...state.items, newItem],
+        isLoading: false,
+      );
     }
   }
 
@@ -89,7 +98,9 @@ class CartNotifier extends StateNotifier<CartState> {
   }
 
   void removeFromCart(String itemId) {
-    final updatedItems = state.items.where((item) => item.id != itemId).toList();
+    final updatedItems = state.items
+        .where((item) => item.id != itemId)
+        .toList();
     state = state.copyWith(items: updatedItems);
   }
 

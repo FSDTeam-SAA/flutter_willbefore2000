@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Added Riverpod import
 import 'package:flutx_core/flutx_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,9 +9,10 @@ import 'package:smilestreats/core/styles/decorations.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routes/route_endpoint.dart';
 import '../../../../core/utils/hero_tag_manager.dart';
+import '../../../cart/presentation/providers/cart_provider.dart';
 import '../../domain/entrity/product.dart';
 
-class ProductCard extends StatelessWidget {
+class ProductCard extends ConsumerWidget {
   final Product product;
   final bool isHorizontal;
   final String? heroTag;
@@ -23,7 +25,7 @@ class ProductCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) { // Added WidgetRef parameter
     final uniqueHeroTag =
         heroTag ??
         HeroTagManager.generateProductHeroTag(
@@ -38,13 +40,13 @@ class ProductCard extends StatelessWidget {
       ),
       child: Container(
         child: isHorizontal
-            ? _buildHorizontalCard(uniqueHeroTag)
-            : _buildVerticalCard(uniqueHeroTag),
+            ? _buildHorizontalCard(context, ref, uniqueHeroTag) // Added context and ref parameters
+            : _buildVerticalCard(context, ref, uniqueHeroTag), // Added context and ref parameters
       ),
     );
   }
 
-  Widget _buildHorizontalCard(String uniqueHeroTag) {
+  Widget _buildHorizontalCard(BuildContext context, WidgetRef ref, String uniqueHeroTag) { // Added context and ref parameters
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenWidth = MediaQuery.of(context).size.width;
@@ -180,16 +182,40 @@ class ProductCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Container(
-                      width: isSmallScreen ? 28 : 32,
-                      height: isSmallScreen ? 28 : 32,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        Icons.add,
-                        color: AppColors.black,
-                        size: isSmallScreen ? 16 : 18,
+                    GestureDetector(
+                      onTap: () {
+                        // Add product to cart with default quantity of 1
+                        ref.read(cartProvider.notifier).addToCart(
+                          product,
+                          1, // Default quantity
+                          null, // No size selected
+                          null, // No color selected
+                        );
+                        
+                        // Show snackbar confirmation
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '${product.title} added to cart',
+                              style: GoogleFonts.notoSansKr(),
+                            ),
+                            duration: const Duration(seconds: 2),
+                            backgroundColor: AppColors.primaryLaurel,
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: isSmallScreen ? 28 : 32,
+                        height: isSmallScreen ? 28 : 32,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: AppColors.primaryLaurel.withOpacity(0.1), // Added background color
+                        ),
+                        child: Icon(
+                          Icons.add,
+                          color: AppColors.primaryLaurel, // Changed color to primary
+                          size: isSmallScreen ? 16 : 18,
+                        ),
                       ),
                     ),
                   ],
@@ -202,7 +228,7 @@ class ProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildVerticalCard(String uniqueHeroTag) {
+  Widget _buildVerticalCard(BuildContext context, WidgetRef ref, String uniqueHeroTag) { // Added context and ref parameters
     return SizedBox(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -341,11 +367,41 @@ class ProductCard extends StatelessWidget {
               ),
             ],
           ),
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
-            child: const Icon(Icons.add, color: AppColors.black, size: 18),
+          GestureDetector(
+            onTap: () {
+              // Add product to cart with default quantity of 1
+              ref.read(cartProvider.notifier).addToCart(
+                product,
+                1, // Default quantity
+                null, // No size selected
+                null, // No color selected
+              );
+              
+              // Show snackbar confirmation
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '${product.title} added to cart',
+                    style: GoogleFonts.notoSansKr(),
+                  ),
+                  duration: const Duration(seconds: 2),
+                  backgroundColor: AppColors.primaryLaurel,
+                ),
+              );
+            },
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: AppColors.primaryLaurel.withOpacity(0.1), // Added background color
+              ),
+              child: Icon(
+                Icons.add, 
+                color: AppColors.primaryLaurel, // Changed color to primary
+                size: 18
+              ),
+            ),
           ),
         ],
       ),

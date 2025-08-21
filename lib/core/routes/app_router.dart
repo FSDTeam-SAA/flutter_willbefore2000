@@ -90,8 +90,10 @@ class AppRouter {
           GoRoute(
             path: RoutePaths.search,
             name: "Search",
-            pageBuilder: (context, state) =>
-                MaterialPage(key: state.pageKey, child: const AdvancedSearchScreen()),
+            pageBuilder: (context, state) => MaterialPage(
+              key: state.pageKey,
+              child: const AdvancedSearchScreen(),
+            ),
           ),
           GoRoute(
             path: RoutePaths.cart,
@@ -116,27 +118,26 @@ class AppRouter {
         ],
       ),
 
-       GoRoute(
-      path: '${RoutePaths.product}/:productId',
-      pageBuilder: (context, state) {
-        final productId = state.pathParameters['productId']!;
-        final heroTag = state.extra as String?; // Get Hero tag from extra data
-        
-        return CustomTransitionPage<void>(
-          key: state.pageKey,
-          child: ProductDetailScreen(
-            productId: productId,
-            heroTag: heroTag, // Pass Hero tag to product detail screen
-          ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-        );
-      },
-    ),
+      GoRoute(
+        path: '${RoutePaths.product}/:productId',
+        pageBuilder: (context, state) {
+          final productId = state.pathParameters['productId']!;
+          final heroTag =
+              state.extra as String?; // Get Hero tag from extra data
+
+          return CustomTransitionPage<void>(
+            key: state.pageKey,
+            child: ProductDetailScreen(
+              productId: productId,
+              heroTag: heroTag, // Pass Hero tag to product detail screen
+            ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+          );
+        },
+      ),
       // GoRoute(
       //   path: '${RoutePaths.productList}/:type',
       //   name: 'product-list',
@@ -194,9 +195,10 @@ class AppRouter {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => context.go(RoutePaths.home),
-                child: const Text('Go to Dashboard'),
+              context.primaryButton(
+                // isLoading: authState.isLoading,
+                onPressed: () => GoRouter.of(context).go(RoutePaths.home),
+                text: "Go to Dashboard",
               ),
             ],
           ),

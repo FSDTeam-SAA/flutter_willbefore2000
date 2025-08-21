@@ -4,28 +4,15 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../providers/advance_search_provider.dart';
+import '../providers/search_filter_provider.dart';
 
-class SearchFilterDrawer extends ConsumerStatefulWidget {
+class SearchFilterDrawer extends ConsumerWidget {
   const SearchFilterDrawer({super.key});
 
   @override
-  ConsumerState<SearchFilterDrawer> createState() => _SearchFilterDrawerState();
-}
-
-class _SearchFilterDrawerState extends ConsumerState<SearchFilterDrawer> {
-  late String _selectedCategory;
-  late RangeValues _priceRange;
-
-  @override
-  void initState() {
-    super.initState();
-    final searchState = ref.read(advancedSearchProvider);
-    _selectedCategory = searchState.selectedCategory;
-    _priceRange = RangeValues(searchState.minPrice, searchState.maxPrice);
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final filterState = ref.watch(searchFilterProvider);
+    
     return Drawer(
       child: SafeArea(
         child: Column(
@@ -66,13 +53,13 @@ class _SearchFilterDrawerState extends ConsumerState<SearchFilterDrawer> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildCategorySection(),
+                    _buildCategorySection(ref, filterState),
                     const SizedBox(height: 24),
-                    _buildPriceSection(),
+                    _buildPriceSection(ref, filterState),
                     const SizedBox(height: 24),
-                    _buildRatingSection(),
+                    _buildRatingSection(ref, filterState),
                     const SizedBox(height: 24),
-                    _buildBrandSection(),
+                    _buildBrandSection(ref, filterState),
                   ],
                 ),
               ),
@@ -93,7 +80,7 @@ class _SearchFilterDrawerState extends ConsumerState<SearchFilterDrawer> {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: _resetFilters,
+                      onPressed: () => _resetFilters(ref),
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(color: AppColors.primaryLaurel),
                         shape: RoundedRectangleBorder(
@@ -113,7 +100,7 @@ class _SearchFilterDrawerState extends ConsumerState<SearchFilterDrawer> {
                   Expanded(
                     flex: 2,
                     child: ElevatedButton(
-                      onPressed: _applyFilters,
+                      onPressed: () => _applyFilters(context, ref, filterState),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryLaurel,
                         shape: RoundedRectangleBorder(
@@ -138,7 +125,7 @@ class _SearchFilterDrawerState extends ConsumerState<SearchFilterDrawer> {
     );
   }
 
-  Widget _buildCategorySection() {
+  Widget _buildCategorySection(WidgetRef ref, SearchFilterState filterState) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -156,38 +143,38 @@ class _SearchFilterDrawerState extends ConsumerState<SearchFilterDrawer> {
             'Sports',
             'Beauty',
             'Automotive',
-          ].map((category) => _buildCategoryChip(category)).toList(),
+          ].map((category) => _buildCategoryChip(ref, category, filterState.selectedCategory)).toList(),
         ),
       ],
     );
   }
 
-  Widget _buildPriceSection() {
+  Widget _buildPriceSection(WidgetRef ref, SearchFilterState filterState) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle('Price Range'),
         const SizedBox(height: 12),
         RangeSlider(
-          values: _priceRange,
+          values: filterState.priceRange,
           min: 0,
           max: 1000,
           divisions: 20,
           activeColor: AppColors.primaryLaurel,
           inactiveColor: AppColors.primaryLaurel.withOpacity(0.3),
           labels: RangeLabels(
-            '\$${_priceRange.start.round()}',
-            '\$${_priceRange.end.round()}',
+            '\$${filterState.priceRange.start.round()}',
+            '\$${filterState.priceRange.end.round()}',
           ),
           onChanged: (values) {
-            setState(() => _priceRange = values);
+            ref.read(searchFilterProvider.notifier).updatePriceRange(values);
           },
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '\$${_priceRange.start.round()}',
+              '\$${filterState.priceRange.start.round()}',
               style: GoogleFonts.notoSansKr(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -195,7 +182,7 @@ class _SearchFilterDrawerState extends ConsumerState<SearchFilterDrawer> {
               ),
             ),
             Text(
-              '\$${_priceRange.end.round()}',
+              '\$${filterState.priceRange.end.round()}',
               style: GoogleFonts.notoSansKr(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -208,7 +195,7 @@ class _SearchFilterDrawerState extends ConsumerState<SearchFilterDrawer> {
     );
   }
 
-  Widget _buildRatingSection() {
+  Widget _buildRatingSection(WidgetRef ref, SearchFilterState filterState) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -233,8 +220,10 @@ class _SearchFilterDrawerState extends ConsumerState<SearchFilterDrawer> {
               style: GoogleFonts.notoSansKr(fontSize: 14),
             ),
             trailing: Checkbox(
-              value: false,
-              onChanged: (value) {},
+              value: filterState.selectedRatings.contains(rating),
+              onChanged: (value) {
+                ref.read(searchFilterProvider.notifier).toggleRating(rating);
+              },
               activeColor: AppColors.primaryLaurel,
             ),
           );
@@ -243,7 +232,7 @@ class _SearchFilterDrawerState extends ConsumerState<SearchFilterDrawer> {
     );
   }
 
-  Widget _buildBrandSection() {
+  Widget _buildBrandSection(WidgetRef ref, SearchFilterState filterState) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -252,12 +241,11 @@ class _SearchFilterDrawerState extends ConsumerState<SearchFilterDrawer> {
         ...['Apple', 'Samsung', 'Nike', 'Adidas', 'Sony'].map((brand) {
           return CheckboxListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text(
-              brand,
-              style: GoogleFonts.notoSansKr(fontSize: 14),
-            ),
-            value: false,
-            onChanged: (value) {},
+            title: Text(brand, style: GoogleFonts.notoSansKr(fontSize: 14)),
+            value: filterState.selectedBrands.contains(brand),
+            onChanged: (value) {
+              ref.read(searchFilterProvider.notifier).toggleBrand(brand);
+            },
             activeColor: AppColors.primaryLaurel,
           );
         }),
@@ -276,11 +264,11 @@ class _SearchFilterDrawerState extends ConsumerState<SearchFilterDrawer> {
     );
   }
 
-  Widget _buildCategoryChip(String category) {
-    final isSelected = _selectedCategory == category;
+  Widget _buildCategoryChip(WidgetRef ref, String category, String selectedCategory) {
+    final isSelected = selectedCategory == category;
     return GestureDetector(
       onTap: () {
-        setState(() => _selectedCategory = category);
+        ref.read(searchFilterProvider.notifier).updateCategory(category);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -303,19 +291,18 @@ class _SearchFilterDrawerState extends ConsumerState<SearchFilterDrawer> {
     );
   }
 
-  void _resetFilters() {
-    setState(() {
-      _selectedCategory = 'All';
-      _priceRange = const RangeValues(0, 1000);
-    });
+  void _resetFilters(WidgetRef ref) {
+    ref.read(searchFilterProvider.notifier).resetFilters();
   }
 
-  void _applyFilters() {
-    ref.read(advancedSearchProvider.notifier).updateFilters(
-      category: _selectedCategory,
-      minPrice: _priceRange.start,
-      maxPrice: _priceRange.end,
-    );
+  void _applyFilters(BuildContext context, WidgetRef ref, SearchFilterState filterState) {
+    ref
+        .read(advancedSearchProvider.notifier)
+        .updateFilters(
+          category: filterState.selectedCategory,
+          minPrice: filterState.priceRange.start,
+          maxPrice: filterState.priceRange.end,
+        );
     Navigator.pop(context);
   }
 }

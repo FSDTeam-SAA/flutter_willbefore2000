@@ -6,6 +6,7 @@ class AppScaffold extends StatelessWidget {
   final Widget? drawer;
   final bool removePadding;
   final Widget? floatingActionButton;
+  final Widget ? endDrawer;
 
   const AppScaffold({
     super.key,
@@ -14,6 +15,7 @@ class AppScaffold extends StatelessWidget {
     required this.body,
     this.removePadding = false,
     this.floatingActionButton,
+    this.endDrawer,
   });
 
   @override
@@ -21,6 +23,7 @@ class AppScaffold extends StatelessWidget {
     return Scaffold(
       drawer: drawer,
       appBar: appBar,
+      endDrawer: endDrawer,
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: removePadding ? 0 : 18),
         child: body,

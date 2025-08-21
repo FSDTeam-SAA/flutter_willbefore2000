@@ -11,7 +11,7 @@ class CategoryChips extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final searchState = ref.watch(advancedSearchProvider);
-    
+
     final categories = [
       'All',
       'Electronics',
@@ -24,12 +24,12 @@ class CategoryChips extends ConsumerWidget {
 
     return ListView.builder(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      // padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: categories.length,
       itemBuilder: (context, index) {
         final category = categories[index];
         final isSelected = searchState.selectedCategory == category;
-        
+
         return Container(
           margin: const EdgeInsets.only(right: 8),
           child: FilterChip(
@@ -43,15 +43,17 @@ class CategoryChips extends ConsumerWidget {
             ),
             selected: isSelected,
             onSelected: (selected) {
-              ref.read(advancedSearchProvider.notifier).updateFilters(
-                category: selected ? category : 'All',
-              );
+              ref
+                  .read(advancedSearchProvider.notifier)
+                  .updateFilters(category: selected ? category : 'All');
             },
             backgroundColor: Colors.white,
             selectedColor: AppColors.primaryLaurel,
             checkmarkColor: Colors.white,
             side: BorderSide(
-              color: isSelected ? AppColors.primaryLaurel : AppColors.borderColor,
+              color: isSelected
+                  ? AppColors.primaryLaurel
+                  : AppColors.borderColor,
             ),
           ),
         );

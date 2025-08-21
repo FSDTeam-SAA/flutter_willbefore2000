@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
 
+import '../../../../core/common/widgets/app_scaffold.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/cart_item_widget.dart';
@@ -14,21 +16,8 @@ class CartScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cartState = ref.watch(cartProvider);
 
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: Text(
-          'Cart',
-          style: GoogleFonts.notoSansKr(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textAppBlack,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-      ),
+    return AppScaffold(
+      appBar: AppBar(),
       body: cartState.items.isEmpty
           ? _buildEmptyCart()
           : Column(
@@ -36,20 +25,21 @@ class CartScreen extends ConsumerWidget {
                 // Cart Items
                 Expanded(
                   child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    // padding: const EdgeInsets.all(16),
                     itemCount: cartState.items.length,
                     itemBuilder: (context, index) {
                       final item = cartState.items[index];
                       return CartItemWidget(
                         item: item,
                         onQuantityChanged: (newQuantity) {
-                          ref.read(cartProvider.notifier).updateQuantity(
-                                item.id,
-                                newQuantity,
-                              );
+                          ref
+                              .read(cartProvider.notifier)
+                              .updateQuantity(item.id, newQuantity);
                         },
                         onRemove: () {
-                          ref.read(cartProvider.notifier).removeFromCart(item.id);
+                          ref
+                              .read(cartProvider.notifier)
+                              .removeFromCart(item.id);
                         },
                       );
                     },
@@ -61,9 +51,7 @@ class CartScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(20),
                   decoration: const BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(20),
-                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(20)),
                   ),
                   child: SafeArea(
                     child: Column(
@@ -146,27 +134,33 @@ class CartScreen extends ConsumerWidget {
                         const SizedBox(height: 20),
                         SizedBox(
                           width: double.infinity,
-                          child: ElevatedButton(
+                          child: context.primaryButton(
+                            // isLoading: authState.isLoading,
                             onPressed: () {
                               // Checkout logic
                               _showCheckoutDialog(context);
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryLaurel,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: Text(
-                              'Continue Shopping',
-                              style: GoogleFonts.notoSansKr(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
+                            text: "Continue Shopping",
                           ),
+
+                          // ElevatedButton(
+                          //   onPressed: () {},
+                          //   style: ElevatedButton.styleFrom(
+                          //     backgroundColor: AppColors.primaryLaurel,
+                          //     padding: const EdgeInsets.symmetric(vertical: 16),
+                          //     shape: RoundedRectangleBorder(
+                          //       borderRadius: BorderRadius.circular(12),
+                          //     ),
+                          //   ),
+                          //   child: Text(
+                          //     'Continue Shopping',
+                          //     style: GoogleFonts.notoSansKr(
+                          //       fontSize: 16,
+                          //       fontWeight: FontWeight.w600,
+                          //       color: Colors.white,
+                          //     ),
+                          //   ),
+                          // ),
                         ),
                       ],
                     ),
@@ -182,11 +176,7 @@ class CartScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.shopping_cart_outlined,
-            size: 80,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.shopping_cart_outlined, size: 80, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             'Your cart is empty',
@@ -215,9 +205,7 @@ class CartScreen extends ConsumerWidget {
       builder: (context) => AlertDialog(
         title: Text(
           'Checkout',
-          style: GoogleFonts.notoSansKr(
-            fontWeight: FontWeight.w600,
-          ),
+          style: GoogleFonts.notoSansKr(fontWeight: FontWeight.w600),
         ),
         content: Text(
           'Checkout functionality will be implemented soon!',
@@ -228,9 +216,7 @@ class CartScreen extends ConsumerWidget {
             onPressed: () => context.pop(),
             child: Text(
               'OK',
-              style: GoogleFonts.notoSansKr(
-                color: AppColors.primaryLaurel,
-              ),
+              style: GoogleFonts.notoSansKr(color: AppColors.primaryLaurel),
             ),
           ),
         ],
