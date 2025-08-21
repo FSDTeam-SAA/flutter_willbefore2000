@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart'; // Added GoRouter import
 import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
-import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
 
 import '../../../../core/common/widgets/html_content_widget.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -11,59 +11,142 @@ import '../../../cart/presentation/providers/cart_provider.dart';
 import '../providers/products_details_provider.dart';
 import '../providers/products_providers.dart';
 
-class ProductDetailScreen extends ConsumerStatefulWidget {
+class ProductDetailScreen extends ConsumerWidget {
   final String productId;
-  final String? heroTag;
+  final String? heroTag; // Added heroTag parameter to receive from navigation
 
-  const ProductDetailScreen({super.key, required this.productId, this.heroTag});
+  const ProductDetailScreen({
+    super.key,
+    required this.productId,
+    this.heroTag, // Optional heroTag for Hero animation
+  });
 
-  @override
-  ConsumerState<ProductDetailScreen> createState() =>
-      _ProductDetailScreenState();
-}
+  String _getCartButtonText(
+    WidgetRef ref,
+    product,
+    String? selectedSize,
+    String? selectedColor,
+  ) {
+    final cartNotifier = ref.read(cartProvider.notifier);
 
-class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
-  late PageController _pageController;
-  bool _isPageViewChanging = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final productsState = ref.watch(productsProvider);
-    final productDetailState = ref.watch(productDetailProvider);
-
-    ref.listen(
-      productDetailProvider.select((state) => state.currentImageIndex),
-      (previous, next) {
-        if (!_isPageViewChanging &&
-            _pageController.hasClients &&
-            previous != next) {
-          _pageController.animateToPage(
-            next,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
-        }
-      },
+    // Check if exact variant exists in cart
+    final exactMatch = cartNotifier.getExistingCartItem(
+      product.id,
+      selectedSize,
+      selectedColor,
     );
 
-    // Initialize products if needed
+    if (exactMatch != null) {
+      return 'Update Cart';
+    }
+
+    // Check if product exists with different variants
+    final hasProduct = cartNotifier.hasProductInCart(product.id);
+    if (hasProduct) {
+      return 'Add New Variant';
+    }
+
+    return 'Add to Cart';
+  }
+
+  void _handleCartAction(
+    BuildContext context,
+    WidgetRef ref,
+    product,
+    String? selectedSize,
+    String? selectedColor,
+    int quantity,
+  ) async {
+    // Validate required selections
+    if (product.sizes.isNotEmpty && selectedSize == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Please select a size',
+            style: GoogleFonts.notoSansKr(),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (product.colors.isNotEmpty && selectedColor == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Please select a color',
+            style: GoogleFonts.notoSansKr(),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final cartNotifier = ref.read(cartProvider.notifier);
+
+    // Check if exact variant exists in cart
+    final exactMatch = cartNotifier.getExistingCartItem(
+      product.id,
+      selectedSize,
+      selectedColor,
+    );
+
+    String actionMessage;
+
+    if (exactMatch != null) {
+      // Update existing item
+      await cartNotifier.updateCartItemVariant(
+        product.id,
+        exactMatch.selectedSize,
+        exactMatch.selectedColor,
+        selectedSize,
+        selectedColor,
+        quantity,
+      );
+      actionMessage = '${product.title} updated in cart!';
+    } else {
+      // Add new item or variant
+      await cartNotifier.addToCart(
+        product,
+        quantity,
+        selectedSize,
+        selectedColor,
+      );
+
+      final hasOtherVariants = cartNotifier.hasProductInCart(product.id);
+      actionMessage = hasOtherVariants
+          ? '${product.title} variant added to cart!'
+          : '${product.title} added to cart!';
+    }
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(actionMessage, style: GoogleFonts.notoSansKr()),
+          backgroundColor: AppColors.primaryLaurel,
+          action: SnackBarAction(
+            label: 'View Cart',
+            textColor: Colors.white,
+            onPressed: () {
+              context.go('/cart');
+            },
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final productsState = ref.watch(productsProvider);
+    final cartState = ref.watch(cartProvider);
+    final productDetailState = ref.watch(productDetailProvider);
+
     ref.listen(productsProvider, (previous, next) {
       if (previous?.products.isEmpty == true && next.products.isEmpty) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ref.read(productsProvider.notifier).fetchProducts();
-        });
+        ref.read(productsProvider.notifier).fetchProducts();
       }
     });
 
@@ -72,12 +155,12 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     }
 
     final product = productsState.products.firstWhere(
-      (p) => p.id == widget.productId,
+      (p) => p.id == productId,
       orElse: () => throw Exception('Product not found'),
     );
 
     final effectiveHeroTag =
-        widget.heroTag ??
+        heroTag ??
         HeroTagManager.generateProductHeroTag(
           productId: product.id,
           context: 'detail-fallback',
@@ -94,30 +177,25 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             pinned: true,
             automaticallyImplyLeading: true,
             actions: [
-              // IconButton(
-              //   onPressed: () {},
-              //   icon: const Icon(
-              //     Icons.favorite_border,
-              //     color: AppColors.textAppBlack,
-              //   ),
-              // ),
-              // IconButton(
-              //   onPressed: () {},
-              //   icon: const Icon(Icons.share, color: AppColors.textAppBlack),
-              // ),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.favorite_border,
+                  color: AppColors.textAppBlack,
+                ),
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.share, color: AppColors.textAppBlack),
+              ),
             ],
           ),
 
           // Product Images
           SliverToBoxAdapter(
             child: Hero(
-              tag: effectiveHeroTag,
-              child: _buildImageSection(
-                context,
-                ref,
-                product,
-                productDetailState,
-              ),
+              tag: effectiveHeroTag, // Use the effective hero tag
+              child: _buildImageSection(ref, product, productDetailState),
             ),
           ),
 
@@ -215,33 +293,18 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
                   // Size Selection
                   if (product.sizes.isNotEmpty)
-                    _buildSizeSelection(
-                      context,
-                      ref,
-                      product,
-                      productDetailState,
-                    ),
+                    _buildSizeSelection(ref, product, productDetailState),
 
                   const SizedBox(height: 24),
 
                   // Color Selection
                   if (product.colors.isNotEmpty)
-                    _buildColorSelection(
-                      context,
-                      ref,
-                      product,
-                      productDetailState,
-                    ),
+                    _buildColorSelection(ref, product, productDetailState),
 
                   const SizedBox(height: 24),
 
                   // Quantity Selection
-                  _buildQuantitySelection(
-                    context,
-                    ref,
-                    product,
-                    productDetailState,
-                  ),
+                  _buildQuantitySelection(ref, product, productDetailState),
 
                   const SizedBox(height: 32),
 
@@ -251,6 +314,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                     ref,
                     product,
                     productDetailState,
+                    cartState,
                   ),
 
                   const SizedBox(height: 100),
@@ -263,31 +327,21 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  Widget _buildImageSection(
-    BuildContext context,
-    WidgetRef ref,
-    dynamic product,
-    ProductDetailState state,
-  ) {
-    return SizedBox(
+  Widget _buildImageSection(WidgetRef ref, product, ProductDetailState state) {
+    return Container(
       height: 400,
       child: Column(
         children: [
           // Main Image
           Expanded(
             child: PageView.builder(
-              controller: _pageController, // Added PageController
               itemCount: product.imageUrls.isNotEmpty
                   ? product.imageUrls.length
                   : 1,
               onPageChanged: (index) {
-                _isPageViewChanging = true;
                 ref
                     .read(productDetailProvider.notifier)
                     .updateImageIndex(index);
-                Future.delayed(const Duration(milliseconds: 100), () {
-                  _isPageViewChanging = false;
-                });
               },
               itemBuilder: (context, index) {
                 return Container(
@@ -338,10 +392,19 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: AppCachedImage(
-                          imageUrl: product.imageUrls.isNotEmpty
-                              ? product.imageUrls[index]
-                              : '/placeholder.svg?height=80&width=80',
+                        child: Image.network(
+                          product.imageUrls[index],
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey[200],
+                              child: const Icon(
+                                Icons.image,
+                                size: 30,
+                                color: Colors.grey,
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -394,12 +457,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  Widget _buildSizeSelection(
-    BuildContext context,
-    WidgetRef ref,
-    dynamic product,
-    ProductDetailState state,
-  ) {
+  Widget _buildSizeSelection(WidgetRef ref, product, ProductDetailState state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -452,9 +510,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   }
 
   Widget _buildColorSelection(
-    BuildContext context,
     WidgetRef ref,
-    dynamic product,
+    product,
     ProductDetailState state,
   ) {
     return Column(
@@ -477,7 +534,6 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             final colorName = entry.value;
             final isSelected = state.selectedColor == colorName;
 
-            // Get color from colorCodes if available
             Color color = Colors.grey;
             if (index < product.colorCodes.length) {
               try {
@@ -530,9 +586,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   }
 
   Widget _buildQuantitySelection(
-    BuildContext context,
     WidgetRef ref,
-    dynamic product,
+    product,
     ProductDetailState state,
   ) {
     return Column(
@@ -605,40 +660,81 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   Widget _buildActionButtons(
     BuildContext context,
     WidgetRef ref,
-    dynamic product,
+    product,
     ProductDetailState state,
+    cartState,
   ) {
+    final buttonText = _getCartButtonText(
+      ref,
+      product,
+      state.selectedSize,
+      state.selectedColor,
+    );
+
     return Row(
       children: [
         Expanded(
-          child: context.secondaryButton(
-            isLoading: ref.watch(cartProvider).isLoading,
-            onPressed: () {
-              ref
-                  .read(cartProvider.notifier)
-                  .addToCart(
+          child: OutlinedButton(
+            onPressed: cartState.isLoading
+                ? null
+                : () => _handleCartAction(
+                    context,
+                    ref,
                     product,
-                    state.quantity,
                     state.selectedSize,
                     state.selectedColor,
-                  );
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Added to cart!',
-                    style: GoogleFonts.notoSansKr(),
+                    state.quantity,
                   ),
-                  backgroundColor: AppColors.primaryLaurel,
-                ),
-              );
-            },
-            text: "Added to cart",
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              side: const BorderSide(color: AppColors.primaryLaurel),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: cartState.isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.primaryLaurel,
+                      ),
+                    ),
+                  )
+                : Text(
+                    buttonText,
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryLaurel,
+                    ),
+                  ),
           ),
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: context.primaryButton(onPressed: () {}, text: "Buy Now"),
+          child: ElevatedButton(
+            onPressed: () {
+              // Buy now logic
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryLaurel,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Buy Now',
+              style: GoogleFonts.notoSansKr(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
         ),
       ],
     );

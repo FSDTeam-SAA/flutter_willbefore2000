@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/cart_item.dart';
@@ -44,22 +45,28 @@ class CartItemWidget extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                item.product.imageUrls.isNotEmpty
+              child: AppCachedImage(
+                imageUrl: item.product.imageUrls.isNotEmpty
                     ? item.product.imageUrls.first
                     : '/placeholder.svg?height=80&width=80',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[200],
-                    child: const Icon(
-                      Icons.image,
-                      size: 30,
-                      color: Colors.grey,
-                    ),
-                  );
-                },
               ),
+
+              // Image.network(
+              //   item.product.imageUrls.isNotEmpty
+              //       ? item.product.imageUrls.first
+              //       : '/placeholder.svg?height=80&width=80',
+              //   fit: BoxFit.cover,
+              //   errorBuilder: (context, error, stackTrace) {
+              //     return Container(
+              //       color: Colors.grey[200],
+              //       child: const Icon(
+              //         Icons.image,
+              //         size: 30,
+              //         color: Colors.grey,
+              //       ),
+              //     );
+              //   },
+              // ),
             ),
           ),
 
@@ -83,7 +90,8 @@ class CartItemWidget extends StatelessWidget {
                 const SizedBox(height: 4),
                 if (item.selectedSize != null || item.selectedColor != null)
                   Text(
-                    '${item.selectedSize ?? ''} ${item.selectedColor ?? ''}'.trim(),
+                    '${item.selectedSize ?? ''} ${item.selectedColor ?? ''}'
+                        .trim(),
                     style: GoogleFonts.notoSansKr(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,

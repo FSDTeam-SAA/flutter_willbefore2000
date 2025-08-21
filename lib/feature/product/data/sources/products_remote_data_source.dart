@@ -111,7 +111,7 @@ class ProductsRemoteDataSourceImpl implements ProductsRemoteDataSource {
           .where('isActive', isEqualTo: true)
           .orderBy('title')
           .startAt([query])
-          .endAt([query + '\uf8ff'])
+          .endAt(['$query\uf8ff'])
           .get();
 
       return querySnapshot.docs
