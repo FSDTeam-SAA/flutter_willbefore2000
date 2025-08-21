@@ -4,7 +4,6 @@ import 'package:flutx_core/flutx_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
 
-import '../../../../core/common/widgets/app_scaffold.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/hero_tag_manager.dart';
 import '../../../product/presentation/widgets/product_card.dart';

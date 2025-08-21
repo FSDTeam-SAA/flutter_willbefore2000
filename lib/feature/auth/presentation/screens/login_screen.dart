@@ -1,7 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutx_core/core/routes/services/go_next_navigation.dart';
 import 'package:flutx_core/flutx_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smilestreats/core/routes/route_endpoint.dart';
@@ -9,7 +8,6 @@ import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
 import 'package:smilestreats/core/utils/extensions/input_decoration_extensions.dart';
 import 'package:smilestreats/feature/auth/domain/requests/login_request.dart';
 import 'package:smilestreats/feature/auth/presentation/providers/auth_provider.dart';
-import 'package:smilestreats/feature/auth/presentation/screens/signup_screen.dart';
 
 import '../../../../core/common/widgets/app_icons.dart';
 import '../../../../core/common/widgets/app_logo.dart';

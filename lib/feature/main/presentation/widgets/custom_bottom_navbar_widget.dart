@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/common/widgets/app_icons.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_icons_const.dart';
-import '../provider/bottom_nav_provider.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
