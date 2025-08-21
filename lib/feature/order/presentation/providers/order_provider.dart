@@ -1,46 +1,81 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/sources/order_remote_data_source.dart';
 import '../../domain/entities/order_entities.dart';
+import '../../domain/repositories/order_repository.dart';
+import '../../data/repositories/order_repository_impl.dart';
 import '../../../cart/domain/entities/cart_item.dart';
 
+// Add these missing definitions
+final orderRepositoryProvider = Provider<OrderRepository>((ref) {
+  return OrderRepositoryImpl(
+    ref.watch(orderRemoteDataSourceProvider),
+    // auth: FirebaseAuth.instance,
+  );
+});
+
+// Add extensions for Order class if missing
+extension OrderExtensions on Order {
+  Color get statusColor {
+    switch (status) {
+      case OrderStatus.pending:
+        return Colors.orange;
+      case OrderStatus.confirmed:
+        return Colors.blue;
+      case OrderStatus.processing:
+        return Colors.purple;
+      case OrderStatus.shipped:
+        return Colors.indigo;
+      case OrderStatus.delivered:
+        return Colors.green;
+      case OrderStatus.cancelled:
+        return Colors.red;
+    }
+  }
+
+  String get statusText {
+    switch (status) {
+      case OrderStatus.pending:
+        return 'Pending';
+      case OrderStatus.confirmed:
+        return 'Confirmed';
+      case OrderStatus.processing:
+        return 'Processing';
+      case OrderStatus.shipped:
+        return 'Shipped';
+      case OrderStatus.delivered:
+        return 'Delivered';
+      case OrderStatus.cancelled:
+        return 'Cancelled';
+    }
+  }
+}
+
 class OrderNotifier extends StateNotifier<AsyncValue<List<Order>>> {
-  OrderNotifier() : super(const AsyncValue.loading()) {
+  final OrderRepository _repository;
+
+  OrderNotifier(this._repository) : super(const AsyncValue.loading()) {
     _loadOrders();
+    _listenToOrderChanges();
+  }
+
+  void _listenToOrderChanges() {
+    _repository.getUserOrdersStream().listen(
+      (orders) {
+        state = AsyncValue.data(orders);
+      },
+      onError: (error, stackTrace) {
+        state = AsyncValue.error(error, stackTrace);
+      },
+    );
   }
 
   Future<void> _loadOrders() async {
     try {
-      // Simulate loading orders from Firebase
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // Mock orders for demonstration
-      final orders = <Order>[
-        Order(
-          id: '1',
-          userId: 'user1',
-          items: [],
-          shippingAddress: ShippingAddress(
-            firstName: 'John',
-            lastName: 'Doe',
-            email: 'john@example.com',
-            phoneNumber: '+1234567890',
-            address: '123 Main St',
-            city: 'New York',
-            state: 'NY',
-            zipCode: '10001',
-            country: 'United States',
-          ),
-          subtotal: 239.96,
-          tax: 0.00,
-          total: 239.96,
-          status: OrderStatus.delivered,
-          createdAt: DateTime.now().subtract(const Duration(days: 5)),
-          estimatedDelivery: DateTime.now().add(const Duration(days: 2)),
-        ),
-      ];
-      
+      final orders = await _repository.getUserOrders();
       state = AsyncValue.data(orders);
-    } catch (e) {
-      state = AsyncValue.error(e, StackTrace.current);
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
     }
   }
 
@@ -49,59 +84,77 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<Order>>> {
     required ShippingAddress shippingAddress,
     required String paymentIntentId,
   }) async {
-    final subtotal = items.fold(0.0, (sum, item) => sum + item.totalPrice);
-    final tax = subtotal * 0.0; // No tax for now
-    final total = subtotal + tax;
+    try {
+      final order = await _repository.createOrder(
+        items: items,
+        shippingAddress: shippingAddress,
+        paymentIntentId: paymentIntentId,
+      );
 
-    final order = Order(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      userId: 'current_user_id', // Get from auth
-      items: items,
-      shippingAddress: shippingAddress,
-      subtotal: subtotal,
-      tax: tax,
-      total: total,
-      status: OrderStatus.confirmed,
-      createdAt: DateTime.now(),
-      estimatedDelivery: DateTime.now().add(const Duration(days: 7)),
-      paymentIntentId: paymentIntentId,
-    );
-
-    // Add to Firebase here
-    
-    // Update local state
-    final currentOrders = state.value ?? [];
-    state = AsyncValue.data([order, ...currentOrders]);
-    
-    return order;
+      // State will be updated automatically via stream listener
+      return order;
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+      rethrow;
+    }
   }
 
-  void updateOrderStatus(String orderId, OrderStatus status) {
-    final currentOrders = state.value ?? [];
-    final updatedOrders = currentOrders.map((order) {
-      if (order.id == orderId) {
-        return Order(
-          id: order.id,
-          userId: order.userId,
-          items: order.items,
-          shippingAddress: order.shippingAddress,
-          subtotal: order.subtotal,
-          tax: order.tax,
-          total: order.total,
-          status: status,
-          createdAt: order.createdAt,
-          estimatedDelivery: order.estimatedDelivery,
-          paymentIntentId: order.paymentIntentId,
-          trackingNumber: order.trackingNumber,
-        );
-      }
-      return order;
-    }).toList();
-    
-    state = AsyncValue.data(updatedOrders);
+  Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
+    try {
+      await _repository.updateOrderStatus(orderId, status);
+      // State will be updated automatically via stream listener
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+    }
   }
 }
 
-final orderProvider = StateNotifierProvider<OrderNotifier, AsyncValue<List<Order>>>(
-  (ref) => OrderNotifier(),
-);
+class AdminOrderNotifier extends StateNotifier<AsyncValue<List<Order>>> {
+  final OrderRepository _repository;
+
+  AdminOrderNotifier(this._repository) : super(const AsyncValue.loading()) {
+    _loadAllOrders();
+    _listenToAllOrderChanges();
+  }
+
+  void _listenToAllOrderChanges() {
+    _repository.getAllOrdersStream().listen(
+      (orders) {
+        state = AsyncValue.data(orders);
+      },
+      onError: (error, stackTrace) {
+        state = AsyncValue.error(error, stackTrace);
+      },
+    );
+  }
+
+  Future<void> _loadAllOrders() async {
+    try {
+      final orders = await _repository.getAllOrders();
+      state = AsyncValue.data(orders);
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+    }
+  }
+
+  Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
+    try {
+      await _repository.updateOrderStatus(orderId, status);
+      // State will be updated automatically via stream listener
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+    }
+  }
+}
+
+final orderProvider =
+    StateNotifierProvider<OrderNotifier, AsyncValue<List<Order>>>((ref) {
+      final repository = ref.watch(orderRepositoryProvider);
+      return OrderNotifier(repository);
+    });
+
+final adminOrderProvider =
+    StateNotifierProvider<AdminOrderNotifier, AsyncValue<List<Order>>>((ref) {
+      final repository = ref.watch(orderRepositoryProvider);
+      return AdminOrderNotifier(repository);
+    });

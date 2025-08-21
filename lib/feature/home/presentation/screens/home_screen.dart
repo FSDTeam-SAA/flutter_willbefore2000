@@ -153,7 +153,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                context.pushNamed(RoutePaths.orders);
+              },
               icon: Icon(
                 Icons.calendar_today_outlined,
                 color: AppColors.textAppBlack,

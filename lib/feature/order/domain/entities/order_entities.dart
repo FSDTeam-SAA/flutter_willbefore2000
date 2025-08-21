@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../../../cart/domain/entities/cart_item.dart';
 
 enum OrderStatus {
@@ -8,42 +7,10 @@ enum OrderStatus {
   processing,
   shipped,
   delivered,
-  cancelled,
-}
+  cancelled;
 
-class Order {
-  final String id;
-  final String userId;
-  final List<CartItem> items;
-  final ShippingAddress shippingAddress;
-  final double subtotal;
-  final double tax;
-  final double total;
-  final OrderStatus status;
-  final DateTime createdAt;
-  final DateTime? estimatedDelivery;
-  final String? paymentIntentId;
-  final String? trackingNumber;
-
-  Order({
-    required this.id,
-    required this.userId,
-    required this.items,
-    required this.shippingAddress,
-    required this.subtotal,
-    required this.tax,
-    required this.total,
-    required this.status,
-    required this.createdAt,
-    this.estimatedDelivery,
-    this.paymentIntentId,
-    this.trackingNumber,
-  });
-
-  String get orderNumber => '#ORD-${id.substring(0, 8).toUpperCase()}';
-
-  String get statusText {
-    switch (status) {
+  String get displayName {
+    switch (this) {
       case OrderStatus.pending:
         return 'Pending';
       case OrderStatus.confirmed:
@@ -59,8 +26,8 @@ class Order {
     }
   }
 
-  Color get statusColor {
-    switch (status) {
+  Color get color {
+    switch (this) {
       case OrderStatus.pending:
         return Colors.orange;
       case OrderStatus.confirmed:
@@ -88,7 +55,7 @@ class ShippingAddress {
   final String zipCode;
   final String country;
 
-  ShippingAddress({
+  const ShippingAddress({
     required this.firstName,
     required this.lastName,
     required this.email,
@@ -102,4 +69,41 @@ class ShippingAddress {
 
   String get fullName => '$firstName $lastName';
   String get fullAddress => '$address, $city, $state $zipCode, $country';
+}
+
+class Order {
+  final String id;
+  final String userId;
+  final List<CartItem> items;
+  final ShippingAddress shippingAddress;
+  final double subtotal;
+  final double tax;
+  final double total;
+  final OrderStatus status;
+  final DateTime createdAt;
+  final DateTime? estimatedDelivery;
+  final String? paymentIntentId;
+  final String? trackingNumber;
+  final String? orderNumber;
+  final DateTime? updatedAt;
+
+  const Order({
+    required this.id,
+    required this.userId,
+    required this.items,
+    required this.shippingAddress,
+    required this.subtotal,
+    required this.tax,
+    required this.total,
+    required this.status,
+    required this.createdAt,
+    this.estimatedDelivery,
+    this.paymentIntentId,
+    this.trackingNumber,
+    this.orderNumber,
+    this.updatedAt,
+  });
+
+  String get statusText => status.displayName;
+  Color get statusColor => status.color;
 }

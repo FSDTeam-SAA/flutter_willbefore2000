@@ -34,7 +34,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('Order'),
+        title: const Text('Orders'),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -44,7 +44,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
           unselectedLabelColor: Colors.grey,
           indicatorColor: Colors.green,
           tabs: const [
-            Tab(text: 'My Order'),
+            Tab(text: 'My Orders'),
             Tab(text: 'Order History'),
           ],
         ),
@@ -52,10 +52,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
       body: ordersState.when(
         data: (orders) => TabBarView(
           controller: _tabController,
-          children: [
-            _buildMyOrderTab(orders),
-            _buildOrderHistoryTab(orders),
-          ],
+          children: [_buildMyOrderTab(orders), _buildOrderHistoryTab(orders)],
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('Error: $error')),
@@ -64,15 +61,16 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
   }
 
   Widget _buildMyOrderTab(List<Order> orders) {
-    final activeOrders = orders.where((order) => 
-      order.status != OrderStatus.delivered && 
-      order.status != OrderStatus.cancelled
-    ).toList();
+    final activeOrders = orders
+        .where(
+          (order) =>
+              order.status != OrderStatus.delivered &&
+              order.status != OrderStatus.cancelled,
+        )
+        .toList();
 
     if (activeOrders.isEmpty) {
-      return const Center(
-        child: Text('No active orders'),
-      );
+      return const Center(child: Text('No active orders'));
     }
 
     return ListView.builder(
@@ -86,10 +84,16 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
   }
 
   Widget _buildOrderHistoryTab(List<Order> orders) {
-    if (orders.isEmpty) {
-      return const Center(
-        child: Text('No order history'),
-      );
+    final historyOrders = orders
+        .where(
+          (order) =>
+              order.status == OrderStatus.delivered ||
+              order.status == OrderStatus.cancelled,
+        )
+        .toList();
+
+    if (historyOrders.isEmpty) {
+      return const Center(child: Text('No order history'));
     }
 
     return SingleChildScrollView(
@@ -157,29 +161,14 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
                   ),
                 ),
                 // Table Rows
-                ...orders.map((order) => _buildOrderHistoryRow(order)),
+                ...historyOrders.map((order) => _buildOrderHistoryRow(order)),
               ],
             ),
           ),
           const SizedBox(height: 16),
-          
-          // Pagination
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('Showing 1 to 5 of 12 results'),
-              const SizedBox(width: 16),
-              Row(
-                children: [
-                  _buildPaginationButton('1', isActive: true),
-                  _buildPaginationButton('2'),
-                  _buildPaginationButton('3'),
-                  _buildPaginationButton('4'),
-                  _buildPaginationButton('>'),
-                ],
-              ),
-            ],
-          ),
+
+          // Pagination (if needed)
+          if (historyOrders.length > 5) _buildPagination(),
         ],
       ),
     );
@@ -196,22 +185,16 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Store Name and Status
+          // Order ID and Status
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.store, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Smilestreats',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+              Text(
+                'Order #${order.id.substring(0, 8)}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -231,40 +214,66 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
             ],
           ),
           const SizedBox(height: 12),
-          
+
           // Product Items
-          ...order.items.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              children: [
-                // Product Image
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    image: DecorationImage(
-                      image: NetworkImage(item.product.imageUrls.first),
-                      fit: BoxFit.cover,
+          ...order.items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  // Product Image
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.grey[200],
+                      image: item.product.imageUrls.isNotEmpty
+                          ? DecorationImage(
+                              image: NetworkImage(item.product.imageUrls.first),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                
-                // Product Details
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(width: 12),
+
+                  // Product Details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.product.title,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          '\$${item.product.effectivePrice.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Quantity and Total
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        item.product.title,
+                        'Qty: ${item.quantity}',
                         style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
+                          color: Colors.grey,
                         ),
                       ),
                       Text(
-                        '\$${item.product.effectivePrice.toStringAsFixed(2)}',
+                        '\$${item.totalPrice.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -272,56 +281,52 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
                       ),
                     ],
                   ),
-                ),
-                
-                // Quantity and Total
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Qty: ${item.quantity}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    Text(
-                      'Total (${item.quantity} items): \$${item.totalPrice.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
-          )),
+          ),
+
+          // Order Total and Date
+          const Divider(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Total: \$${order.total.toStringAsFixed(2)}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                DateFormat('MMM dd, yyyy').format(order.createdAt),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
   Widget _buildOrderHistoryRow(Order order) {
+    final mainProduct = order.items.isNotEmpty ? order.items.first : null;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[200]!),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
       ),
       child: Row(
         children: [
           Expanded(
             flex: 2,
             child: Text(
-              order.items.isNotEmpty ? order.items.first.product.title : 'Order',
+              mainProduct != null
+                  ? '${mainProduct.product.title}${order.items.length > 1 ? ' +${order.items.length - 1} more' : ''}'
+                  : 'Order #${order.id.substring(0, 8)}',
               style: const TextStyle(fontSize: 12),
             ),
           ),
           Expanded(
             child: Text(
-              
               DateFormat('MM/dd/yyyy').format(order.createdAt),
               style: const TextStyle(fontSize: 12),
             ),
@@ -348,16 +353,32 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
             child: TextButton(
               onPressed: () => _showOrderSummary(order),
               child: const Text(
-                'See Details',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.blue,
-                ),
+                'Details',
+                style: TextStyle(fontSize: 12, color: Colors.blue),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPagination() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text('Showing 1 to 5 of 12 results'),
+        const SizedBox(width: 16),
+        Row(
+          children: [
+            _buildPaginationButton('1', isActive: true),
+            _buildPaginationButton('2'),
+            _buildPaginationButton('3'),
+            _buildPaginationButton('4'),
+            _buildPaginationButton('>'),
+          ],
+        ),
+      ],
     );
   }
 
@@ -376,10 +397,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
             side: BorderSide(color: Colors.grey[300]!),
           ),
         ),
-        child: Text(
-          text,
-          style: const TextStyle(fontSize: 12),
-        ),
+        child: Text(text, style: const TextStyle(fontSize: 12)),
       ),
     );
   }
@@ -388,9 +406,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Container(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -401,11 +417,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Smilestreats Order Summary',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    'Order Summary',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
@@ -414,53 +427,71 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
                 ],
               ),
               const SizedBox(height: 16),
-              
-              // Product Item
-              if (order.items.isNotEmpty) ...[
-                Row(
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: NetworkImage(order.items.first.product.imageUrls.first),
-                          fit: BoxFit.cover,
+
+              // Product Items
+              ...order.items.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.grey[200],
+                          image: item.product.imageUrls.isNotEmpty
+                              ? DecorationImage(
+                                  image: NetworkImage(
+                                    item.product.imageUrls.first,
+                                  ),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            order.items.first.product.title,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.product.title,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                          Text(
-                            '${order.items.first.quantity} x \$${order.items.first.product.effectivePrice.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
+                            Text(
+                              '${item.quantity} x \$${item.product.effectivePrice.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                      Text(
+                        '\$${item.totalPrice.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 20),
-              ],
-              
+              ),
+              const SizedBox(height: 20),
+
               // Order Summary
               Column(
                 children: [
-                  _buildSummaryRow('Subtotal', '\$${order.subtotal.toStringAsFixed(2)}'),
+                  _buildSummaryRow(
+                    'Subtotal',
+                    '\$${order.subtotal.toStringAsFixed(2)}',
+                  ),
                   _buildSummaryRow('Tax', '\$${order.tax.toStringAsFixed(2)}'),
                   const Divider(),
                   _buildSummaryRow(
@@ -471,14 +502,14 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
                 ],
               ),
               const SizedBox(height: 20),
-              
+
               // Download Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {},
                   icon: const Icon(Icons.download),
-                  label: const Text('Download Now'),
+                  label: const Text('Download Receipt'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green[600],
                     foregroundColor: Colors.white,
