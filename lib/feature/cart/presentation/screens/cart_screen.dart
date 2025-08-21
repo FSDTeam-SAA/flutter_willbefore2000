@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:smilestreats/core/routes/route_endpoint.dart';
 import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
 
 import '../../../../core/common/widgets/app_scaffold.dart';
@@ -137,30 +138,10 @@ class CartScreen extends ConsumerWidget {
                           child: context.primaryButton(
                             // isLoading: authState.isLoading,
                             onPressed: () {
-                              // Checkout logic
-                              _showCheckoutDialog(context);
+                              context.pushNamed(RoutePaths.checkout);
                             },
                             text: "Continue Shopping",
                           ),
-
-                          // ElevatedButton(
-                          //   onPressed: () {},
-                          //   style: ElevatedButton.styleFrom(
-                          //     backgroundColor: AppColors.primaryLaurel,
-                          //     padding: const EdgeInsets.symmetric(vertical: 16),
-                          //     shape: RoundedRectangleBorder(
-                          //       borderRadius: BorderRadius.circular(12),
-                          //     ),
-                          //   ),
-                          //   child: Text(
-                          //     'Continue Shopping',
-                          //     style: GoogleFonts.notoSansKr(
-                          //       fontSize: 16,
-                          //       fontWeight: FontWeight.w600,
-                          //       color: Colors.white,
-                          //     ),
-                          //   ),
-                          // ),
                         ),
                       ],
                     ),
@@ -192,31 +173,6 @@ class CartScreen extends ConsumerWidget {
             style: GoogleFonts.notoSansKr(
               fontSize: 14,
               color: AppColors.textSecondaryHintColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showCheckoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Checkout',
-          style: GoogleFonts.notoSansKr(fontWeight: FontWeight.w600),
-        ),
-        content: Text(
-          'Checkout functionality will be implemented soon!',
-          style: GoogleFonts.notoSansKr(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => context.pop(),
-            child: Text(
-              'OK',
-              style: GoogleFonts.notoSansKr(color: AppColors.primaryLaurel),
             ),
           ),
         ],

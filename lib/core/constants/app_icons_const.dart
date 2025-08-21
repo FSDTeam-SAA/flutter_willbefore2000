@@ -2,7 +2,9 @@ class AssetsPath {
   static const String _baseImagePath = 'assets/images';
   static const String _baseIconPath = 'assets/icons';
 
+  /// [Images]
   static const String appLogo = '$_baseImagePath/app_logo.png';
+  static const String stripeLogo = '$_baseImagePath/stripe_logo.png';
 
   /// [Icons]
   static const String email = '$_baseIconPath/email.png';
@@ -15,5 +17,4 @@ class AssetsPath {
   static const String search = '$_baseIconPath/search.svg';
   static const String cart = '$_baseIconPath/cart.svg';
   static const String profile = '$_baseIconPath/profile.svg';
-  
 }

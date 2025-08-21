@@ -99,12 +99,14 @@ class AppRouter {
             path: RoutePaths.cart,
             name: RoutePaths.cart,
             builder: (context, state) => const CartScreen(),
+
             // pageBuilder: (context, state) => AppTransitions.slideTransition(
             //   context: context,
             //   child: const CartScreen(),
             //   state: state,
             // ),
           ),
+
           GoRoute(
             path: RoutePaths.profile,
             name: RoutePaths.profile,
@@ -116,6 +118,42 @@ class AppRouter {
             // ),
           ),
         ],
+      ),
+
+      GoRoute(
+        path: RoutePaths.orders,
+        name: RoutePaths.orders,
+        pageBuilder: (context, state) {
+          return AppTransitions.slideTransition(
+            child: const OrdersScreen(),
+            context: context,
+            state: state,
+          );
+        },
+      ),
+      GoRoute(
+        path: RoutePaths.orderConfirm,
+        name: RoutePaths.orderConfirm,
+        pageBuilder: (context, state) {
+          final order = state.extra as Order;;
+          return AppTransitions.slideTransition(
+            child: OrderConfirmationScreen(order: order,),
+            context: context,
+            state: state,
+          );
+        },
+      ),
+
+      GoRoute(
+        path: RoutePaths.checkout,
+        name: RoutePaths.checkout,
+        pageBuilder: (context, state) {
+          return AppTransitions.slideTransition(
+            child: const CheckoutScreen(),
+            context: context,
+            state: state,
+          );
+        },
       ),
 
       GoRoute(

@@ -23,7 +23,7 @@ class AppColors {
   static const Color errorRed = Color(0xFFB50000);
   static const Color successGreen = Color(0xFF34813C);
   static const Color black = Colors.black;
-  static const Color white = bgColor;
+  static const Color white = Colors.white;
 
   // static const Color mutedGray = Color(0xFF595959);
   // static const Color softBlue = Color(0xFF9EC7DC);
