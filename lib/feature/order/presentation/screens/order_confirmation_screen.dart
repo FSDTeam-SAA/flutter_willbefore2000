@@ -81,7 +81,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildDetailRow('Order Number:', order.orderNumber),
+                      _buildDetailRow('Order Number:', order.orderNumber ?? 'N/A'),
                       const SizedBox(height: 12),
                       _buildDetailRow(
                         'Estimated Delivery:',

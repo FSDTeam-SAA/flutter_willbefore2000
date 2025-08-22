@@ -1,12 +1,15 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/base/base_state.dart';
 import '../../data/repo/auth_repository_impl.dart';
 import '../../domain/models/user_model.dart';
 import '../../domain/repo/auth_repository.dart';
+import '../../domain/requests/forgot_password_request.dart';
 import '../../domain/requests/login_request.dart';
+import '../../domain/requests/signup_request.dart';
+import '../../domain/usecases/forgot_passowrd_use_case.dart';
 import '../../domain/usecases/login_use_case.dart';
+import '../../domain/usecases/signup_use_case.dart';
 
 class AuthState extends BaseState {
   final UserModel? user;
@@ -42,36 +45,49 @@ class AuthState extends BaseState {
 final authProvider = StateNotifierProvider<AuthProvider, AuthState>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);
   final loginUseCase = LoginUseCase(authRepository);
+  final signupUseCase = SignupUseCase(authRepository);
+  final forgotPasswordUseCase = ForgotPasswordUseCase(authRepository);
 
-  return AuthProvider(loginUseCase, authRepository);
+  return AuthProvider(
+    loginUseCase,
+    signupUseCase,
+    forgotPasswordUseCase,
+    authRepository,
+  );
 });
 
 class AuthProvider extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
   final LoginUseCase _loginUseCase;
+  final SignupUseCase _signupUseCase;
+  final ForgotPasswordUseCase _forgotPasswordUseCase;
 
-  AuthProvider(this._loginUseCase, this._authRepository) : super(AuthState()) {
+  AuthProvider(
+    this._loginUseCase,
+    this._signupUseCase,
+    this._forgotPasswordUseCase,
+    this._authRepository,
+  ) : super(const AuthState()) {
     _initializeAuthState();
 
     /// [Listen] to auth state changes
     _authRepository.authStateChanges.listen((user) {
-      state = state.copyWith(user: user, isAuthenticated: user != null);
+      state = state.copyWith(
+        user: user,
+        isAuthenticated: user != null,
+        isInitialized: true,
+      );
     });
   }
 
   Future<void> _initializeAuthState() async {
     try {
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser != null) {
-        final userModel = UserModel.fromFirebase(currentUser);
-        state = state.copyWith(
-          user: userModel,
-          isAuthenticated: true,
-          isInitialized: true,
-        );
-      } else {
-        state = state.copyWith(isAuthenticated: false, isInitialized: true);
-      }
+      final currentUser = await _authRepository.getCurrentUser();
+      state = state.copyWith(
+        user: currentUser,
+        isAuthenticated: currentUser != null,
+        isInitialized: true,
+      );
     } catch (e) {
       state = state.copyWith(
         isAuthenticated: false,
@@ -85,10 +101,57 @@ class AuthProvider extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       await _loginUseCase.call(request);
-
       return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      return false;
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
+  }
+
+  Future<bool> signup(SignupRequest request) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      await _signupUseCase.call(request);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      return false;
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
+  }
+
+  Future<bool> forgotPassword(ForgotPasswordRequest request) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      await _forgotPasswordUseCase.call(request);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      return false;
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
+  }
+
+  Future<void> sendEmailVerification() async {
+    try {
+      await _authRepository.sendEmailVerification();
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString());
+    }
+  }
+
+  Future<bool> updateProfile(UserModel user) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      await _authRepository.updateUserProfile(user);
+      state = state.copyWith(user: user);
+      return true;
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString());
       return false;
     } finally {
       state = state.copyWith(isLoading: false);
@@ -101,10 +164,11 @@ class AuthProvider extends StateNotifier<AuthState> {
     try {
       await _authRepository.logout();
 
-      state = state.copyWith(
+      state = const AuthState(
         user: null,
         isAuthenticated: false,
         isLoading: false,
+        isInitialized: true,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());

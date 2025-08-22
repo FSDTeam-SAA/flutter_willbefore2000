@@ -56,14 +56,15 @@ class AppRouter {
           state: state,
         ),
       ),
-      // GoRoute(
-      //   path: RouteEndpoint.signup,
-      //   name: RouteEndpoint.signup,
-      //   pageBuilder: (context, state) => buildPageWithDefaultTransition(
-      //     context: context,
-      //     child: const SignupScreen(), state: state,
-      //   ),
-      // ),
+      GoRoute(
+        path: RoutePaths.signup,
+        name: RoutePaths.signup,
+        pageBuilder: (context, state) => AppTransitions.slideTransition(
+          context: context,
+          child: const SignupScreen(),
+          state: state,
+        ),
+      ),
       // GoRoute(
       //   path: RouteEndpoint.forgotPassword,
       //   name: RouteEndpoint.forgotPassword,
@@ -135,9 +136,10 @@ class AppRouter {
         path: RoutePaths.orderConfirm,
         name: RoutePaths.orderConfirm,
         pageBuilder: (context, state) {
-          final order = state.extra as Order;;
+          final order = state.extra as Order;
+          ;
           return AppTransitions.slideTransition(
-            child: OrderConfirmationScreen(order: order,),
+            child: OrderConfirmationScreen(order: order),
             context: context,
             state: state,
           );

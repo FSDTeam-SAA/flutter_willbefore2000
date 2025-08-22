@@ -1,13 +1,24 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutx_core/flutx_core.dart';
 
 import '../../../../core/errors/auth_exception.dart';
 import '../../domain/requests/login_request.dart';
+import '../../domain/requests/signup_request.dart';
+import '../../domain/requests/forgot_password_request.dart';
+import '../../domain/models/user_model.dart';
 
 class AuthRemoteDataSource {
   final FirebaseAuth _firebaseAuth;
+  final FirebaseFirestore _firestore;
+  final FirebaseMessaging _messaging;
 
-  AuthRemoteDataSource(this._firebaseAuth);
+  AuthRemoteDataSource(
+    this._firebaseAuth,
+    this._firestore,
+    this._messaging,
+  );
 
   Future<User> login(LoginRequest request) async {
     DPrint.log("Login Requests -> ${request.email}");
@@ -20,7 +31,134 @@ class AuthRemoteDataSource {
       DPrint.log("Logged in credential : ${userCredential.user?.email}");
       return userCredential.user!;
     } on FirebaseAuthException catch (e) {
-      throw AuthException(e.message ?? "Login failed. Please try again.");
+      throw AuthException(_getAuthErrorMessage(e.code));
+    }
+  }
+
+  Future<UserModel> signup(SignupRequest request) async {
+    DPrint.log("Signup Request -> ${request.email}");
+    try {
+      // Create user with email and password
+      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: request.email,
+        password: request.password,
+      );
+
+      final user = userCredential.user!;
+
+      // Update display name
+      await user.updateDisplayName(request.name);
+
+      // Get FCM token
+      String? fcmToken;
+      try {
+        fcmToken = await _messaging.getToken();
+      } catch (e) {
+        DPrint.log("Failed to get FCM token: $e");
+      }
+
+      // Create user document in Firestore
+      final userModel = UserModel(
+        uid: user.uid,
+        email: user.email,
+        displayName: request.name,
+        phoneNumber: request.phoneNumber,
+        fcmToken: fcmToken,
+        role: 'user',
+        createdAt: DateTime.now(),
+        isEmailVerified: user.emailVerified,
+      );
+
+      await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .set(userModel.toFirestore());
+
+      // Send email verification
+      await user.sendEmailVerification();
+
+      DPrint.log("User created successfully: ${user.email}");
+      return userModel;
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(_getAuthErrorMessage(e.code));
+    } catch (e) {
+      throw AuthException("Signup failed. Please try again.");
+    }
+  }
+
+  Future<void> forgotPassword(ForgotPasswordRequest request) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: request.email);
+      DPrint.log("Password reset email sent to: ${request.email}");
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(_getAuthErrorMessage(e.code));
+    }
+  }
+
+  Future<void> resetPassword(String code, String newPassword) async {
+    try {
+      await _firebaseAuth.confirmPasswordReset(
+        code: code,
+        newPassword: newPassword,
+      );
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(_getAuthErrorMessage(e.code));
+    }
+  }
+
+  Future<void> sendEmailVerification() async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification();
+      }
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(_getAuthErrorMessage(e.code));
+    }
+  }
+
+  Future<void> updateUserProfile(UserModel userModel) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user != null) {
+        // Update Firebase Auth profile
+        await user.updateDisplayName(userModel.displayName);
+        if (userModel.photoURL != null) {
+          await user.updatePhotoURL(userModel.photoURL);
+        }
+
+        // Update Firestore document
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .update(userModel.toFirestore());
+      }
+    } catch (e) {
+      throw AuthException("Failed to update profile. Please try again.");
+    }
+  }
+
+  Future<UserModel?> getCurrentUser() async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user != null) {
+        final doc = await _firestore.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+          return UserModel.fromFirestore(doc);
+        } else {
+          // Create user document if it doesn't exist
+          final userModel = UserModel.fromFirebase(user);
+          await _firestore
+              .collection('users')
+              .doc(user.uid)
+              .set(userModel.toFirestore());
+          return userModel;
+        }
+      }
+      return null;
+    } catch (e) {
+      DPrint.log("Error getting current user: $e");
+      return null;
     }
   }
 
@@ -28,5 +166,28 @@ class AuthRemoteDataSource {
 
   Future<void> logout() async {
     await _firebaseAuth.signOut();
+  }
+
+  String _getAuthErrorMessage(String code) {
+    switch (code) {
+      case 'user-not-found':
+        return 'No user found with this email address.';
+      case 'wrong-password':
+        return 'Incorrect password. Please try again.';
+      case 'email-already-in-use':
+        return 'An account already exists with this email address.';
+      case 'weak-password':
+        return 'Password is too weak. Please choose a stronger password.';
+      case 'invalid-email':
+        return 'Please enter a valid email address.';
+      case 'user-disabled':
+        return 'This account has been disabled. Please contact support.';
+      case 'too-many-requests':
+        return 'Too many failed attempts. Please try again later.';
+      case 'operation-not-allowed':
+        return 'This operation is not allowed. Please contact support.';
+      default:
+        return 'An error occurred. Please try again.';
+    }
   }
 }

@@ -9,6 +9,7 @@ import 'package:smilestreats/feature/order/presentation/screens/orders_screen.da
 
 import '../../feature/auth/presentation/providers/auth_provider.dart';
 import '../../feature/auth/presentation/screens/login_screen.dart';
+import '../../feature/auth/presentation/screens/signup_screen.dart';
 import '../../feature/cart/presentation/screens/cart_screen.dart';
 import '../../feature/cart/presentation/screens/checkout_screen.dart';
 import '../../feature/home/presentation/screens/home_screen.dart';
