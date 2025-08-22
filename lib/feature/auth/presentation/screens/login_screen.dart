@@ -209,10 +209,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     ),
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
-                                        // Go.sailTo(
-                                        //   SignupScreen(),
-                                        //   transition: TransitionType.slideLeft,
-                                        // );
+                                        context.pushNamed(RoutePaths.signup);
                                       },
                                   ),
                                 ],
