@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutx_core/flutx_core.dart';
 import '../../data/sources/order_remote_data_source.dart';
 import '../../domain/entities/order_entities.dart';
 import '../../domain/repositories/order_repository.dart';
@@ -10,7 +12,7 @@ import '../../../cart/domain/entities/cart_item.dart';
 final orderRepositoryProvider = Provider<OrderRepository>((ref) {
   return OrderRepositoryImpl(
     ref.watch(orderRemoteDataSourceProvider),
-    // auth: FirebaseAuth.instance,
+    auth: FirebaseAuth.instance,
   );
 });
 
@@ -73,6 +75,7 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<Order>>> {
   Future<void> _loadOrders() async {
     try {
       final orders = await _repository.getUserOrders();
+      DPrint.log('Loaded ${orders.length} orders');
       state = AsyncValue.data(orders);
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);

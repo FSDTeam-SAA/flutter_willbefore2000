@@ -24,10 +24,21 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   Future<void> createOrder(Order order) async {
     try {
       final orderModel = OrderModel.fromEntity(order);
-      await _firestore
+      final batch = _firestore.batch();
+
+      // Save in main orders collection for admin queries
+      final mainOrderRef = _firestore.collection('orders').doc(order.id);
+      batch.set(mainOrderRef, orderModel.toFirestore());
+
+      // Save in user subcollection for efficient user queries
+      final userOrderRef = _firestore
+          .collection('users')
+          .doc(order.userId)
           .collection('orders')
-          .doc(order.id)
-          .set(orderModel.toFirestore());
+          .doc(order.id);
+      batch.set(userOrderRef, orderModel.toFirestore());
+
+      await batch.commit();
     } catch (e) {
       throw Exception('Failed to create order: $e');
     }
@@ -37,8 +48,9 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   Future<List<Order>> getUserOrders(String userId) async {
     try {
       final querySnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
           .collection('orders')
-          .where('userId', isEqualTo: userId)
           .orderBy('createdAt', descending: true)
           .get();
 
@@ -53,8 +65,9 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   @override
   Stream<List<Order>> getUserOrdersStream(String userId) {
     return _firestore
+        .collection('users')
+        .doc(userId)
         .collection('orders')
-        .where('userId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map(
@@ -96,10 +109,34 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   @override
   Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
     try {
-      await _firestore.collection('orders').doc(orderId).update({
+      final batch = _firestore.batch();
+
+      // Update in main orders collection
+      final mainOrderRef = _firestore.collection('orders').doc(orderId);
+      batch.update(mainOrderRef, {
         'status': status.name,
         'updatedAt': FieldValue.serverTimestamp(),
       });
+
+      // Find and update in user subcollection
+      // First get the order to find the userId
+      final orderDoc = await mainOrderRef.get();
+      if (orderDoc.exists) {
+        final userId = orderDoc.data()?['userId'];
+        if (userId != null) {
+          final userOrderRef = _firestore
+              .collection('users')
+              .doc(userId)
+              .collection('orders')
+              .doc(orderId);
+          batch.update(userOrderRef, {
+            'status': status.name,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+
+      await batch.commit();
     } catch (e) {
       throw Exception('Failed to update order status: $e');
     }

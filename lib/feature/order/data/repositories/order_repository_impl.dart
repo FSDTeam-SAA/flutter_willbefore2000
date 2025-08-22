@@ -9,10 +9,8 @@ class OrderRepositoryImpl implements OrderRepository {
   final OrderRemoteDataSource _remoteDataSource;
   final FirebaseAuth _auth;
 
-  OrderRepositoryImpl(
-    this._remoteDataSource, {
-    FirebaseAuth? auth,
-  }) : _auth = auth ?? FirebaseAuth.instance;
+  OrderRepositoryImpl(this._remoteDataSource, {FirebaseAuth? auth})
+    : _auth = auth ?? FirebaseAuth.instance;
 
   @override
   Future<Order> createOrder({
@@ -50,20 +48,24 @@ class OrderRepositoryImpl implements OrderRepository {
 
   @override
   Future<List<Order>> getUserOrders() async {
-    final user = _auth.currentUser;
-    if (user == null) {
-      throw Exception('User not authenticated');
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) {
+      return [];
     }
-    return await _remoteDataSource.getUserOrders(user.uid);
+
+    return _remoteDataSource.getUserOrders(userId);
   }
 
   @override
   Stream<List<Order>> getUserOrdersStream() {
-    final user = _auth.currentUser;
-    if (user == null) {
-      throw Stream.error('User not authenticated');
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) {
+      return Stream.value([]);
     }
-    return _remoteDataSource.getUserOrdersStream(user.uid);
+
+    return _remoteDataSource.getUserOrdersStream(userId).map((orders) {
+      return orders.where((order) => order.userId == userId).toList();
+    });
   }
 
   @override
