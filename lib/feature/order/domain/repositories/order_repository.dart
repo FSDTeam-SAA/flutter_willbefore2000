@@ -6,6 +6,7 @@ abstract class OrderRepository {
     required List<CartItem> items,
     required ShippingAddress shippingAddress,
     required String paymentIntentId,
+    required Map<String, dynamic> metadata,
   });
   
   Future<List<Order>> getUserOrders();

@@ -17,6 +17,7 @@ class OrderRepositoryImpl implements OrderRepository {
     required List<CartItem> items,
     required ShippingAddress shippingAddress,
     required String paymentIntentId,
+    required Map<String, dynamic> metadata,
   }) async {
     final user = _auth.currentUser;
     if (user == null) {
@@ -40,6 +41,7 @@ class OrderRepositoryImpl implements OrderRepository {
       estimatedDelivery: DateTime.now().add(const Duration(days: 7)),
       paymentIntentId: paymentIntentId,
       orderNumber: 'ORD-${DateTime.now().millisecondsSinceEpoch}',
+      metadata: metadata,
     );
 
     await _remoteDataSource.createOrder(order);

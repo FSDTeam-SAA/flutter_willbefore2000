@@ -87,6 +87,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           ),
                           Gap.h24,
 
+                          // Show error message if any
+                          if (authState.loginError!.isNotEmpty) ...[
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.red.shade200),
+                              ),
+                              child: Text(
+                                authState.errorMessage,
+                                style: TextStyle(color: Colors.red.shade700),
+                              ),
+                            ),
+                            Gap.h16,
+                          ],
+
                           // Email field
                           TextFormField(
                             controller: _emailController,
@@ -173,7 +190,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               ),
                               Spacer(),
                               TextButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  context.pushNamed(
+                                    RoutePaths.forgotPassword,
+                                    extra: _emailController.text.trim(),
+                                  );
+                                },
                                 child: Text(
                                   "Forgot password?",
                                   style: TextStyle(

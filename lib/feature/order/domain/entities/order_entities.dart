@@ -86,6 +86,7 @@ class Order {
   final String? trackingNumber;
   final String? orderNumber;
   final DateTime? updatedAt;
+  final Map<String, dynamic>? metadata;
 
   const Order({
     required this.id,
@@ -102,6 +103,7 @@ class Order {
     this.trackingNumber,
     this.orderNumber,
     this.updatedAt,
+    this.metadata,
   });
 
   String get statusText => status.displayName;

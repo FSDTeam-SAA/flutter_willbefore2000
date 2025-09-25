@@ -86,12 +86,14 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<Order>>> {
     required List<CartItem> items,
     required ShippingAddress shippingAddress,
     required String paymentIntentId,
+    required Map<String, dynamic> metadata,
   }) async {
     try {
       final order = await _repository.createOrder(
         items: items,
         shippingAddress: shippingAddress,
         paymentIntentId: paymentIntentId,
+        metadata: metadata,
       );
 
       // State will be updated automatically via stream listener

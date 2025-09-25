@@ -6,6 +6,7 @@ import 'package:smilestreats/core/constants/app_colors.dart';
 import 'package:smilestreats/core/routes/route_endpoint.dart';
 import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
 import '../../../../core/constants/app_icons_const.dart';
+import '../../../../core/services/shipo_service.dart';
 import '../../../../core/services/stripe_service.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 import '../../../order/domain/entities/order_entities.dart';
@@ -31,28 +32,27 @@ class CheckoutScreen extends ConsumerWidget {
       body: cartState.isLoading
           ? const Center(child: CircularProgressIndicator())
           : cartState.errorMessage != null
-          ? Center(child: Text('Error: ${cartState.errorMessage}'))
-          : cartState.items.isEmpty
-          ? const Center(child: Text('Your cart is empty'))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _buildShippingSection(ref, formState),
-                  const SizedBox(height: 24),
-                  _buildPaymentSection(),
-                  const SizedBox(height: 32),
-                  _buildContinueButton(
-                    ref,
-                    cartState.items,
-                    cartState.total,
-                    formState,
-                    // context
-                  ),
-                ],
-              ),
-            ),
+              ? Center(child: Text('Error: ${cartState.errorMessage}'))
+              : cartState.items.isEmpty
+                  ? const Center(child: Text('Your cart is empty'))
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          _buildShippingSection(ref, formState),
+                          const SizedBox(height: 24),
+                          _buildPaymentSection(),
+                          const SizedBox(height: 32),
+                          _buildContinueButton(
+                            ref,
+                            cartState.items,
+                            cartState.total,
+                            formState,
+                          ),
+                        ],
+                      ),
+                    ),
     );
   }
 
@@ -222,7 +222,6 @@ class CheckoutScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           Container(
-            // padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.blue[300]!),
               borderRadius: BorderRadius.circular(8),
@@ -280,9 +279,9 @@ class CheckoutScreen extends ConsumerWidget {
             decoration: InputDecoration(
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 12,
-                vertical: 4, // Reduced vertical padding to fit in 30 height
+                vertical: 4,
               ),
-              isDense: true, // This reduces the overall height
+              isDense: true,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
                 borderSide: BorderSide(color: AppColors.iconDeselectedColor),
@@ -316,6 +315,13 @@ class CheckoutScreen extends ConsumerWidget {
         onPressed: () {
           if (formState.isValid) {
             _processPayment(ref, cartItems, total, formState);
+          } else {
+            ScaffoldMessenger.of(ref.context).showSnackBar(
+              const SnackBar(
+                content: Text('Please fill all required fields'),
+                backgroundColor: Colors.red,
+              ),
+            );
           }
         },
         text: 'Continue to Payment',
@@ -330,6 +336,33 @@ class CheckoutScreen extends ConsumerWidget {
     CheckoutFormState formState,
   ) async {
     try {
+      // Create Shippo address
+      final shippoService = ShippoService();
+      final addressResult = await shippoService.createAddress(
+        name: '${formState.firstName} ${formState.lastName}',
+        street1: formState.address,
+        city: formState.city,
+        state: formState.state,
+        zip: formState.zipCode,
+        country: formState.country == 'United States' ? 'US' : formState.country == 'Canada' ? 'CA' : 'UK',
+        phone: formState.phoneNumber,
+        email: formState.email,
+        isResidential: true,
+        metadata: 'Customer Order',
+      );
+
+      if (addressResult == null || !addressResult['is_complete']) {
+        if (ref.context.mounted) {
+          ScaffoldMessenger.of(ref.context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to validate shipping address: ${addressResult?['validation_results']?['messages']?.join(', ') ?? 'Unknown error'}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
       // Process payment with Stripe
       final success = await StripeService.processPayment(
         amount: total,
@@ -337,11 +370,12 @@ class CheckoutScreen extends ConsumerWidget {
         metadata: {
           'customer_email': formState.email,
           'order_items': cartItems.length.toString(),
+          'shippo_address_id': addressResult['object_id'], // Link Shippo address
         },
       );
 
       if (success) {
-        // Create shipping address using form state
+        // Create shipping address entity
         final shippingAddress = ShippingAddress(
           firstName: formState.firstName,
           lastName: formState.lastName,
@@ -354,13 +388,12 @@ class CheckoutScreen extends ConsumerWidget {
           country: formState.country,
         );
 
-        // Create order
-        final order = await ref
-            .read(orderProvider.notifier)
-            .createOrder(
+        // Create order with Shippo address ID
+        final order = await ref.read(orderProvider.notifier).createOrder(
               items: cartItems,
               shippingAddress: shippingAddress,
               paymentIntentId: 'pi_${DateTime.now().millisecondsSinceEpoch}',
+              metadata: {'shippo_address_id': addressResult['object_id']}, // Add Shippo metadata
             );
 
         // Clear cart and form
@@ -371,13 +404,21 @@ class CheckoutScreen extends ConsumerWidget {
         if (ref.context.mounted) {
           GoRouter.of(ref.context).go(RoutePaths.orderConfirm, extra: order);
         }
+      } else {
+        if (ref.context.mounted) {
+          ScaffoldMessenger.of(ref.context).showSnackBar(
+            const SnackBar(
+              content: Text('Payment processing failed'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } catch (e) {
-      // Handle error
       if (ref.context.mounted) {
         ScaffoldMessenger.of(ref.context).showSnackBar(
           SnackBar(
-            content: Text('Payment error: ${e.toString()}'),
+            content: Text('Error: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );

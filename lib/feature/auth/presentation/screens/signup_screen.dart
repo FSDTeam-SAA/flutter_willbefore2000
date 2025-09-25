@@ -135,7 +135,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           Gap.h24,
 
                           // Show error message if any
-                          if (authState.errorMessage != null) ...[
+                          if (authState.errorMessage.isNotEmpty) ...[
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
@@ -144,7 +144,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                 border: Border.all(color: Colors.red.shade200),
                               ),
                               child: Text(
-                                authState.errorMessage!,
+                                authState.errorMessage,
                                 style: TextStyle(color: Colors.red.shade700),
                               ),
                             ),

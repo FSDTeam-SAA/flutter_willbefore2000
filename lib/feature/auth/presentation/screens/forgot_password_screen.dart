@@ -13,16 +13,24 @@ import '../../domain/requests/forgot_password_request.dart';
 import '../providers/auth_provider.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
-  const ForgotPasswordScreen({super.key});
+  final String email;
+  const ForgotPasswordScreen({super.key, this.email = ''});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final FocusNode _emailFocus = FocusNode();
   final TextEditingController _emailController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController.text = widget.email;
+  }
 
   @override
   void dispose() {
@@ -34,11 +42,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final request = ForgotPasswordRequest(
-      email: _emailController.text.trim(),
-    );
+    final request = ForgotPasswordRequest(email: _emailController.text.trim());
 
-    final result = await ref.read(authProvider.notifier).forgotPassword(request);
+    final result = await ref
+        .read(authProvider.notifier)
+        .forgotPassword(request);
 
     if (result && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -107,7 +115,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           Gap.h32,
 
                           // Show error message if any
-                          if (authState.errorMessage != null) ...[
+                          if (authState.errorMessage.isNotEmpty) ...[
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
@@ -163,9 +171,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                             onPressed: () => context.pop(),
                             child: Text(
                               'Back to Login',
-                              style: TextStyle(
-                                color: AppColors.textAppLaurel,
-                              ),
+                              style: TextStyle(color: AppColors.textAppLaurel),
                             ),
                           ),
 

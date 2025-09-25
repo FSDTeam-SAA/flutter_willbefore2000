@@ -15,10 +15,16 @@ class AuthState extends BaseState {
   final UserModel? user;
   final bool isAuthenticated;
   final bool isInitialized;
+  final String? loginError; // Specific error for login
+  final String? signupError; // Specific error for signup
+  final String? forgotPasswordError; // Specific error for forgot password
 
   const AuthState({
     super.isLoading = false,
     super.errorMessage,
+    this.loginError = '',
+    this.signupError = '',
+    this.forgotPasswordError = '',
     this.user,
     this.isAuthenticated = false,
     this.isInitialized = false,
@@ -28,6 +34,9 @@ class AuthState extends BaseState {
   AuthState copyWith({
     bool? isLoading,
     String? errorMessage,
+    String? loginError,
+    String? signupError,
+    String? forgotPasswordError,
     UserModel? user,
     bool? isAuthenticated,
     bool? isInitialized,
@@ -35,6 +44,9 @@ class AuthState extends BaseState {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage ?? this.errorMessage,
+      loginError: loginError ?? this.loginError,
+      signupError: signupError ?? this.signupError,
+      forgotPasswordError: forgotPasswordError ?? this.forgotPasswordError,
       user: user ?? this.user,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       isInitialized: isInitialized ?? this.isInitialized,
@@ -92,18 +104,18 @@ class AuthProvider extends StateNotifier<AuthState> {
       state = state.copyWith(
         isAuthenticated: false,
         isInitialized: true,
-        errorMessage: e.toString(),
+        loginError: e.toString(), // Use loginError for initialization errors
       );
     }
   }
 
   Future<bool> login(LoginRequest request) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isLoading: true, loginError: "");
     try {
       await _loginUseCase.call(request);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      state = state.copyWith(isLoading: false, loginError: e.toString());
       return false;
     } finally {
       state = state.copyWith(isLoading: false);
@@ -111,12 +123,12 @@ class AuthProvider extends StateNotifier<AuthState> {
   }
 
   Future<bool> signup(SignupRequest request) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isLoading: true, signupError: "");
     try {
       await _signupUseCase.call(request);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      state = state.copyWith(isLoading: false, signupError: e.toString());
       return false;
     } finally {
       state = state.copyWith(isLoading: false);
@@ -124,12 +136,15 @@ class AuthProvider extends StateNotifier<AuthState> {
   }
 
   Future<bool> forgotPassword(ForgotPasswordRequest request) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isLoading: true, forgotPasswordError: "");
     try {
       await _forgotPasswordUseCase.call(request);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        forgotPasswordError: e.toString(),
+      );
       return false;
     } finally {
       state = state.copyWith(isLoading: false);
@@ -140,18 +155,22 @@ class AuthProvider extends StateNotifier<AuthState> {
     try {
       await _authRepository.sendEmailVerification();
     } catch (e) {
-      state = state.copyWith(errorMessage: e.toString());
+      state = state.copyWith(
+        loginError: e.toString(),
+      ); // Use loginError or add a specific field
     }
   }
 
   Future<bool> updateProfile(UserModel user) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isLoading: true, loginError: "");
     try {
       await _authRepository.updateUserProfile(user);
       state = state.copyWith(user: user);
       return true;
     } catch (e) {
-      state = state.copyWith(errorMessage: e.toString());
+      state = state.copyWith(
+        loginError: e.toString(),
+      ); // Use loginError or add a specific field
       return false;
     } finally {
       state = state.copyWith(isLoading: false);
@@ -160,18 +179,19 @@ class AuthProvider extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     state = state.copyWith(isLoading: true);
-
     try {
       await _authRepository.logout();
-
       state = const AuthState(
         user: null,
         isAuthenticated: false,
         isLoading: false,
         isInitialized: true,
+        loginError: '',
+        signupError: '',
+        forgotPasswordError: '',
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      state = state.copyWith(isLoading: false, loginError: e.toString());
     }
   }
 }

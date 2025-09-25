@@ -14,11 +14,7 @@ class AuthRemoteDataSource {
   final FirebaseFirestore _firestore;
   final FirebaseMessaging _messaging;
 
-  AuthRemoteDataSource(
-    this._firebaseAuth,
-    this._firestore,
-    this._messaging,
-  );
+  AuthRemoteDataSource(this._firebaseAuth, this._firestore, this._messaging);
 
   Future<User> login(LoginRequest request) async {
     DPrint.log("Login Requests -> ${request.email}");
@@ -28,9 +24,12 @@ class AuthRemoteDataSource {
         password: request.password,
       );
 
+      DPrint.log("user credential : $userCredential");
+
       DPrint.log("Logged in credential : ${userCredential.user?.email}");
       return userCredential.user!;
     } on FirebaseAuthException catch (e) {
+      DPrint.error("Login error : $e");
       throw AuthException(_getAuthErrorMessage(e.code));
     }
   }
@@ -91,6 +90,7 @@ class AuthRemoteDataSource {
       await _firebaseAuth.sendPasswordResetEmail(email: request.email);
       DPrint.log("Password reset email sent to: ${request.email}");
     } on FirebaseAuthException catch (e) {
+      DPrint.error("Forgot password error: $e");
       throw AuthException(_getAuthErrorMessage(e.code));
     }
   }
@@ -169,6 +169,7 @@ class AuthRemoteDataSource {
   }
 
   String _getAuthErrorMessage(String code) {
+    DPrint.info("Auth Error Message code : $code");
     switch (code) {
       case 'user-not-found':
         return 'No user found with this email address.';
@@ -178,8 +179,8 @@ class AuthRemoteDataSource {
         return 'An account already exists with this email address.';
       case 'weak-password':
         return 'Password is too weak. Please choose a stronger password.';
-      case 'invalid-email':
-        return 'Please enter a valid email address.';
+      case 'invalid-credential':
+        return 'The provided credential is invalid.';
       case 'user-disabled':
         return 'This account has been disabled. Please contact support.';
       case 'too-many-requests':

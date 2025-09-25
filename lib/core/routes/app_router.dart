@@ -17,7 +17,7 @@ class AuthGuardState {
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: RoutePaths.home,
+    initialLocation: RoutePaths.splash,
     debugLogDiagnostics: true,
     redirect: (BuildContext context, GoRouterState state) {
       final container = ProviderScope.containerOf(context);
@@ -46,6 +46,16 @@ class AppRouter {
       return null;
     },
     routes: [
+      GoRoute(
+        path: RoutePaths.splash,
+        name: RoutePaths.splash,
+        pageBuilder: (context, state) => AppTransitions.fadeSlideTransition(
+          context: context,
+          child: const SplashScreen(),
+          state: state,
+        ),
+      ),
+      
       // Auth routes
       GoRoute(
         path: RoutePaths.login,
@@ -65,14 +75,19 @@ class AppRouter {
           state: state,
         ),
       ),
-      // GoRoute(
-      //   path: RouteEndpoint.forgotPassword,
-      //   name: RouteEndpoint.forgotPassword,
-      //   pageBuilder: (context, state) => buildPageWithDefaultTransition(
-      //     context: context,
-      //     child: const ForgotPasswordScreen(),
-      //   ),
-      // ),
+      GoRoute(
+        path: RoutePaths.forgotPassword,
+        name: RoutePaths.forgotPassword,
+        pageBuilder: (context, state) {
+          final email = state.extra as String? ?? '';
+
+          return AppTransitions.slideTransition(
+            context: context,
+            child: ForgotPasswordScreen(email: email),
+            state: state,
+          );
+        },
+      ),
 
       // Main app shell
       ShellRoute(
@@ -137,7 +152,7 @@ class AppRouter {
         name: RoutePaths.orderConfirm,
         pageBuilder: (context, state) {
           final order = state.extra as Order;
-          ;
+
           return AppTransitions.slideTransition(
             child: OrderConfirmationScreen(order: order),
             context: context,

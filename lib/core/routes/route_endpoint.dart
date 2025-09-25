@@ -6,8 +6,10 @@ import 'package:smilestreats/feature/home/presentation/screens/home_screach_scre
 import 'package:smilestreats/feature/main/presentation/screens/main_nav_screen.dart';
 import 'package:smilestreats/feature/order/presentation/screens/order_confirmation_screen.dart';
 import 'package:smilestreats/feature/order/presentation/screens/orders_screen.dart';
+import 'package:smilestreats/feature/splash/presentation/screens/splash_screen.dart';
 
 import '../../feature/auth/presentation/providers/auth_provider.dart';
+import '../../feature/auth/presentation/screens/forgot_password_screen.dart';
 import '../../feature/auth/presentation/screens/login_screen.dart';
 import '../../feature/auth/presentation/screens/signup_screen.dart';
 import '../../feature/cart/presentation/screens/cart_screen.dart';
@@ -24,6 +26,7 @@ import 'transitions.dart';
 part 'app_router.dart';
 
 class RoutePaths {
+  static const String splash = '/splash';
   // Auth routes
   static const String login = '/login';
   static const String signup = '/signup';
