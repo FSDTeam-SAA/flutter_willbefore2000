@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutx_core/flutx_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:smilestreats/core/routes/route_endpoint.dart';
@@ -18,11 +19,13 @@ class CartScreen extends ConsumerWidget {
     final cartState = ref.watch(cartProvider);
 
     return AppScaffold(
-      appBar: AppBar(),
+      safeArea: true,
+      // appBar: AppBar(),
       body: cartState.items.isEmpty
           ? _buildEmptyCart()
           : Column(
               children: [
+                Gap.h12,
                 // Cart Items
                 Expanded(
                   child: ListView.builder(
@@ -63,7 +66,7 @@ class CartScreen extends ConsumerWidget {
                           style: GoogleFonts.notoSansKr(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textAppBlack,
+                            color: AppColors.primaryLaurel,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -127,7 +130,7 @@ class CartScreen extends ConsumerWidget {
                               style: GoogleFonts.notoSansKr(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textAppBlack,
+                                color: AppColors.primaryLaurel,
                               ),
                             ),
                           ],

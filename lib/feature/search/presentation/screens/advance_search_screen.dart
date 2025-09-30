@@ -20,11 +20,8 @@ class AdvancedSearchScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final searchState = ref.watch(advancedSearchProvider);
     final uiState = ref.watch(searchUIProvider);
-    
-    return _AdvancedSearchView(
-      searchState: searchState,
-      uiState: uiState,
-    );
+
+    return _AdvancedSearchView(searchState: searchState, uiState: uiState);
   }
 }
 
@@ -32,13 +29,11 @@ class _AdvancedSearchView extends ConsumerStatefulWidget {
   final AdvancedSearchState searchState;
   final SearchUIState uiState;
 
-  const _AdvancedSearchView({
-    required this.searchState,
-    required this.uiState,
-  });
+  const _AdvancedSearchView({required this.searchState, required this.uiState});
 
   @override
-  ConsumerState<_AdvancedSearchView> createState() => _AdvancedSearchViewState();
+  ConsumerState<_AdvancedSearchView> createState() =>
+      _AdvancedSearchViewState();
 }
 
 class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
@@ -74,9 +69,11 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
   }
 
   void _onFocusChange() {
-    ref.read(searchUIProvider.notifier).updateShowSuggestions(
-      _searchFocusNode.hasFocus && _searchController.text.isEmpty,
-    );
+    ref
+        .read(searchUIProvider.notifier)
+        .updateShowSuggestions(
+          _searchFocusNode.hasFocus && _searchController.text.isEmpty,
+        );
   }
 
   void _loadMoreProducts() {
@@ -112,7 +109,8 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
               if (widget.uiState.showSuggestions)
                 SearchSuggestionsOverlay(
                   onSuggestionTap: _onSuggestionTap,
-                  onDismiss: () => ref.read(searchUIProvider.notifier).hideSuggestions(),
+                  onDismiss: () =>
+                      ref.read(searchUIProvider.notifier).hideSuggestions(),
                 ),
             ],
           ),
@@ -120,7 +118,6 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
       ),
     );
   }
-
 
   Widget _buildSearchHeader() {
     return Container(
@@ -221,10 +218,7 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
   }
 
   Widget _buildCategorySection() {
-    return SizedBox(
-      height: 50,
-      child: const CategoryChips(),
-    );
+    return SizedBox(height: 50, child: const CategoryChips());
   }
 
   Widget _menuBar() {
@@ -267,14 +261,17 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                searchState.isSearchMode
-                    ? 'Search Results (${searchState.totalResults})'
-                    : 'All Products (${searchState.totalResults})',
-                style: GoogleFonts.notoSansKr(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textAppBlack,
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  searchState.isSearchMode
+                      ? 'Search Results (${searchState.totalResults})'
+                      : 'All Products (${searchState.totalResults})',
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textAppBlack,
+                  ),
                 ),
               ),
               if (searchState.isSearchMode)
@@ -291,6 +288,7 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
             ],
           ),
         ),
+
         SliverGrid(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
@@ -350,9 +348,9 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
   }
 
   void _onSearchChanged(String query) {
-    ref.read(searchUIProvider.notifier).updateShowSuggestions(
-      query.isEmpty && _searchFocusNode.hasFocus,
-    );
+    ref
+        .read(searchUIProvider.notifier)
+        .updateShowSuggestions(query.isEmpty && _searchFocusNode.hasFocus);
 
     if (query.isNotEmpty) {
       ref.read(advancedSearchProvider.notifier).searchProducts(query);

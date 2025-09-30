@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smilestreats/feature/cart/presentation/providers/cart_provider.dart';
 
 import '../../../../core/common/widgets/app_icons.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_icons_const.dart';
 
-class CustomBottomNavBar extends StatelessWidget {
+class CustomBottomNavBar extends ConsumerWidget {
   final int currentIndex;
   final Function(int)? onTap;
   const CustomBottomNavBar({super.key, required this.currentIndex, this.onTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cartItemCount = ref.watch(
+      cartProvider.select((state) => state.totalItems),
+    );
+
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -24,10 +30,24 @@ class CustomBottomNavBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(0, 'Home', AssetsPath.home, currentIndex, onTap),
-          _buildNavItem(1, 'Search', AssetsPath.search, currentIndex, onTap),
-          _buildNavItem(2, 'Cart', AssetsPath.cart, currentIndex, onTap),
-          _buildNavItem(3, 'Profile', AssetsPath.profile, currentIndex, onTap),
+          _buildNavItem(0, 'Home', AssetsPath.home, currentIndex, onTap, 0),
+          _buildNavItem(1, 'Search', AssetsPath.search, currentIndex, onTap, 0),
+          _buildNavItem(
+            2,
+            'Cart',
+            AssetsPath.cart,
+            currentIndex,
+            onTap,
+            cartItemCount,
+          ),
+          _buildNavItem(
+            3,
+            'Profile',
+            AssetsPath.profile,
+            currentIndex,
+            onTap,
+            0,
+          ),
         ],
       ),
     );
@@ -39,8 +59,10 @@ class CustomBottomNavBar extends StatelessWidget {
     String iconPath,
     int currentIndex,
     Function(int)? onTap,
+    int itemCount,
   ) {
     final isSelected = index == currentIndex;
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
@@ -51,12 +73,44 @@ class CustomBottomNavBar extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          AppIcon(
-            assetPath: iconPath,
-            type: IconType.svg,
-            color: isSelected
-                ? AppColors.iconSelectedColor
-                : AppColors.iconDeselectedColor,
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              AppIcon(
+                assetPath: iconPath,
+                type: IconType.svg,
+                color: isSelected
+                    ? AppColors.iconSelectedColor
+                    : AppColors.iconDeselectedColor,
+              ),
+              // Show badge for cart icon (index == 2) if itemCount > 0
+              if (index == 2 && itemCount > 0)
+                Positioned(
+                  right: -10,
+                  top: -10,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color:
+                          AppColors.primaryLaurel, // Use a color for the badge
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '$itemCount',
+                      style: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 4),
           Text(

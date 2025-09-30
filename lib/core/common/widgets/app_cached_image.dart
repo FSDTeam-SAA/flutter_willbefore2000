@@ -14,7 +14,7 @@ class AppCachedImage extends StatelessWidget {
 
   const AppCachedImage({
     super.key,
-    this.imageUrl = '/placeholder.svg?height=80&width=80',
+    required this.imageUrl,
     this.width,
     this.height,
     this.fit = BoxFit.cover,
@@ -25,8 +25,8 @@ class AppCachedImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    DPrint.log("Attempting to load image from URL: $imageUrl");
-    
+    // DPrint.log("Attempting to load image from URL: $imageUrl");
+
     return ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.zero,
       child: CachedNetworkImage(
@@ -36,7 +36,7 @@ class AppCachedImage extends StatelessWidget {
         fit: fit,
         httpHeaders: {
           'Cache-Control': 'max-age=86400',
-          'Accept': 'image/*',  // Explicitly request image content
+          'Accept': 'image/*', // Explicitly request image content
         },
         placeholder: (context, url) => ShimmerLoader(
           isLoading: true,
@@ -52,7 +52,7 @@ class AppCachedImage extends StatelessWidget {
         errorWidget: (context, url, error) {
           DPrint.log('Image load failed - URL: $url');
           DPrint.log('Error details: $error');
-          
+
           // Attempt to load with Image.network for better error reporting
           return _buildFallbackImage(url);
         },

@@ -58,7 +58,7 @@ class ProductSection extends StatelessWidget {
           if (isLoading)
             _buildLoadingProducts()
           else if (isHorizontal)
-            _buildHorizontalProducts()
+            _buildHorizontalProducts(context)
           else
             _buildVerticalProducts(),
         ],
@@ -66,40 +66,54 @@ class ProductSection extends StatelessWidget {
     );
   }
 
-  Widget _buildHorizontalProducts() {
-    return SizedBox(
-      height: 280,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: products.length,
-        itemBuilder: (context, index) {
-          final product = products[index];
-          String heroTag;
-          switch (title.toLowerCase()) {
-            case 'most popular':
-              heroTag = HeroTagManager.forHomePopular(product.id, index);
-              break;
-            case 'new arrivals':
-              heroTag = HeroTagManager.forHomeNewArrivals(product.id, index);
-              break;
-            case 'for you':
-              heroTag = HeroTagManager.forHomeForYou(product.id, index);
-              break;
-            default:
-              heroTag = HeroTagManager.forProductList(product.id, index);
-          }
+  Widget _buildHorizontalProducts(BuildContext context) {
+    // Take up to 4 products to display in the grid
+    final displayProducts = products.take(4).toList();
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
 
-          return Container(
-            width: 160,
-            margin: const EdgeInsets.only(right: 12),
-            child: ProductCard(
-              product: product,
-              isHorizontal: true,
-              heroTag: heroTag, // Pass context-specific hero tag
-            ),
-          );
-        },
+    // Adjust crossAxisCount and childAspectRatio based on screen size
+    final crossAxisCount = isTablet
+        ? 3
+        : 2; // 3 columns for tablets, 2 for phones
+    final childAspectRatio = isTablet
+        ? 0.75
+        : 0.70; // Slightly taller cards on phones
+    final spacing = isTablet ? 16.0 : 12.0; // Larger spacing on tablets
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(), // Disable scrolling
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        mainAxisSpacing: spacing,
+        crossAxisSpacing: spacing,
+        childAspectRatio: childAspectRatio,
       ),
+      itemCount: displayProducts.length,
+      itemBuilder: (context, index) {
+        final product = displayProducts[index];
+        String heroTag;
+        switch (title.toLowerCase()) {
+          case 'most popular':
+            heroTag = HeroTagManager.forHomePopular(product.id, index);
+            break;
+          case 'new arrivals':
+            heroTag = HeroTagManager.forHomeNewArrivals(product.id, index);
+            break;
+          case 'for you':
+            heroTag = HeroTagManager.forHomeForYou(product.id, index);
+            break;
+          default:
+            heroTag = HeroTagManager.forProductList(product.id, index);
+        }
+
+        return ProductCard(
+          product: product,
+          isHorizontal: true,
+          heroTag: heroTag,
+        );
+      },
     );
   }
 

@@ -110,14 +110,6 @@ class CartItemWidget extends StatelessWidget {
                         color: AppColors.textAppBlack,
                       ),
                     ),
-                    Text(
-                      'Qty: ${item.quantity}',
-                      style: GoogleFonts.notoSansKr(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondaryColor,
-                      ),
-                    ),
                   ],
                 ),
               ],
@@ -129,34 +121,44 @@ class CartItemWidget extends StatelessWidget {
           // Quantity Controls
           Column(
             children: [
-              GestureDetector(
-                onTap: onRemove,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.delete_outline,
-                    size: 18,
-                    color: Colors.red,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
               Text(
-                item.quantity.toString(),
+                'Qty: ${item.quantity}',
                 style: GoogleFonts.notoSansKr(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textAppBlack,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondaryColor,
                 ),
               ),
+
               const SizedBox(height: 8),
+              // Text(
+              //   item.quantity.toString(),
+              //   style: GoogleFonts.notoSansKr(
+              //     fontSize: 16,
+              //     fontWeight: FontWeight.w600,
+              //     color: AppColors.textAppBlack,
+              //   ),
+              // ),
+              // const SizedBox(height: 8),
               Row(
                 children: [
+                  GestureDetector(
+                    onTap: onRemove,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.delete_outline,
+                        size: 18,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () => onQuantityChanged(item.quantity - 1),
                     child: Container(
