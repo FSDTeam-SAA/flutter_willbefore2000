@@ -6,6 +6,7 @@ import 'package:smilestreats/feature/home/presentation/screens/home_screach_scre
 import 'package:smilestreats/feature/main/presentation/screens/main_nav_screen.dart';
 import 'package:smilestreats/feature/order/presentation/screens/order_confirmation_screen.dart';
 import 'package:smilestreats/feature/order/presentation/screens/orders_screen.dart';
+import 'package:smilestreats/feature/profile/presentation/screen/personal_info_screen.dart';
 import 'package:smilestreats/feature/splash/presentation/screens/splash_screen.dart';
 
 import '../../feature/auth/presentation/providers/auth_provider.dart';
@@ -38,6 +39,8 @@ class RoutePaths {
   static const String search = '/search';
   static const String cart = '/cart';
   static const String profile = '/profile';
+  static const String personalInfo = '$profile/personal-info'; // Full path
+  static const String personalInfoName = 'personal-info'; // Route name
 
   static const String product = '/product-details';
   static const String productList = '/products';

@@ -5,14 +5,17 @@ import 'package:smilestreats/feature/cart/presentation/providers/cart_provider.d
 import '../../../../core/common/widgets/app_icons.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_icons_const.dart';
+import '../provider/bottom_nav_provider.dart';
 
 class CustomBottomNavBar extends ConsumerWidget {
-  final int currentIndex;
+  // final int currentIndex;
   final Function(int)? onTap;
-  const CustomBottomNavBar({super.key, required this.currentIndex, this.onTap});
+  const CustomBottomNavBar({super.key, this.onTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currentIndex = ref.watch(bottomNavIndexProvider);
+    
     final cartItemCount = ref.watch(
       cartProvider.select((state) => state.totalItems),
     );
@@ -83,7 +86,6 @@ class CustomBottomNavBar extends ConsumerWidget {
                     ? AppColors.iconSelectedColor
                     : AppColors.iconDeselectedColor,
               ),
-              // Show badge for cart icon (index == 2) if itemCount > 0
               if (index == 2 && itemCount > 0)
                 Positioned(
                   right: -10,
@@ -91,8 +93,7 @@ class CustomBottomNavBar extends ConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color:
-                          AppColors.primaryLaurel, // Use a color for the badge
+                      color: AppColors.primaryLaurel,
                       shape: BoxShape.circle,
                     ),
                     constraints: const BoxConstraints(

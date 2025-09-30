@@ -3,76 +3,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smilestreats/core/routes/route_endpoint.dart';
-
-import '../../../cart/presentation/screens/cart_screen.dart';
-import '../../../home/presentation/screens/home_screen.dart';
-import '../../../profile/presentation/screen/profile_screen.dart';
-import '../../../search/presentation/screens/advance_search_screen.dart';
-import '../provider/bottom_nav_provider.dart';
 import '../widgets/custom_bottom_navbar_widget.dart';
+import '../provider/bottom_nav_provider.dart';
 
-class MainNavScreen extends ConsumerStatefulWidget {
+class MainNavScreen extends ConsumerWidget {
   final Widget child;
   const MainNavScreen({super.key, required this.child});
 
   @override
-  ConsumerState<MainNavScreen> createState() => _MainNavScreenState();
-}
-
-class _MainNavScreenState extends ConsumerState<MainNavScreen> {
-  late PageController _pageController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final currentIndex = ref.watch(bottomNavIndexProvider);
-
-    ref.listen(bottomNavIndexProvider, (previous, next) {
-      if (previous != next) {
-        _pageController.animateToPage(
-          next,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Determine the current tab based on the route
+    // final String currentPath = GoRouterState.of(context).uri.path;
+    // final int currentIndex = _getCurrentIndex(currentPath);
 
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
-        children: const [
-          HomeScreen(),
-          AdvancedSearchScreen(),
-          CartScreen(),
-          ProfileScreen(),
-        ],
-      ),
+      body: child, // Use the child from ShellRoute
       bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: currentIndex,
-        onTap: (index) => _onItemTapped(index, context),
+        // currentIndex: currentIndex,
+        onTap: (index) => _onItemTapped(index, context, ref),
       ),
     );
   }
 
-  void _onItemTapped(int index, BuildContext context) {
-    ref.read(bottomNavIndexProvider.notifier).state = index;
-    _navigateToIndex(index, context);
-  }
+  // int _getCurrentIndex(String path) {
+  //   if (path.startsWith(RoutePaths.home)) return 0;
+  //   if (path.startsWith(RoutePaths.search)) return 1;
+  //   if (path.startsWith(RoutePaths.cart)) return 2;
+  //   if (path.startsWith(RoutePaths.profile)) return 3;
+  //   return 0; // Default to Home
+  // }
 
-  void _navigateToIndex(int index, BuildContext context) {
+  void _onItemTapped(int index, BuildContext context, WidgetRef ref) {
+    // Update Riverpod state
+    ref.read(bottomNavIndexProvider.notifier).state = index;
+
+    // Navigate using go_router
     switch (index) {
       case 0:
         context.go(RoutePaths.home);

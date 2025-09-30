@@ -177,6 +177,17 @@ class AuthProvider extends StateNotifier<AuthState> {
     }
   }
 
+  Future<void> getCurretnUser() async {
+    state = state.copyWith(isLoading: true);
+
+    try {
+      final user = await _authRepository.getCurrentUser();
+      state = state.copyWith(user: user);
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
+  }
+
   Future<void> logout() async {
     state = state.copyWith(isLoading: true);
     try {

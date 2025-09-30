@@ -55,7 +55,7 @@ class AppRouter {
           state: state,
         ),
       ),
-      
+
       // Auth routes
       GoRoute(
         path: RoutePaths.login,
@@ -127,6 +127,13 @@ class AppRouter {
             path: RoutePaths.profile,
             name: RoutePaths.profile,
             builder: (context, state) => const ProfileScreen(),
+            routes: [
+              GoRoute(
+                path: 'personal-info', // Relative path
+                name: RoutePaths.personalInfoName, // Route name
+                builder: (context, state) => const PersonalInfoScreen(),
+              ),
+            ],
             // pageBuilder: (context, state) => AppTransitions.slideTransition(
             //   context: context,
             //   child: const ProfileScreen(),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutx_core/flutx_core.dart';
 import 'package:go_router/go_router.dart';
+import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
 import 'package:smilestreats/core/constants/app_colors.dart';
 import 'package:smilestreats/core/constants/app_icons_const.dart';
 import 'package:smilestreats/core/routes/route_endpoint.dart';
@@ -38,6 +39,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final user = authState.user;
 
     return AppScaffold(
       appBar: AppBar(),
@@ -63,10 +65,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                         border: Border.all(color: AppColors.primaryLaurel),
                       ),
-                      child: Icon(
-                        Icons.person,
-                        size: 60,
-                        color: AppColors.primaryLaurel,
+                      child: ClipOval(
+                        child:
+                            user?.photoURL != null && user!.photoURL!.isNotEmpty
+                            ? AppCachedImage(
+                                imageUrl: user.photoURL!,
+                                fit: BoxFit.cover,
+                              )
+                            : Icon(
+                                Icons.person,
+                                size: 60,
+                                color: AppColors.primaryLaurel,
+                              ),
                       ),
                     ),
 
@@ -76,17 +86,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // User name
-                        'Alex Johnson'.text18w500(
+                        (user?.displayName ?? "").text18w500(
                           color: AppColors.textAppLaurel,
                         ),
 
                         Gap.h4,
                         // Email
-                        'john.smith@example.com'.text12w400(),
+                        (user?.email ?? "").text12w400(),
 
                         Gap.h4,
                         // SS number
-                        '[SS] 123-4567'.text12w400(),
+                        (user?.phoneNumber ?? "").text12w400(),
                       ],
                     ),
                   ],
@@ -103,7 +113,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   _ProfileMenuItem(
                     icon: Icons.person_outline,
                     title: 'Personal Information',
-                    onTap: () {},
+                    onTap: () {
+                      context.pushNamed(RoutePaths.personalInfoName);
+                    },
                   ),
                   _ProfileMenuItem(
                     icon: Icons.security_outlined,
