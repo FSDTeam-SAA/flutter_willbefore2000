@@ -120,7 +120,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   _ProfileMenuItem(
                     icon: Icons.security_outlined,
                     title: 'Account Security',
-                    onTap: () {},
+                    onTap: () {
+                      context.pushNamed(RoutePaths.changePassword);
+                    },
                   ),
                   _ProfileMenuItem(
                     icon: Icons.notifications_outlined,

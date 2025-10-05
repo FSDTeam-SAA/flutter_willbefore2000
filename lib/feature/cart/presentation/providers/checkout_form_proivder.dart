@@ -21,7 +21,7 @@ class CheckoutFormState {
     this.city = '',
     this.state = '',
     this.zipCode = '',
-    this.country = 'United States',
+    this.country = '',
     this.isValid = false,
   });
 
@@ -106,6 +106,7 @@ class CheckoutFormNotifier extends StateNotifier<CheckoutFormState> {
   }
 }
 
-final checkoutFormProvider = StateNotifierProvider<CheckoutFormNotifier, CheckoutFormState>(
-  (ref) => CheckoutFormNotifier(),
-);
+final checkoutFormProvider =
+    StateNotifierProvider<CheckoutFormNotifier, CheckoutFormState>(
+      (ref) => CheckoutFormNotifier(),
+    );

@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
+import 'package:smilestreats/feature/auth/presentation/screens/change_password_screen.dart';
+import 'package:smilestreats/feature/cart/domain/entities/cart_item.dart';
 import 'package:smilestreats/feature/home/presentation/screens/home_screach_screen.dart';
 import 'package:smilestreats/feature/main/presentation/screens/main_nav_screen.dart';
 import 'package:smilestreats/feature/order/presentation/screens/order_confirmation_screen.dart';
 import 'package:smilestreats/feature/order/presentation/screens/orders_screen.dart';
+import 'package:smilestreats/feature/profile/presentation/screen/edit_personal_info_screen.dart';
 import 'package:smilestreats/feature/profile/presentation/screen/personal_info_screen.dart';
 import 'package:smilestreats/feature/splash/presentation/screens/splash_screen.dart';
 
@@ -32,6 +35,7 @@ class RoutePaths {
   static const String login = '/login';
   static const String signup = '/signup';
   static const String forgotPassword = '/forgot-password';
+  static const String changePassword = '/change-password';
 
   // Main navigation routes
   static const String home = '/';
@@ -39,8 +43,9 @@ class RoutePaths {
   static const String search = '/search';
   static const String cart = '/cart';
   static const String profile = '/profile';
-  static const String personalInfo = '$profile/personal-info'; // Full path
+  // static const String personalInfo = '$profile/personal-info'; // Full path
   static const String personalInfoName = 'personal-info'; // Route name
+  static const String editProfile = 'personal-info-edit';
 
   static const String product = '/product-details';
   static const String productList = '/products';

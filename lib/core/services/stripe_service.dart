@@ -10,7 +10,7 @@ class StripeService {
   static const String _baseUrl = 'https://api.stripe.com/v1';
   static const String publishableKey = stripePublishableKey;
   static const String secretKey = stripeSecretKey;
-  
+
   static Future<void> init() async {
     Stripe.publishableKey = publishableKey;
     await Stripe.instance.applySettings();
@@ -40,6 +40,7 @@ class StripeService {
       );
 
       if (response.statusCode == 200) {
+        DPrint.log("Payment intent created successfully.");
         return json.decode(response.body);
       } else {
         throw Exception('Failed to create payment intent: ${response.body}');

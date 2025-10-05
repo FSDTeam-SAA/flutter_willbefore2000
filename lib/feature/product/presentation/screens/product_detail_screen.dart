@@ -3,11 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart'; // Added GoRouter import
 import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
+import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
+import 'package:smilestreats/feature/cart/presentation/screens/checkout_screen.dart';
 
 import '../../../../core/common/widgets/html_content_widget.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/routes/route_endpoint.dart';
 import '../../../../core/utils/hero_tag_manager.dart';
+import '../../../cart/domain/entities/cart_item.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
+import '../../../cart/presentation/providers/checkout_form_proivder.dart';
 import '../providers/products_details_provider.dart';
 import '../providers/products_providers.dart';
 
@@ -716,9 +721,68 @@ class ProductDetailScreen extends ConsumerWidget {
         const SizedBox(width: 16),
         Expanded(
           child: ElevatedButton(
-            onPressed: () {
-              // Buy now logic
-            },
+            onPressed: cartState.isLoading
+                ? null
+                : () async {
+                    // Validate required selections
+                    if (product.sizes.isNotEmpty &&
+                        state.selectedSize == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Please select a size',
+                            style: GoogleFonts.notoSansKr(),
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    if (product.colors.isNotEmpty &&
+                        state.selectedColor == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Please select a color',
+                            style: GoogleFonts.notoSansKr(),
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    try {
+                      final cartItem = await ref
+                          .read(cartProvider.notifier)
+                          .buyNow(
+                            product,
+                            state.quantity,
+                            state.selectedSize,
+                            state.selectedColor,
+                          );
+                      // Navigate to CheckoutScreen with the single CartItem
+                      if (context.mounted) {
+                        context.pushNamed(
+                          RoutePaths.checkout,
+                          extra: {'buyNowItem': cartItem}, // Pass the CartItem
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Error: $e',
+                              style: GoogleFonts.notoSansKr(),
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryLaurel,
               padding: const EdgeInsets.symmetric(vertical: 16),

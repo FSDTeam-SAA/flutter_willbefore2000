@@ -124,7 +124,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                                 border: Border.all(color: Colors.red.shade200),
                               ),
                               child: Text(
-                                authState.errorMessage!,
+                                authState.errorMessage,
                                 style: TextStyle(color: Colors.red.shade700),
                               ),
                             ),

@@ -122,6 +122,32 @@ class CartNotifier extends StateNotifier<CartState> {
     }
   }
 
+  Future<CartItem> buyNow(
+    Product product,
+    int quantity,
+    String? size,
+    String? color,
+  ) async {
+    try {
+      state = state.copyWith(isLoading: true, errorMessage: null);
+
+      // Create a temporary CartItem for the "Buy Now" purchase
+      final buyNowItem = CartItem(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        product: product,
+        quantity: quantity,
+        selectedSize: size,
+        selectedColor: color,
+      );
+
+      state = state.copyWith(isLoading: false);
+      return buyNowItem; // Return the item for checkout processing
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      rethrow; // Rethrow the error for the caller to handle
+    }
+  }
+
   CartItem? getExistingCartItem(String productId, String? size, String? color) {
     try {
       return state.items.firstWhere(

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smilestreats/feature/auth/domain/requests/change_password_request.dart';
 
 import '../../domain/models/user_model.dart';
 import '../../domain/repo/auth_repository.dart';
@@ -31,6 +32,11 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> forgotPassword(ForgotPasswordRequest request) async {
     await remoteDataSource.forgotPassword(request);
+  }
+
+  @override
+  Future<void> changePassword(ChangePasswordRequest request) async {
+    await remoteDataSource.changePassword(request);
   }
 
   @override

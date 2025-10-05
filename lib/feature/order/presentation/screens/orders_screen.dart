@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/order_entities.dart';
 import '../providers/order_provider.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 class OrdersScreen extends ConsumerStatefulWidget {
   const OrdersScreen({super.key});
@@ -463,12 +466,15 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Smilestreats Order Summary',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                  Expanded(
+                    child: const Text(
+                      'Smilestreats Order Summary',
+                      maxLines: 2,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
                     ),
                   ),
                   IconButton(
@@ -557,7 +563,124 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () async {
+                    if (order.items.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No items in this order')),
+                      );
+                      return;
+                    }
+
+                    // Show loading indicator
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) =>
+                          const Center(child: CircularProgressIndicator()),
+                    );
+
+                    try {
+                      // Use getDownloadsDirectory instead of getApplicationDocumentsDirectory
+                      final directory = await getDownloadsDirectory();
+                      if (directory == null) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Unable to access Downloads folder'),
+                          ),
+                        );
+                        return;
+                      }
+                      int successfulDownloads = 0;
+
+                      // Download all images and create info file
+                      for (var item in order.items) {
+                        if (item.product.imageUrls.isNotEmpty) {
+                          final imageUrl = item.product.imageUrls.first;
+                          if (imageUrl.isNotEmpty &&
+                              (imageUrl.startsWith('http://') ||
+                                  imageUrl.startsWith('https://'))) {
+                            try {
+                              final response = await http.get(
+                                Uri.parse(imageUrl),
+                              );
+                              if (response.statusCode == 200) {
+                                // Sanitize title for filename
+                                final sanitizedTitle = item.product.title
+                                    .replaceAll(RegExp(r'[^\w\s-]'), '')
+                                    .replaceAll(RegExp(r'\s+'), '_');
+                                final fileName =
+                                    '${sanitizedTitle}_${order.id}_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}_${item.product.id}.jpg';
+                                final file = File(
+                                  '${directory.path}/$fileName',
+                                );
+                                await file.writeAsBytes(response.bodyBytes);
+                                successfulDownloads++;
+                              }
+                            } catch (e) {
+                              print(
+                                '🐞 DEBUG: Failed to download image for ${item.product.title}: $e',
+                              );
+                            }
+                          }
+                        }
+                      }
+
+                      // Create info file with all products
+                      final infoFile = File(
+                        '${directory.path}/order_${order.id}_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}_info.txt',
+                      );
+                      final infoContent = StringBuffer();
+                      infoContent.write('Order ID: ${order.id}\n');
+                      infoContent.write(
+                        'Date: ${DateFormat('yyyy-MM-dd').format(order.createdAt)}\n',
+                      );
+                      infoContent.write('Status: ${order.statusText}\n\n');
+                      infoContent.write('Products:\n');
+                      for (var item in order.items) {
+                        infoContent.write('------------------------\n');
+                        infoContent.write('Product: ${item.product.title}\n');
+                        infoContent.write(
+                          'Price: \$${item.product.effectivePrice.toStringAsFixed(2)}\n',
+                        );
+                        infoContent.write('Quantity: ${item.quantity}\n');
+                        infoContent.write(
+                          'Subtotal: \$${item.totalPrice.toStringAsFixed(2)}\n',
+                        );
+                      }
+                      infoContent.write('\nOrder Summary:\n');
+                      infoContent.write(
+                        'Subtotal: \$${order.subtotal.toStringAsFixed(2)}\n',
+                      );
+                      infoContent.write(
+                        'Tax: \$${order.tax.toStringAsFixed(2)}\n',
+                      );
+                      infoContent.write(
+                        'Total: \$${order.total.toStringAsFixed(2)}\n',
+                      );
+
+                      await infoFile.writeAsString(infoContent.toString());
+
+                      // Close loading dialog
+                      Navigator.pop(context);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            successfulDownloads > 0
+                                ? 'Successfully downloaded $successfulDownloads image${successfulDownloads > 1 ? 's' : ''} and order info to Downloads folder'
+                                : 'Order info saved to Downloads folder, but no images were downloaded',
+                          ),
+                        ),
+                      );
+                    } catch (e) {
+                      // Close loading dialog
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error saving files: $e')),
+                      );
+                    }
+                  },
                   icon: const Icon(Icons.download, size: 18),
                   label: const Text(
                     'Download Now',

@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutx_core/flutx_core.dart';
 
 import '../../../../core/errors/auth_exception.dart';
+import '../../domain/requests/change_password_request.dart';
 import '../../domain/requests/login_request.dart';
 import '../../domain/requests/signup_request.dart';
 import '../../domain/requests/forgot_password_request.dart';
@@ -92,6 +93,39 @@ class AuthRemoteDataSource {
     } on FirebaseAuthException catch (e) {
       DPrint.error("Forgot password error: $e");
       throw AuthException(_getAuthErrorMessage(e.code));
+    }
+  }
+
+  Future<void> changePassword(ChangePasswordRequest request) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+
+      if (user == null) {
+        throw AuthException('User not authenticated');
+      }
+
+      if (user.email == null) {
+        throw AuthException('User email not found');
+      }
+
+      // First, re-authenticate the user with current password
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: request.currentPassword,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+
+      // Then update to new password
+      await user.updatePassword(request.newPassword);
+
+      DPrint.log("Password updated successfully for user: ${user.email}");
+    } on FirebaseAuthException catch (e) {
+      DPrint.error("Change password error: $e");
+      throw AuthException(_getAuthErrorMessage(e.code));
+    } catch (e) {
+      DPrint.error("Change password general error: $e");
+      throw AuthException("Failed to change password. Please try again.");
     }
   }
 

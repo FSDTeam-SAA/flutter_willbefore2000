@@ -1,9 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smilestreats/core/services/storage_service.dart';
+import 'package:smilestreats/feature/auth/domain/usecases/change_password_use_case.dart';
 
 import '../../../../core/base/base_state.dart';
 import '../../data/repo/auth_repository_impl.dart';
 import '../../domain/models/user_model.dart';
 import '../../domain/repo/auth_repository.dart';
+import '../../domain/requests/change_password_request.dart';
 import '../../domain/requests/forgot_password_request.dart';
 import '../../domain/requests/login_request.dart';
 import '../../domain/requests/signup_request.dart';
@@ -18,6 +21,7 @@ class AuthState extends BaseState {
   final String? loginError; // Specific error for login
   final String? signupError; // Specific error for signup
   final String? forgotPasswordError; // Specific error for forgot password
+  final String? changePasswordError;
 
   const AuthState({
     super.isLoading = false,
@@ -25,6 +29,7 @@ class AuthState extends BaseState {
     this.loginError = '',
     this.signupError = '',
     this.forgotPasswordError = '',
+    this.changePasswordError = '',
     this.user,
     this.isAuthenticated = false,
     this.isInitialized = false,
@@ -37,6 +42,7 @@ class AuthState extends BaseState {
     String? loginError,
     String? signupError,
     String? forgotPasswordError,
+    String? changePasswordError,
     UserModel? user,
     bool? isAuthenticated,
     bool? isInitialized,
@@ -47,6 +53,7 @@ class AuthState extends BaseState {
       loginError: loginError ?? this.loginError,
       signupError: signupError ?? this.signupError,
       forgotPasswordError: forgotPasswordError ?? this.forgotPasswordError,
+      changePasswordError: changePasswordError ?? this.changePasswordError,
       user: user ?? this.user,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       isInitialized: isInitialized ?? this.isInitialized,
@@ -59,12 +66,16 @@ final authProvider = StateNotifierProvider<AuthProvider, AuthState>((ref) {
   final loginUseCase = LoginUseCase(authRepository);
   final signupUseCase = SignupUseCase(authRepository);
   final forgotPasswordUseCase = ForgotPasswordUseCase(authRepository);
+  final storageService = StorageService();
+  final changePasswordUseCase = ChangePasswordUseCase(authRepository);
 
   return AuthProvider(
     loginUseCase,
     signupUseCase,
     forgotPasswordUseCase,
     authRepository,
+    storageService,
+    changePasswordUseCase,
   );
 });
 
@@ -73,12 +84,16 @@ class AuthProvider extends StateNotifier<AuthState> {
   final LoginUseCase _loginUseCase;
   final SignupUseCase _signupUseCase;
   final ForgotPasswordUseCase _forgotPasswordUseCase;
+  final StorageService _storageService;
+  final ChangePasswordUseCase _changePasswordUseCase;
 
   AuthProvider(
     this._loginUseCase,
     this._signupUseCase,
     this._forgotPasswordUseCase,
     this._authRepository,
+    this._storageService,
+    this._changePasswordUseCase,
   ) : super(const AuthState()) {
     _initializeAuthState();
 
@@ -144,6 +159,22 @@ class AuthProvider extends StateNotifier<AuthState> {
       state = state.copyWith(
         isLoading: false,
         forgotPasswordError: e.toString(),
+      );
+      return false;
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
+  }
+
+  Future<bool> changePassword(ChangePasswordRequest request) async {
+    state = state.copyWith(isLoading: true, changePasswordError: "");
+    try {
+      await _changePasswordUseCase.call(request);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        changePasswordError: e.toString(),
       );
       return false;
     } finally {

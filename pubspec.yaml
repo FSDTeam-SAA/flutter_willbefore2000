@@ -45,6 +45,8 @@ dependencies:
   flutter_stripe: ^11.5.0
   http: ^1.5.0
   firebase_messaging: ^16.0.0
+  image_picker: ^1.2.0
+  country_picker: ^2.0.27
 
 
 dev_dependencies:

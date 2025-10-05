@@ -15,43 +15,52 @@ class CustomBottomNavBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = ref.watch(bottomNavIndexProvider);
-    
+
     final cartItemCount = ref.watch(
       cartProvider.select((state) => state.totalItems),
     );
 
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 1),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(0, 'Home', AssetsPath.home, currentIndex, onTap, 0),
-          _buildNavItem(1, 'Search', AssetsPath.search, currentIndex, onTap, 0),
-          _buildNavItem(
-            2,
-            'Cart',
-            AssetsPath.cart,
-            currentIndex,
-            onTap,
-            cartItemCount,
-          ),
-          _buildNavItem(
-            3,
-            'Profile',
-            AssetsPath.profile,
-            currentIndex,
-            onTap,
-            0,
-          ),
-        ],
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 1),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavItem(0, 'Home', AssetsPath.home, currentIndex, onTap, 0),
+            _buildNavItem(
+              1,
+              'Search',
+              AssetsPath.search,
+              currentIndex,
+              onTap,
+              0,
+            ),
+            _buildNavItem(
+              2,
+              'Cart',
+              AssetsPath.cart,
+              currentIndex,
+              onTap,
+              cartItemCount,
+            ),
+            _buildNavItem(
+              3,
+              'Profile',
+              AssetsPath.profile,
+              currentIndex,
+              onTap,
+              0,
+            ),
+          ],
+        ),
       ),
     );
   }

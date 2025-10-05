@@ -2,25 +2,165 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutx_core/flutx_core.dart';
 import 'package:go_router/go_router.dart';
+import 'package:country_picker/country_picker.dart';
 import 'package:smilestreats/core/constants/app_colors.dart';
 import 'package:smilestreats/core/routes/route_endpoint.dart';
 import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
+import 'package:smilestreats/feature/auth/presentation/providers/auth_provider.dart';
 import '../../../../core/constants/app_icons_const.dart';
 import '../../../../core/services/shipo_service.dart';
 import '../../../../core/services/stripe_service.dart';
+import '../../../auth/domain/models/user_model.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 import '../../../order/domain/entities/order_entities.dart';
 import '../../../order/presentation/providers/order_provider.dart';
 import '../../../cart/domain/entities/cart_item.dart';
 import '../providers/checkout_form_proivder.dart';
 
-class CheckoutScreen extends ConsumerWidget {
-  const CheckoutScreen({super.key});
+class CheckoutScreen extends ConsumerStatefulWidget {
+  final CartItem? buyNowItem;
+  const CheckoutScreen({super.key, this.buyNowItem});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
+}
+
+class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
+  // TextEditingControllers for each field
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _cityController = TextEditingController();
+  final TextEditingController _stateController = TextEditingController();
+  final TextEditingController _zipCodeController = TextEditingController();
+  final TextEditingController _countryController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill form with user data when screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _prefillFormWithUserData();
+    });
+  }
+
+  void _prefillFormWithUserData() {
+    final user = ref.read(authProvider).user;
+    if (user != null) {
+      // Split display name into first and last name
+      if (user.displayName != null && user.displayName!.isNotEmpty) {
+        final nameParts = user.displayName!.split(' ');
+        if (nameParts.length >= 2) {
+          _firstNameController.text = nameParts[0];
+          _lastNameController.text = nameParts.sublist(1).join(' ');
+        } else {
+          _firstNameController.text = user.displayName!;
+        }
+      }
+
+      // Fill email if available
+      if (user.email != null && user.email!.isNotEmpty) {
+        _emailController.text = user.email!;
+      }
+
+      // Fill phone number if available
+      if (user.phoneNumber != null && user.phoneNumber!.isNotEmpty) {
+        _phoneNumberController.text = user.phoneNumber!;
+      }
+
+      // Fill address information if available
+      if (user.streetAddress != null && user.streetAddress!.isNotEmpty) {
+        _addressController.text = user.streetAddress!;
+      }
+
+      if (user.city != null && user.city!.isNotEmpty) {
+        _cityController.text = user.city!;
+      }
+
+      if (user.state != null && user.state!.isNotEmpty) {
+        _stateController.text = user.state!;
+      }
+
+      if (user.zipCode != null && user.zipCode!.isNotEmpty) {
+        _zipCodeController.text = user.zipCode!;
+      }
+
+      // Set default country to United States if user doesn't have country data
+      _countryController.text = 'United States';
+
+      // Update the form provider with initial values
+      final formNotifier = ref.read(checkoutFormProvider.notifier);
+      formNotifier.updateField('firstName', _firstNameController.text);
+      formNotifier.updateField('lastName', _lastNameController.text);
+      formNotifier.updateField('email', _emailController.text);
+      formNotifier.updateField('phoneNumber', _phoneNumberController.text);
+      formNotifier.updateField('address', _addressController.text);
+      formNotifier.updateField('city', _cityController.text);
+      formNotifier.updateField('state', _stateController.text);
+      formNotifier.updateField('zipCode', _zipCodeController.text);
+      formNotifier.updateField('country', _countryController.text);
+    }
+  }
+
+  void _showCountryPicker(BuildContext context) {
+    showCountryPicker(
+      context: context,
+      showPhoneCode: false, // Set to true if you want phone codes
+      countryListTheme: CountryListThemeData(
+        flagSize: 25,
+        backgroundColor: Colors.white,
+        textStyle: const TextStyle(fontSize: 16, color: Colors.blueGrey),
+        bottomSheetHeight: MediaQuery.of(context).size.height * 0.7,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20.0),
+          topRight: Radius.circular(20.0),
+        ),
+        inputDecoration: InputDecoration(
+          labelText: 'Search',
+          hintText: 'Start typing to search',
+          prefixIcon: const Icon(Icons.search),
+          border: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: const Color(0xFF8C98A8).withOpacity(0.2),
+            ),
+          ),
+        ),
+      ),
+      onSelect: (Country country) {
+        setState(() {
+          _countryController.text = country.name;
+        });
+        _updateFormField('country', country.name);
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    // Dispose all controllers
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _phoneNumberController.dispose();
+    _addressController.dispose();
+    _cityController.dispose();
+    _stateController.dispose();
+    _zipCodeController.dispose();
+    _countryController.dispose();
+    super.dispose();
+  }
+
+  void _updateFormField(String field, String value) {
+    ref.read(checkoutFormProvider.notifier).updateField(field, value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final cartState = ref.watch(cartProvider);
     final formState = ref.watch(checkoutFormProvider);
+    final user = ref.watch(authProvider).user;
 
     return Scaffold(
       appBar: AppBar(
@@ -32,31 +172,76 @@ class CheckoutScreen extends ConsumerWidget {
       body: cartState.isLoading
           ? const Center(child: CircularProgressIndicator())
           : cartState.errorMessage != null
-              ? Center(child: Text('Error: ${cartState.errorMessage}'))
-              : cartState.items.isEmpty
-                  ? const Center(child: Text('Your cart is empty'))
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          _buildShippingSection(ref, formState),
-                          const SizedBox(height: 24),
-                          _buildPaymentSection(),
-                          const SizedBox(height: 32),
-                          _buildContinueButton(
-                            ref,
-                            cartState.items,
-                            cartState.total,
-                            formState,
-                          ),
-                        ],
-                      ),
-                    ),
+          ? Center(child: Text('Error: ${cartState.errorMessage}'))
+          : cartState.items.isEmpty
+          ? const Center(child: Text('Your cart is empty'))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // User info banner
+                  if (user != null) _buildUserInfoBanner(user),
+                  _buildShippingSection(ref, formState, context),
+                  const SizedBox(height: 24),
+                  _buildPaymentSection(),
+                  const SizedBox(height: 32),
+                  _buildContinueButton(
+                    ref,
+                    cartState.items,
+                    cartState.total,
+                    formState,
+                  ),
+                ],
+              ),
+            ),
     );
   }
 
-  Widget _buildShippingSection(WidgetRef ref, CheckoutFormState formState) {
+  Widget _buildUserInfoBanner(UserModel user) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppColors.primaryLaurel.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.primaryLaurel.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.person_outline, color: AppColors.primaryLaurel, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Shipping to your account',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryLaurel,
+                  ),
+                ),
+                if (user.displayName != null && user.displayName!.isNotEmpty)
+                  Text(
+                    user.displayName!,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShippingSection(
+    WidgetRef ref,
+    CheckoutFormState formState,
+    BuildContext context,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -79,19 +264,19 @@ class CheckoutScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: _buildTextField(
-                  ref: ref,
+                  controller: _firstNameController,
                   field: 'firstName',
                   label: 'First Name',
-                  initialValue: formState.firstName,
+                  isRequired: true,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _buildTextField(
-                  ref: ref,
+                  controller: _lastNameController,
                   field: 'lastName',
                   label: 'Last Name',
-                  initialValue: formState.lastName,
+                  isRequired: true,
                 ),
               ),
             ],
@@ -101,59 +286,59 @@ class CheckoutScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: _buildTextField(
-                  ref: ref,
+                  controller: _emailController,
                   field: 'email',
                   label: 'Email',
                   keyboardType: TextInputType.emailAddress,
-                  initialValue: formState.email,
+                  isRequired: true,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _buildTextField(
-                  ref: ref,
+                  controller: _phoneNumberController,
                   field: 'phoneNumber',
                   label: 'Phone Number',
                   keyboardType: TextInputType.phone,
-                  initialValue: formState.phoneNumber,
+                  isRequired: true,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
           _buildTextField(
-            ref: ref,
+            controller: _addressController,
             field: 'address',
             label: 'Address',
-            initialValue: formState.address,
+            isRequired: true,
           ),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: _buildTextField(
-                  ref: ref,
+                  controller: _cityController,
                   field: 'city',
                   label: 'City',
-                  initialValue: formState.city,
+                  isRequired: true,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _buildTextField(
-                  ref: ref,
+                  controller: _stateController,
                   field: 'state',
                   label: 'State',
-                  initialValue: formState.state,
+                  isRequired: true,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _buildTextField(
-                  ref: ref,
+                  controller: _zipCodeController,
                   field: 'zipCode',
                   label: 'ZIP Code',
-                  initialValue: formState.zipCode,
+                  isRequired: true,
                 ),
               ),
             ],
@@ -168,32 +353,32 @@ class CheckoutScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Container(
-            height: 36,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: formState.country,
-                isExpanded: true,
-                items: ['United States', 'Canada', 'United Kingdom']
-                    .map(
-                      (country) => DropdownMenuItem(
-                        value: country,
-                        child: Text(country),
+          GestureDetector(
+            onTap: () => _showCountryPicker(context),
+            child: Container(
+              height: 36,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _countryController.text.isEmpty
+                          ? 'Select Country'
+                          : _countryController.text,
+                      style: TextStyle(
+                        color: _countryController.text.isEmpty
+                            ? Colors.grey
+                            : Colors.black,
+                        fontSize: 14,
                       ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    ref
-                        .read(checkoutFormProvider.notifier)
-                        .updateField('country', value);
-                  }
-                },
+                    ),
+                  ),
+                  Icon(Icons.arrow_drop_down, color: Colors.grey[600]),
+                ],
               ),
             ),
           ),
@@ -250,31 +435,44 @@ class CheckoutScreen extends ConsumerWidget {
   }
 
   Widget _buildTextField({
-    required WidgetRef ref,
+    required TextEditingController controller,
     required String field,
     required String label,
-    required String initialValue,
     TextInputType? keyboardType,
+    bool isRequired = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: AppColors.iconDeselectedColor,
-          ),
+        Row(
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: AppColors.iconDeselectedColor,
+              ),
+            ),
+            if (isRequired)
+              const Text(
+                ' *',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.red,
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 8),
         SizedBox(
           height: 36,
           child: TextFormField(
-            initialValue: initialValue,
+            controller: controller,
             keyboardType: keyboardType,
             onChanged: (value) {
-              ref.read(checkoutFormProvider.notifier).updateField(field, value);
+              _updateFormField(field, value);
             },
             decoration: InputDecoration(
               contentPadding: const EdgeInsets.symmetric(
@@ -344,18 +542,22 @@ class CheckoutScreen extends ConsumerWidget {
         city: formState.city,
         state: formState.state,
         zip: formState.zipCode,
-        country: formState.country == 'United States' ? 'US' : formState.country == 'Canada' ? 'CA' : 'UK',
+        country: _getCountryCode(formState.country),
         phone: formState.phoneNumber,
         email: formState.email,
         isResidential: true,
         metadata: 'Customer Order',
       );
 
+      DPrint.log('Shippo address creation success: $addressResult');
+
       if (addressResult == null || !addressResult['is_complete']) {
         if (ref.context.mounted) {
           ScaffoldMessenger.of(ref.context).showSnackBar(
             SnackBar(
-              content: Text('Failed to validate shipping address: ${addressResult?['validation_results']?['messages']?.join(', ') ?? 'Unknown error'}'),
+              content: Text(
+                'Failed to validate shipping address: ${addressResult?['validation_results']?['messages']?.join(', ') ?? 'Unknown error'}',
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -370,7 +572,7 @@ class CheckoutScreen extends ConsumerWidget {
         metadata: {
           'customer_email': formState.email,
           'order_items': cartItems.length.toString(),
-          'shippo_address_id': addressResult['object_id'], // Link Shippo address
+          'shippo_address_id': addressResult['object_id'],
         },
       );
 
@@ -389,11 +591,13 @@ class CheckoutScreen extends ConsumerWidget {
         );
 
         // Create order with Shippo address ID
-        final order = await ref.read(orderProvider.notifier).createOrder(
+        final order = await ref
+            .read(orderProvider.notifier)
+            .createOrder(
               items: cartItems,
               shippingAddress: shippingAddress,
               paymentIntentId: 'pi_${DateTime.now().millisecondsSinceEpoch}',
-              metadata: {'shippo_address_id': addressResult['object_id']}, // Add Shippo metadata
+              metadata: {'shippo_address_id': addressResult['object_id']},
             );
 
         // Clear cart and form
@@ -423,6 +627,15 @@ class CheckoutScreen extends ConsumerWidget {
           ),
         );
       }
+    }
+  }
+
+  String _getCountryCode(String countryName) {
+    try {
+      final country = Country.tryParse(countryName);
+      return country?.countryCode ?? 'US';
+    } catch (e) {
+      return 'US'; // Default fallback
     }
   }
 }

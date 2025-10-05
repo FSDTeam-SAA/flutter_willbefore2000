@@ -133,6 +133,17 @@ class AppRouter {
                 name: RoutePaths.personalInfoName, // Route name
                 builder: (context, state) => const PersonalInfoScreen(),
               ),
+              GoRoute(
+                path: 'personal-info-edit',
+                name: RoutePaths.editProfile,
+                builder: (context, state) => const EditPersonalInfoScreen(),
+              ),
+
+              GoRoute(
+                path: 'change-password',
+                name: RoutePaths.changePassword,
+                builder: (context, state) => const ChangePasswordScreen(),
+              ),
             ],
             // pageBuilder: (context, state) => AppTransitions.slideTransition(
             //   context: context,
@@ -172,8 +183,13 @@ class AppRouter {
         path: RoutePaths.checkout,
         name: RoutePaths.checkout,
         pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final buyNowItem = extra != null
+              ? extra['buyNowItem'] as CartItem?
+              : null;
+
           return AppTransitions.slideTransition(
-            child: const CheckoutScreen(),
+            child: CheckoutScreen(buyNowItem: buyNowItem),
             context: context,
             state: state,
           );
