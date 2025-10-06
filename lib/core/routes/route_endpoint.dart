@@ -19,6 +19,7 @@ import '../../feature/auth/presentation/screens/signup_screen.dart';
 import '../../feature/cart/presentation/screens/cart_screen.dart';
 import '../../feature/cart/presentation/screens/checkout_screen.dart';
 import '../../feature/home/presentation/screens/home_screen.dart';
+import '../../feature/home/presentation/widgets/categories_view.dart';
 import '../../feature/order/domain/entities/order_entities.dart';
 import '../../feature/product/presentation/screens/product_detail_screen.dart';
 import '../../feature/profile/presentation/screen/profile_screen.dart';
@@ -49,7 +50,7 @@ class RoutePaths {
 
   static const String product = '/product-details';
   static const String productList = '/products';
-  static const String categories = '/categories';
+  static const String categories = 'categories';
   static const String orders = '/orders';
   static const String orderConfirm = '/order-confirm';
 

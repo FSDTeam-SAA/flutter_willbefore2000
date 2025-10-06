@@ -17,10 +17,12 @@ class AdvancedSearchState {
   final List<String> popularSearches;
   final String searchQuery;
   final String selectedCategory;
+  final String selectedCategoryId;
   final String sortBy;
   final double minPrice;
   final double maxPrice;
   final bool isLoading;
+  final bool isLoadingMore; // Add this line
   final int currentPage;
   final int totalResults;
   final bool hasMoreData;
@@ -33,10 +35,12 @@ class AdvancedSearchState {
     this.popularSearches = const [],
     this.searchQuery = '',
     this.selectedCategory = 'All',
+    this.selectedCategoryId = '',
     this.sortBy = 'relevance',
     this.minPrice = 0,
     this.maxPrice = 1000,
     this.isLoading = false,
+    this.isLoadingMore = false, // Initialize it
     this.currentPage = 1,
     this.totalResults = 0,
     this.hasMoreData = true,
@@ -50,10 +54,12 @@ class AdvancedSearchState {
     List<String>? popularSearches,
     String? searchQuery,
     String? selectedCategory,
+    String? selectedCategoryId,
     String? sortBy,
     double? minPrice,
     double? maxPrice,
     bool? isLoading,
+    bool? isLoadingMore, // Add this parameter
     int? currentPage,
     int? totalResults,
     bool? hasMoreData,
@@ -66,10 +72,12 @@ class AdvancedSearchState {
       popularSearches: popularSearches ?? this.popularSearches,
       searchQuery: searchQuery ?? this.searchQuery,
       selectedCategory: selectedCategory ?? this.selectedCategory,
+      selectedCategoryId: selectedCategoryId ?? this.selectedCategoryId,
       sortBy: sortBy ?? this.sortBy,
       minPrice: minPrice ?? this.minPrice,
       maxPrice: maxPrice ?? this.maxPrice,
       isLoading: isLoading ?? this.isLoading,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore, // Include it here
       currentPage: currentPage ?? this.currentPage,
       totalResults: totalResults ?? this.totalResults,
       hasMoreData: hasMoreData ?? this.hasMoreData,
@@ -126,7 +134,6 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
     final searchResults = fuzzySearch.search(query);
 
     final filteredResults = _applyFiltersAndSort(searchResults);
-
     final paginatedResults = _paginateResults(filteredResults, 1);
 
     state = state.copyWith(
@@ -135,10 +142,14 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
       hasMoreData: filteredResults.length > _pageSize,
       isLoading: false,
     );
+
+    await addToSearchHistory(query);
   }
 
   Future<void> loadMoreProducts() async {
     if (!state.hasMoreData || state.isLoading) return;
+
+    state = state.copyWith(isLoadingMore: true);
 
     final nextPage = state.currentPage + 1;
     List<Product> filteredResults;
@@ -158,15 +169,23 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
         products: [...state.products, ...newProducts],
         currentPage: nextPage,
         hasMoreData: filteredResults.length > nextPage * _pageSize,
+        isLoadingMore: false,
       );
     } else {
-      state = state.copyWith(hasMoreData: false);
+      state = state.copyWith(hasMoreData: false, isLoadingMore: false);
     }
   }
 
-  void updateFilters({String? category, double? minPrice, double? maxPrice}) {
+  // Updated to handle both name and ID
+  void updateFilters({
+    String? category,
+    String? categoryId,
+    double? minPrice,
+    double? maxPrice,
+  }) {
     state = state.copyWith(
       selectedCategory: category ?? state.selectedCategory,
+      selectedCategoryId: categoryId ?? state.selectedCategoryId,
       minPrice: minPrice ?? state.minPrice,
       maxPrice: maxPrice ?? state.maxPrice,
       currentPage: 1,
@@ -226,11 +245,14 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
 
   List<Product> _applyFiltersAndSort(List<Product> products) {
     var filtered = products.where((product) {
+      // Filter by category (using ID for more accurate filtering)
       if (state.selectedCategory != 'All' &&
-          product.categoryId != state.selectedCategory) {
+          state.selectedCategoryId.isNotEmpty &&
+          product.categoryId != state.selectedCategoryId) {
         return false;
       }
 
+      // Filter by price
       if (product.effectivePrice < state.minPrice ||
           product.effectivePrice > state.maxPrice) {
         return false;
@@ -239,6 +261,7 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
       return true;
     }).toList();
 
+    // Apply sorting
     switch (state.sortBy) {
       case 'price_low':
         filtered.sort((a, b) => a.effectivePrice.compareTo(b.effectivePrice));
@@ -246,14 +269,13 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
       case 'price_high':
         filtered.sort((a, b) => b.effectivePrice.compareTo(a.effectivePrice));
         break;
-      // case 'rating':
-      //   filtered.sort((a, b) => b.rating.compareTo(a.rating));
-      // break;
       case 'newest':
         filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
         break;
       case 'relevance':
       default:
+        // For search results, relevance is handled by fuzzy search
+        // For non-search, maybe sort by popularity or keep original order
         break;
     }
 

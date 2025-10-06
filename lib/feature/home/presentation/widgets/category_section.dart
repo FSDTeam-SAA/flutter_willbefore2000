@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutx_core/core/theme/extensions/string_extension.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
@@ -31,13 +32,29 @@ class CategorySection extends StatelessWidget {
         children: [
           Padding(
             padding: EdgeInsets.symmetric(horizontal: isTablet ? 24 : 16),
-            child: Text(
-              'Categories',
-              style: GoogleFonts.notoSansKr(
-                fontSize: isTablet ? 24 : 20,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textAppBlack,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Categories',
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: isTablet ? 24 : 20,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textAppBlack,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => context.goNamed(RoutePaths.categories),
+                  child: Text(
+                    'See More',
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: isTablet ? 16 : 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryLaurel,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           SizedBox(height: isTablet ? 16 : 12),
@@ -117,9 +134,8 @@ class CategorySection extends StatelessWidget {
       itemBuilder: (context, index) {
         final category = categories[index];
         return GestureDetector(
-          onTap: () => context.go(
-            '${RoutePaths.productList}/category/${category.id}?title=${category.name}',
-          ),
+          onTap: () =>
+              context.go('${RoutePaths.search}?category=All&categoryId='),
           child: Container(
             width: itemWidth,
             margin: EdgeInsets.only(right: isTablet ? 16 : 12),
@@ -145,16 +161,10 @@ class CategorySection extends StatelessWidget {
                     width: 75,
                     height: 80,
                   ),
-
-                  // Icon(
-                  //   _getCategoryIcon(category.name),
-                  //   color: AppColors.primaryLaurel,
-                  //   size: iconInnerSize,
-                  // ),
                 ),
                 SizedBox(height: isTablet ? 8 : 6),
                 Text(
-                  category.name,
+                  category.name.capitalizeFirstOfEach,
                   style: GoogleFonts.notoSansKr(
                     fontSize: isTablet ? 12 : 10,
                     fontWeight: FontWeight.w500,

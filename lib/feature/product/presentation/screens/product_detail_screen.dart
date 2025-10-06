@@ -181,19 +181,19 @@ class ProductDetailScreen extends ConsumerWidget {
             elevation: 0,
             pinned: true,
             automaticallyImplyLeading: true,
-            actions: [
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.favorite_border,
-                  color: AppColors.textAppBlack,
-                ),
-              ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.share, color: AppColors.textAppBlack),
-              ),
-            ],
+            // actions: [
+            //   IconButton(
+            //     onPressed: () {},
+            //     icon: const Icon(
+            //       Icons.favorite_border,
+            //       color: AppColors.textAppBlack,
+            //     ),
+            //   ),
+            //   IconButton(
+            //     onPressed: () {},
+            //     icon: const Icon(Icons.share, color: AppColors.textAppBlack),
+            //   ),
+            // ],
           ),
 
           // Product Images
@@ -333,13 +333,26 @@ class ProductDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildImageSection(WidgetRef ref, product, ProductDetailState state) {
-    return Container(
+    // Create a PageController with the initial page set to the current image index
+    final PageController pageController = PageController(
+      initialPage: state.currentImageIndex,
+    );
+
+    // Listen to changes in currentImageIndex to update the PageView
+    ref.listen(productDetailProvider, (previous, next) {
+      if (previous?.currentImageIndex != next.currentImageIndex) {
+        pageController.jumpToPage(next.currentImageIndex);
+      }
+    });
+
+    return SizedBox(
       height: 400,
       child: Column(
         children: [
           // Main Image
           Expanded(
             child: PageView.builder(
+              controller: pageController, // Assign the PageController
               itemCount: product.imageUrls.isNotEmpty
                   ? product.imageUrls.length
                   : 1,
@@ -357,7 +370,16 @@ class ProductDetailScreen extends ConsumerWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: AppCachedImage(imageUrl: product.imageUrls[index]),
+                    child: product.imageUrls.isNotEmpty
+                        ? AppCachedImage(imageUrl: product.imageUrls[index])
+                        : Container(
+                            color: Colors.grey[200],
+                            child: const Icon(
+                              Icons.image,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
+                          ),
                   ),
                 );
               },
@@ -539,19 +561,6 @@ class ProductDetailScreen extends ConsumerWidget {
             final colorName = entry.value;
             final isSelected = state.selectedColor == colorName;
 
-            Color color = Colors.grey;
-            if (index < product.colorCodes.length) {
-              try {
-                final colorCode = product.colorCodes[index];
-                final cleanColorCode = colorCode.replaceAll('#', '');
-                if (cleanColorCode.length == 6) {
-                  color = Color(int.parse('FF$cleanColorCode', radix: 16));
-                }
-              } catch (e) {
-                color = Colors.grey;
-              }
-            }
-
             return GestureDetector(
               onTap: () {
                 ref.read(productDetailProvider.notifier).selectColor(colorName);
@@ -562,10 +571,12 @@ class ProductDetailScreen extends ConsumerWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: color,
+                  color: isSelected ? AppColors.primaryLaurel : Colors.white,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: isSelected ? Colors.white : Colors.transparent,
+                    color: isSelected
+                        ? AppColors.primaryLaurel
+                        : Colors.grey[300]!,
                     width: 2,
                   ),
                 ),
@@ -574,7 +585,9 @@ class ProductDetailScreen extends ConsumerWidget {
                   style: GoogleFonts.notoSansKr(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: _getTextColorForBackground(color),
+                    color: isSelected
+                        ? Colors.white
+                        : AppColors.textAppBlack, // Consistent text color
                   ),
                 ),
               ),
@@ -584,11 +597,10 @@ class ProductDetailScreen extends ConsumerWidget {
       ],
     );
   }
-
-  Color _getTextColorForBackground(Color backgroundColor) {
-    final luminance = backgroundColor.computeLuminance();
-    return luminance > 0.5 ? Colors.black : Colors.white;
-  }
+  // Color _getTextColorForBackground(Color backgroundColor) {
+  //   final luminance = backgroundColor.computeLuminance();
+  //   return luminance > 0.5 ? Colors.black : Colors.white;
+  // }
 
   Widget _buildQuantitySelection(
     WidgetRef ref,

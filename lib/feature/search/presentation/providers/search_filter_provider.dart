@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// Filter state class
 class SearchFilterState {
   final String selectedCategory;
+  final String selectedCategoryId; // Add category ID
   final RangeValues priceRange;
   final Set<int> selectedRatings;
   final Set<String> selectedBrands;
 
   const SearchFilterState({
     this.selectedCategory = 'All',
+    this.selectedCategoryId = '',
     this.priceRange = const RangeValues(0, 1000),
     this.selectedRatings = const {},
     this.selectedBrands = const {},
@@ -17,12 +18,14 @@ class SearchFilterState {
 
   SearchFilterState copyWith({
     String? selectedCategory,
+    String? selectedCategoryId,
     RangeValues? priceRange,
     Set<int>? selectedRatings,
     Set<String>? selectedBrands,
   }) {
     return SearchFilterState(
       selectedCategory: selectedCategory ?? this.selectedCategory,
+      selectedCategoryId: selectedCategoryId ?? this.selectedCategoryId,
       priceRange: priceRange ?? this.priceRange,
       selectedRatings: selectedRatings ?? this.selectedRatings,
       selectedBrands: selectedBrands ?? this.selectedBrands,
@@ -30,12 +33,14 @@ class SearchFilterState {
   }
 }
 
-// Filter state notifier
 class SearchFilterNotifier extends StateNotifier<SearchFilterState> {
   SearchFilterNotifier() : super(const SearchFilterState());
 
-  void updateCategory(String category) {
-    state = state.copyWith(selectedCategory: category);
+  void updateCategory(String category, {String? categoryId}) {
+    state = state.copyWith(
+      selectedCategory: category,
+      selectedCategoryId: categoryId ?? '',
+    );
   }
 
   void updatePriceRange(RangeValues priceRange) {
@@ -67,7 +72,6 @@ class SearchFilterNotifier extends StateNotifier<SearchFilterState> {
   }
 }
 
-// Provider
 final searchFilterProvider =
     StateNotifierProvider.autoDispose<SearchFilterNotifier, SearchFilterState>(
       (ref) => SearchFilterNotifier(),

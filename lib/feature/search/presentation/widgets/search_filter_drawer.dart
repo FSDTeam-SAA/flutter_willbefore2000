@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutx_core/core/theme/extensions/string_extension.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:smilestreats/feature/home/presentation/providers/categories_provider.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../providers/advance_search_provider.dart';
@@ -12,7 +14,8 @@ class SearchFilterDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filterState = ref.watch(searchFilterProvider);
-    
+    final categoriesState = ref.watch(categoriesProvider);
+
     return Drawer(
       child: SafeArea(
         child: Column(
@@ -53,13 +56,13 @@ class SearchFilterDrawer extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildCategorySection(ref, filterState),
+                    _buildCategorySection(ref, filterState, categoriesState),
                     const SizedBox(height: 24),
                     _buildPriceSection(ref, filterState),
                     const SizedBox(height: 24),
                     _buildRatingSection(ref, filterState),
-                    const SizedBox(height: 24),
-                    _buildBrandSection(ref, filterState),
+                    // const SizedBox(height: 24),
+                    // _buildBrandSection(ref, filterState),
                   ],
                 ),
               ),
@@ -125,7 +128,46 @@ class SearchFilterDrawer extends ConsumerWidget {
     );
   }
 
-  Widget _buildCategorySection(WidgetRef ref, SearchFilterState filterState) {
+  Widget _buildCategorySection(
+    WidgetRef ref,
+    SearchFilterState filterState,
+    CategoriesState categoriesState,
+  ) {
+    // Show loading state
+    if (categoriesState.isLoading) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('Category'),
+          const SizedBox(height: 12),
+          const Center(child: CircularProgressIndicator()),
+        ],
+      );
+    }
+
+    // Show error state
+    if (categoriesState.errorMessage.isNotEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('Category'),
+          const SizedBox(height: 12),
+          Center(
+            child: Text(
+              'Failed to load categories',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Create categories list with "All" option
+    final categories = [
+      'All',
+      ...categoriesState.categories.map((cat) => cat.name),
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -134,16 +176,15 @@ class SearchFilterDrawer extends ConsumerWidget {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: [
-            'All',
-            'Electronics',
-            'Clothing',
-            'Books',
-            'Home',
-            'Sports',
-            'Beauty',
-            'Automotive',
-          ].map((category) => _buildCategoryChip(ref, category, filterState.selectedCategory)).toList(),
+          children: categories
+              .map(
+                (category) => _buildCategoryChip(
+                  ref,
+                  category,
+                  filterState.selectedCategory,
+                ),
+              )
+              .toList(),
         ),
       ],
     );
@@ -264,7 +305,11 @@ class SearchFilterDrawer extends ConsumerWidget {
     );
   }
 
-  Widget _buildCategoryChip(WidgetRef ref, String category, String selectedCategory) {
+  Widget _buildCategoryChip(
+    WidgetRef ref,
+    String category,
+    String selectedCategory,
+  ) {
     final isSelected = selectedCategory == category;
     return GestureDetector(
       onTap: () {
@@ -280,7 +325,7 @@ class SearchFilterDrawer extends ConsumerWidget {
           ),
         ),
         child: Text(
-          category,
+          category.capitalizeFirstOfEach,
           style: GoogleFonts.notoSansKr(
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -295,7 +340,11 @@ class SearchFilterDrawer extends ConsumerWidget {
     ref.read(searchFilterProvider.notifier).resetFilters();
   }
 
-  void _applyFilters(BuildContext context, WidgetRef ref, SearchFilterState filterState) {
+  void _applyFilters(
+    BuildContext context,
+    WidgetRef ref,
+    SearchFilterState filterState,
+  ) {
     ref
         .read(advancedSearchProvider.notifier)
         .updateFilters(

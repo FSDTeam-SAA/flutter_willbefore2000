@@ -281,34 +281,34 @@ class _EditPersonalInfoScreenState
                           // _buildSectionHeader('Personal Information'),
                           Gap.h16,
 
-                          /// [tile]
-                          Text(
-                            "Email",
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textAppBlack,
-                            ),
-                          ),
-                          Gap.h4,
-                          // Email field (read-only as shown in image)
-                          TextFormField(
-                            controller: TextEditingController(
-                              text: 'john.smith@example.com',
-                            ),
-                            readOnly: true,
-                            style: TextStyle(
-                              color: AppColors.textSecondaryColor.withOpacity(
-                                0.6,
-                              ),
-                            ),
-                            decoration: context.primaryInputDecoration.copyWith(
-                              hintText: 'Enter your email',
-                              filled: true,
-                              fillColor: Colors.grey.shade100,
-                            ),
-                          ),
-                          Gap.h16,
+                          // /// [tile]
+                          // Text(
+                          //   "Email",
+                          //   style: TextStyle(
+                          //     fontSize: 14,
+                          //     fontWeight: FontWeight.w500,
+                          //     color: AppColors.textAppBlack,
+                          //   ),
+                          // ),
+                          // Gap.h4,
+                          // // Email field (read-only as shown in image)
+                          // TextFormField(
+                          //   controller: TextEditingController(
+                          //     text: 'john.smith@example.com',
+                          //   ),
+                          //   readOnly: true,
+                          //   style: TextStyle(
+                          //     color: AppColors.textSecondaryColor.withOpacity(
+                          //       0.6,
+                          //     ),
+                          //   ),
+                          //   decoration: context.primaryInputDecoration.copyWith(
+                          //     hintText: 'Enter your email',
+                          //     filled: true,
+                          //     fillColor: Colors.grey.shade100,
+                          //   ),
+                          // ),
+                          // Gap.h16,
 
                           // Contact Information Section
                           _buildSectionHeader('Contact Information'),

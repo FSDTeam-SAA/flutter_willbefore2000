@@ -18,7 +18,7 @@ class SearchSuggestionsOverlay extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final searchState = ref.watch(advancedSearchProvider);
-    
+
     return GestureDetector(
       onTap: onDismiss,
       child: Container(
@@ -53,16 +53,16 @@ class SearchSuggestionsOverlay extends ConsumerWidget {
                         );
                       }),
                     ],
-                    if (searchState.popularSearches.isNotEmpty) ...[
-                      _buildSectionHeader('Popular Searches'),
-                      ...searchState.popularSearches.take(6).map((search) {
-                        return _buildSuggestionItem(
-                          search,
-                          Icons.trending_up,
-                          onSuggestionTap,
-                        );
-                      }),
-                    ],
+                    // if (searchState.popularSearches.isNotEmpty) ...[
+                    //   _buildSectionHeader('Popular Searches'),
+                    //   ...searchState.popularSearches.take(6).map((search) {
+                    //     return _buildSuggestionItem(
+                    //       search,
+                    //       Icons.trending_up,
+                    //       onSuggestionTap,
+                    //     );
+                    //   }),
+                    // ],
                   ],
                 ),
               ),
@@ -93,11 +93,7 @@ class SearchSuggestionsOverlay extends ConsumerWidget {
     Function(String) onTap,
   ) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: AppColors.textSecondaryHintColor,
-        size: 20,
-      ),
+      leading: Icon(icon, color: AppColors.textSecondaryHintColor, size: 20),
       title: Text(
         suggestion,
         style: GoogleFonts.notoSansKr(

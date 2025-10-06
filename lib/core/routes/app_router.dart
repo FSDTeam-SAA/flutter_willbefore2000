@@ -97,6 +97,13 @@ class AppRouter {
             path: RoutePaths.home,
             name: "Home",
             builder: (context, state) => const HomeScreen(),
+            routes: [
+              GoRoute(
+                path: RoutePaths.categories,
+                name: RoutePaths.categories,
+                builder: (context, state) => const CategoriesView(),
+              ),
+            ],
             // pageBuilder: (context, state) => AppTransitions.slideTransition(
             //   context: context,
             //   child: const HomeScreen(),
@@ -234,8 +241,8 @@ class AppRouter {
       ),
       // GoRoute(
       //   path: RoutePaths.categories,
-      //   name: 'categories',
-      //   builder: (context, state) => const CategoriesScreen(),
+      //   name: RoutePaths.categories,
+      //   builder: (context, state) => const CategoryShows(),
       // ),
       // GoRoute(
       //   path: RoutePaths.orders,

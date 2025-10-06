@@ -152,24 +152,28 @@ class ProductCard extends ConsumerWidget {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Flexible(
-                                    child: Text(
-                                      product.formattedPrice,
-                                      style: GoogleFonts.notoSansKr(
-                                        fontSize: isSmallScreen ? 12 : 14,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.primaryLaurel,
+                                  if (product.formattedDiscountPrice !=
+                                      null) ...[
+                                    Flexible(
+                                      child: Text(
+                                        product.formattedDiscountPrice!,
+                                        style: GoogleFonts.notoSansKr(
+                                          fontSize: isSmallScreen ? 12 : 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.primaryLaurel,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                  ),
+                                  ],
+
                                   if (product.isOnSale &&
                                       product.formattedDiscountPrice !=
                                           null) ...[
                                     const SizedBox(width: 8),
                                     Flexible(
                                       child: Text(
-                                        product.formattedDiscountPrice!,
+                                        product.formattedPrice,
                                         style: GoogleFonts.notoSansKr(
                                           fontSize: isSmallScreen ? 10 : 12,
                                           fontWeight: FontWeight.w400,
@@ -234,7 +238,8 @@ class ProductCard extends ConsumerWidget {
     WidgetRef ref,
     String uniqueHeroTag,
   ) {
-    return SizedBox(
+    return Container(
+      color: Colors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -335,7 +340,7 @@ class ProductCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        product.formattedPrice,
+                        product.formattedDiscountPrice ?? '',
                         style: GoogleFonts.notoSansKr(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -345,7 +350,7 @@ class ProductCard extends ConsumerWidget {
                       if (product.isOnSale) ...[
                         Gap.w4,
                         Text(
-                          product.formattedDiscountPrice ?? '',
+                          product.formattedPrice,
                           style: GoogleFonts.notoSansKr(
                             fontSize: 12,
                             fontWeight: FontWeight.w400,

@@ -27,15 +27,15 @@ class SearchUIState {
 class SearchUINotifier extends StateNotifier<SearchUIState> {
   SearchUINotifier() : super(const SearchUIState());
 
-  void updateShowSuggestions(bool show) {
-    state = state.copyWith(showSuggestions: show);
-  }
-
-  void updateLoadingMore(bool loading) {
-    state = state.copyWith(isLoadingMore: loading);
+  void showSuggestions() {
+    state = state.copyWith(showSuggestions: true);
   }
 
   void hideSuggestions() {
     state = state.copyWith(showSuggestions: false);
+  }
+
+  void updateLoadingMore(bool loading) {
+    state = state.copyWith(isLoadingMore: loading);
   }
 }
