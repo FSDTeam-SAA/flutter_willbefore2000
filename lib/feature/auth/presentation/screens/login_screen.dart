@@ -97,7 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                 border: Border.all(color: Colors.red.shade200),
                               ),
                               child: Text(
-                                authState.errorMessage,
+                                authState.loginError.toString(),
                                 style: TextStyle(color: Colors.red.shade700),
                               ),
                             ),

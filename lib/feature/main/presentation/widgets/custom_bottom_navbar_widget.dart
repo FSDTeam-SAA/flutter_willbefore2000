@@ -22,7 +22,7 @@ class CustomBottomNavBar extends ConsumerWidget {
 
     return SafeArea(
       child: Container(
-        margin: const EdgeInsets.all(16),
+        margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: AppColors.white,

@@ -265,7 +265,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                             _obscurePassword.value = !obscure,
                                       ),
                                     ),
-                                validator: Validators.password,
+                                // validator: Validators.password,
                                 onFieldSubmitted: (_) => FocusScope.of(
                                   context,
                                 ).requestFocus(_confirmPasswordFocus),

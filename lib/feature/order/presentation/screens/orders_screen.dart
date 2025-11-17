@@ -460,244 +460,256 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Container(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: const Text(
-                      'Smilestreats Order Summary',
-                      maxLines: 2,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, size: 20),
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.grey[100],
-                      padding: const EdgeInsets.all(4),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Product Items
-              ...order.items.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: Colors.grey[100],
-                        ),
-                        child: _buildProductImage(item.product.imageUrls),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.product.title,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${item.quantity} x \$${item.product.effectivePrice.toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        '\$${item.totalPrice.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: const Text(
+                        'Smilestreats Order Summary',
+                        maxLines: 2,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
                       ),
-                    ],
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close, size: 20),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.grey[100],
+                        padding: const EdgeInsets.all(4),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Product Items
+                ...order.items.map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.grey[100],
+                          ),
+                          child: _buildProductImage(item.product.imageUrls),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.product.title,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${item.quantity} x \$${item.product.effectivePrice.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          '\$${item.totalPrice.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // Order Summary
-              Column(
-                children: [
-                  _buildSummaryRow(
-                    'Subtotal',
-                    '\$${order.subtotal.toStringAsFixed(2)}',
-                  ),
-                  _buildSummaryRow('Tax', '\$${order.tax.toStringAsFixed(2)}'),
-                  const Divider(height: 24),
-                  _buildSummaryRow(
-                    'Total',
-                    '\$${order.total.toStringAsFixed(2)}',
-                    isTotal: true,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
+                // Order Summary
+                Column(
+                  children: [
+                    _buildSummaryRow(
+                      'Subtotal',
+                      '\$${order.subtotal.toStringAsFixed(2)}',
+                    ),
+                    _buildSummaryRow(
+                      'Tax',
+                      '\$${order.tax.toStringAsFixed(2)}',
+                    ),
+                    const Divider(height: 24),
+                    _buildSummaryRow(
+                      'Total',
+                      '\$${order.total.toStringAsFixed(2)}',
+                      isTotal: true,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
 
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    if (order.items.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('No items in this order')),
-                      );
-                      return;
-                    }
-
-                    // Show loading indicator
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (context) =>
-                          const Center(child: CircularProgressIndicator()),
-                    );
-
-                    try {
-                      // Use getDownloadsDirectory instead of getApplicationDocumentsDirectory
-                      final directory = await getDownloadsDirectory();
-                      if (directory == null) {
-                        Navigator.pop(context);
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      if (order.items.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Unable to access Downloads folder'),
+                            content: Text('No items in this order'),
                           ),
                         );
                         return;
                       }
-                      int successfulDownloads = 0;
 
-                      // Download all images and create info file
-                      for (var item in order.items) {
-                        if (item.product.imageUrls.isNotEmpty) {
-                          final imageUrl = item.product.imageUrls.first;
-                          if (imageUrl.isNotEmpty &&
-                              (imageUrl.startsWith('http://') ||
-                                  imageUrl.startsWith('https://'))) {
-                            try {
-                              final response = await http.get(
-                                Uri.parse(imageUrl),
-                              );
-                              if (response.statusCode == 200) {
-                                // Sanitize title for filename
-                                final sanitizedTitle = item.product.title
-                                    .replaceAll(RegExp(r'[^\w\s-]'), '')
-                                    .replaceAll(RegExp(r'\s+'), '_');
-                                final fileName =
-                                    '${sanitizedTitle}_${order.id}_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}_${item.product.id}.jpg';
-                                final file = File(
-                                  '${directory.path}/$fileName',
+                      // Show loading indicator
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) =>
+                            const Center(child: CircularProgressIndicator()),
+                      );
+
+                      try {
+                        // Use getDownloadsDirectory instead of getApplicationDocumentsDirectory
+                        final directory = await getDownloadsDirectory();
+                        if (directory == null) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Unable to access Downloads folder',
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+                        int successfulDownloads = 0;
+
+                        // Download all images and create info file
+                        for (var item in order.items) {
+                          if (item.product.imageUrls.isNotEmpty) {
+                            final imageUrl = item.product.imageUrls.first;
+                            if (imageUrl.isNotEmpty &&
+                                (imageUrl.startsWith('http://') ||
+                                    imageUrl.startsWith('https://'))) {
+                              try {
+                                final response = await http.get(
+                                  Uri.parse(imageUrl),
                                 );
-                                await file.writeAsBytes(response.bodyBytes);
-                                successfulDownloads++;
+                                if (response.statusCode == 200) {
+                                  // Sanitize title for filename
+                                  final sanitizedTitle = item.product.title
+                                      .replaceAll(RegExp(r'[^\w\s-]'), '')
+                                      .replaceAll(RegExp(r'\s+'), '_');
+                                  final fileName =
+                                      '${sanitizedTitle}_${order.id}_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}_${item.product.id}.jpg';
+                                  final file = File(
+                                    '${directory.path}/$fileName',
+                                  );
+                                  await file.writeAsBytes(response.bodyBytes);
+                                  successfulDownloads++;
+                                }
+                              } catch (e) {
+                                print(
+                                  '🐞 DEBUG: Failed to download image for ${item.product.title}: $e',
+                                );
                               }
-                            } catch (e) {
-                              print(
-                                '🐞 DEBUG: Failed to download image for ${item.product.title}: $e',
-                              );
                             }
                           }
                         }
-                      }
 
-                      // Create info file with all products
-                      final infoFile = File(
-                        '${directory.path}/order_${order.id}_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}_info.txt',
-                      );
-                      final infoContent = StringBuffer();
-                      infoContent.write('Order ID: ${order.id}\n');
-                      infoContent.write(
-                        'Date: ${DateFormat('yyyy-MM-dd').format(order.createdAt)}\n',
-                      );
-                      infoContent.write('Status: ${order.statusText}\n\n');
-                      infoContent.write('Products:\n');
-                      for (var item in order.items) {
-                        infoContent.write('------------------------\n');
-                        infoContent.write('Product: ${item.product.title}\n');
-                        infoContent.write(
-                          'Price: \$${item.product.effectivePrice.toStringAsFixed(2)}\n',
+                        // Create info file with all products
+                        final infoFile = File(
+                          '${directory.path}/order_${order.id}_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}_info.txt',
                         );
-                        infoContent.write('Quantity: ${item.quantity}\n');
+                        final infoContent = StringBuffer();
+                        infoContent.write('Order ID: ${order.id}\n');
                         infoContent.write(
-                          'Subtotal: \$${item.totalPrice.toStringAsFixed(2)}\n',
+                          'Date: ${DateFormat('yyyy-MM-dd').format(order.createdAt)}\n',
                         );
-                      }
-                      infoContent.write('\nOrder Summary:\n');
-                      infoContent.write(
-                        'Subtotal: \$${order.subtotal.toStringAsFixed(2)}\n',
-                      );
-                      infoContent.write(
-                        'Tax: \$${order.tax.toStringAsFixed(2)}\n',
-                      );
-                      infoContent.write(
-                        'Total: \$${order.total.toStringAsFixed(2)}\n',
-                      );
+                        infoContent.write('Status: ${order.statusText}\n\n');
+                        infoContent.write('Products:\n');
+                        for (var item in order.items) {
+                          infoContent.write('------------------------\n');
+                          infoContent.write('Product: ${item.product.title}\n');
+                          infoContent.write(
+                            'Price: \$${item.product.effectivePrice.toStringAsFixed(2)}\n',
+                          );
+                          infoContent.write('Quantity: ${item.quantity}\n');
+                          infoContent.write(
+                            'Subtotal: \$${item.totalPrice.toStringAsFixed(2)}\n',
+                          );
+                        }
+                        infoContent.write('\nOrder Summary:\n');
+                        infoContent.write(
+                          'Subtotal: \$${order.subtotal.toStringAsFixed(2)}\n',
+                        );
+                        infoContent.write(
+                          'Tax: \$${order.tax.toStringAsFixed(2)}\n',
+                        );
+                        infoContent.write(
+                          'Total: \$${order.total.toStringAsFixed(2)}\n',
+                        );
 
-                      await infoFile.writeAsString(infoContent.toString());
+                        await infoFile.writeAsString(infoContent.toString());
 
-                      // Close loading dialog
-                      Navigator.pop(context);
+                        // Close loading dialog
+                        Navigator.pop(context);
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            successfulDownloads > 0
-                                ? 'Successfully downloaded $successfulDownloads image${successfulDownloads > 1 ? 's' : ''} and order info to Downloads folder'
-                                : 'Order info saved to Downloads folder, but no images were downloaded',
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              successfulDownloads > 0
+                                  ? 'Successfully downloaded $successfulDownloads image${successfulDownloads > 1 ? 's' : ''} and order info to Downloads folder'
+                                  : 'Order info saved to Downloads folder, but no images were downloaded',
+                            ),
                           ),
-                        ),
-                      );
-                    } catch (e) {
-                      // Close loading dialog
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error saving files: $e')),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.download, size: 18),
-                  label: const Text(
-                    'Download Now',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green[600],
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                        );
+                      } catch (e) {
+                        // Close loading dialog
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error saving files: $e')),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.download, size: 18),
+                    label: const Text(
+                      'Download Now',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                    elevation: 0,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[600],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
