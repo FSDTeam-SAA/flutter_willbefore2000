@@ -6,6 +6,7 @@ import 'package:smilestreats/feature/auth/presentation/screens/change_password_s
 import 'package:smilestreats/feature/cart/domain/entities/cart_item.dart';
 import 'package:smilestreats/feature/home/presentation/screens/home_screach_screen.dart';
 import 'package:smilestreats/feature/main/presentation/screens/main_nav_screen.dart';
+import 'package:smilestreats/feature/notification/presentation/screens/notification_screen.dart';
 import 'package:smilestreats/feature/order/presentation/screens/order_confirmation_screen.dart';
 import 'package:smilestreats/feature/order/presentation/screens/orders_screen.dart';
 import 'package:smilestreats/feature/profile/presentation/screen/edit_personal_info_screen.dart';
@@ -55,6 +56,8 @@ class RoutePaths {
   static const String orderConfirm = '/order-confirm';
 
   static const String checkout = '/checkout';
+
+  static const String notification = '/notification';
 
   // Error routes
   static const String notFound = '/not-found';

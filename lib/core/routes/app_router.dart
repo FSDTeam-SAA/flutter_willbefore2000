@@ -103,6 +103,11 @@ class AppRouter {
                 name: RoutePaths.categories,
                 builder: (context, state) => const CategoriesView(),
               ),
+              GoRoute(
+                path: RoutePaths.notification,
+                name: RoutePaths.notification,
+                builder: (context, state) => const NotificationScreen(),
+              ),
             ],
             // pageBuilder: (context, state) => AppTransitions.slideTransition(
             //   context: context,

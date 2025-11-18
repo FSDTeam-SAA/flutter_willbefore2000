@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routes/route_endpoint.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../notification/presentation/providers/notification_provider.dart';
 import '../../../product/presentation/providers/products_providers.dart';
 import '../../../product/presentation/widgets/product_selection.dart';
 import '../providers/categories_provider.dart';
@@ -130,6 +132,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildHeader(bool isTablet) {
+    final user = ref.watch(authProvider.select((state) => state.user));
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
+
+    final firstName = user?.displayName?.split(' ').first ?? 'User';
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -139,7 +146,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Welcome Alex 👋',
+                'Welcome $firstName',
                 style: GoogleFonts.notoSansKr(
                   fontSize: isTablet ? 28 : 24,
                   fontWeight: FontWeight.w700,
@@ -153,6 +160,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Orders Icon
             IconButton(
               onPressed: () {
                 context.pushNamed(RoutePaths.orders);
@@ -163,13 +171,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 size: isTablet ? 26 : 24,
               ),
             ),
-            IconButton(
-              onPressed: () {},
-              icon: Icon(
-                Icons.notifications_outlined,
-                color: AppColors.textAppBlack,
-                size: isTablet ? 26 : 24,
-              ),
+
+            // Notifications Bell with Badge
+            Stack(
+              children: [
+                IconButton(
+                  onPressed: () {
+                    context.push(RoutePaths.notification); // or your route
+                  },
+                  icon: Icon(
+                    Icons.notifications_outlined,
+                    color: AppColors.textAppBlack,
+                    size: isTablet ? 26 : 24,
+                  ),
+                ),
+                // Unread Badge
+                unreadCount.when(
+                  data: (count) {
+                    if (count == 0) return const SizedBox();
+                    return Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          count > 99 ? '99+' : '$count',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    );
+                  },
+                  loading: () => const SizedBox(),
+                  error: (_, __) => const SizedBox(),
+                ),
+              ],
             ),
           ],
         ),
