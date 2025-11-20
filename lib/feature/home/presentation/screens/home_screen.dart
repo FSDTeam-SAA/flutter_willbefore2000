@@ -93,9 +93,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   title: 'Most Popular',
                   products: productsState.products.take(4).toList(),
                   isLoading: productsState.isLoading,
-                  onSeeAll: () => context.go(
-                    '${RoutePaths.productList}/popular?title=Most Popular',
-                  ),
+                  onSeeAll: () => context.go(RoutePaths.search),
                   isHorizontal: false,
                 ),
 
@@ -104,9 +102,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   title: 'New Arrivals',
                   products: productsState.products.take(4).toList(),
                   isLoading: productsState.isLoading,
-                  onSeeAll: () => context.go(
-                    '${RoutePaths.productList}/new-arrivals?title=New Arrivals',
-                  ),
+                  onSeeAll: () => context.go(RoutePaths.search),
                   isHorizontal: false,
                 ),
 
@@ -115,9 +111,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   title: 'For You',
                   products: productsState.products,
                   isLoading: productsState.isLoading,
-                  onSeeAll: () => context.go(
-                    '${RoutePaths.productList}/for-you?title=For You',
-                  ),
+                  onSeeAll: () => context.go(RoutePaths.search),
                   isHorizontal: true,
                 ),
 

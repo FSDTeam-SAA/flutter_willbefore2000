@@ -13,7 +13,7 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // await NotificationService().initialize();
+  await NotificationService().initialize();
 
   // Initialize Stripe
   await StripeService.init();
