@@ -132,12 +132,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   _ProfileMenuItem(
                     icon: Icons.privacy_tip_outlined,
                     title: 'Privacy policy',
-                    onTap: () {},
+                    onTap: () {
+                      context.pushNamed(RoutePaths.appPrivacyPolicy);
+                    },
                   ),
                   _ProfileMenuItem(
                     icon: Icons.description_outlined,
                     title: 'Terms & Conditions',
-                    onTap: () {},
+                    onTap: () {
+                      context.pushNamed(RoutePaths.appTermsAndConditions);
+                    },
                   ),
                 ],
               ),

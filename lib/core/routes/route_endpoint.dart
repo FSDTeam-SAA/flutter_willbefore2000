@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
+import 'package:smilestreats/feature/app/screens/app_pp_tc.dart';
 import 'package:smilestreats/feature/auth/presentation/screens/change_password_screen.dart';
 import 'package:smilestreats/feature/cart/domain/entities/cart_item.dart';
 import 'package:smilestreats/feature/home/presentation/screens/home_screach_screen.dart';
@@ -58,6 +59,9 @@ class RoutePaths {
   static const String checkout = '/checkout';
 
   static const String notification = '/notification';
+
+  static const String appPrivacyPolicy = '/privacy-policy';
+  static const String appTermsAndConditions = '/terms-and-conditions';
 
   // Error routes
   static const String notFound = '/not-found';

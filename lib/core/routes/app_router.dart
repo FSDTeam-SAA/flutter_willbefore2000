@@ -156,6 +156,18 @@ class AppRouter {
                 name: RoutePaths.changePassword,
                 builder: (context, state) => const ChangePasswordScreen(),
               ),
+
+              GoRoute(
+                path: 'privacy-policy',
+                name: RoutePaths.appPrivacyPolicy,
+                builder: (context, state) => const PrivacyPolicyScreen(),
+              ),
+
+              GoRoute(
+                path: 'terms-and-conditions',
+                name: RoutePaths.appTermsAndConditions,
+                builder: (context, state) => const TermsAndConditionsScreen(),
+              ),
             ],
             // pageBuilder: (context, state) => AppTransitions.slideTransition(
             //   context: context,

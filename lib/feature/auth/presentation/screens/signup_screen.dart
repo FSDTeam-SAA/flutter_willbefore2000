@@ -355,7 +355,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                             ),
                                             recognizer: TapGestureRecognizer()
                                               ..onTap = () {
-                                                // Navigate to terms of service
+                                                context.pushNamed(
+                                                  RoutePaths
+                                                      .appTermsAndConditions,
+                                                );
                                               },
                                           ),
                                           const TextSpan(text: 'and '),
@@ -366,7 +369,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                             ),
                                             recognizer: TapGestureRecognizer()
                                               ..onTap = () {
-                                                // Navigate to privacy policy
+                                                context.pushNamed(
+                                                  RoutePaths.appPrivacyPolicy,
+                                                );
                                               },
                                           ),
                                         ],
