@@ -724,8 +724,6 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
         return Colors.orange;
       case OrderStatus.cancelled:
         return Colors.red;
-      case OrderStatus.processing:
-        return Colors.blue;
       case OrderStatus.shipped:
         return Colors.teal;
       default:

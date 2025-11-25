@@ -84,7 +84,7 @@ class AuthProvider extends StateNotifier<AuthState> {
   final LoginUseCase _loginUseCase;
   final SignupUseCase _signupUseCase;
   final ForgotPasswordUseCase _forgotPasswordUseCase;
-  final StorageService _storageService;
+  final StorageService storageService;
   final ChangePasswordUseCase _changePasswordUseCase;
 
   AuthProvider(
@@ -92,7 +92,7 @@ class AuthProvider extends StateNotifier<AuthState> {
     this._signupUseCase,
     this._forgotPasswordUseCase,
     this._authRepository,
-    this._storageService,
+    this.storageService,
     this._changePasswordUseCase,
   ) : super(const AuthState()) {
     _initializeAuthState();

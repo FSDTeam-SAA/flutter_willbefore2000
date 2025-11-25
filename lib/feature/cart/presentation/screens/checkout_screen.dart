@@ -566,7 +566,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       }
 
       // Process payment with Stripe
-      final success = await StripeService.processPayment(
+      final paymentResult = await StripeService.processPayment(
         amount: total,
         currency: 'usd',
         metadata: {
@@ -576,47 +576,54 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         },
       );
 
-      if (success) {
-        // Create shipping address entity
-        final shippingAddress = ShippingAddress(
-          firstName: formState.firstName,
-          lastName: formState.lastName,
-          email: formState.email,
-          phoneNumber: formState.phoneNumber,
-          address: formState.address,
-          city: formState.city,
-          state: formState.state,
-          zipCode: formState.zipCode,
-          country: formState.country,
-        );
-
-        // Create order with Shippo address ID
-        final order = await ref
-            .read(orderProvider.notifier)
-            .createOrder(
-              items: cartItems,
-              shippingAddress: shippingAddress,
-              paymentIntentId: 'pi_${DateTime.now().millisecondsSinceEpoch}',
-              metadata: {'shippo_address_id': addressResult['object_id']},
-            );
-
-        // Clear cart and form
-        await ref.read(cartProvider.notifier).clearCart();
-        ref.read(checkoutFormProvider.notifier).reset();
-
-        // Navigate to success page
-        if (ref.context.mounted) {
-          GoRouter.of(ref.context).go(RoutePaths.orderConfirm, extra: order);
-        }
-      } else {
+      if (!paymentResult['success']) {
         if (ref.context.mounted) {
           ScaffoldMessenger.of(ref.context).showSnackBar(
-            const SnackBar(
-              content: Text('Payment processing failed'),
+            SnackBar(
+              content: Text(paymentResult['error'] ?? 'Payment failed'),
               backgroundColor: Colors.red,
             ),
           );
         }
+        return;
+      }
+
+      final String realPaymentIntentId = paymentResult['paymentIntentId'];
+
+      DPrint.log(
+        "Payment processed successfully. PaymentIntent ID: $realPaymentIntentId",
+      );
+
+      // Create shipping address entity
+      final shippingAddress = ShippingAddress(
+        firstName: formState.firstName,
+        lastName: formState.lastName,
+        email: formState.email,
+        phoneNumber: formState.phoneNumber,
+        address: formState.address,
+        city: formState.city,
+        state: formState.state,
+        zipCode: formState.zipCode,
+        country: formState.country,
+      );
+
+      // Create order with Shippo address ID
+      final order = await ref
+          .read(orderProvider.notifier)
+          .createOrder(
+            items: cartItems,
+            shippingAddress: shippingAddress,
+            paymentIntentId: realPaymentIntentId,
+            metadata: {'shippo_address_id': addressResult['object_id']},
+          );
+
+      // Clear cart and form
+      await ref.read(cartProvider.notifier).clearCart();
+      ref.read(checkoutFormProvider.notifier).reset();
+
+      // Navigate to success page
+      if (ref.context.mounted) {
+        GoRouter.of(ref.context).go(RoutePaths.orderConfirm, extra: order);
       }
     } catch (e) {
       if (ref.context.mounted) {

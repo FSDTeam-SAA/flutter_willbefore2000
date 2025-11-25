@@ -273,26 +273,26 @@ class SearchFilterDrawer extends ConsumerWidget {
     );
   }
 
-  Widget _buildBrandSection(WidgetRef ref, SearchFilterState filterState) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('Brand'),
-        const SizedBox(height: 8),
-        ...['Apple', 'Samsung', 'Nike', 'Adidas', 'Sony'].map((brand) {
-          return CheckboxListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(brand, style: GoogleFonts.notoSansKr(fontSize: 14)),
-            value: filterState.selectedBrands.contains(brand),
-            onChanged: (value) {
-              ref.read(searchFilterProvider.notifier).toggleBrand(brand);
-            },
-            activeColor: AppColors.primaryLaurel,
-          );
-        }),
-      ],
-    );
-  }
+  // Widget _buildBrandSection(WidgetRef ref, SearchFilterState filterState) {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       _buildSectionTitle('Brand'),
+  //       const SizedBox(height: 8),
+  //       ...['Apple', 'Samsung', 'Nike', 'Adidas', 'Sony'].map((brand) {
+  //         return CheckboxListTile(
+  //           contentPadding: EdgeInsets.zero,
+  //           title: Text(brand, style: GoogleFonts.notoSansKr(fontSize: 14)),
+  //           value: filterState.selectedBrands.contains(brand),
+  //           onChanged: (value) {
+  //             ref.read(searchFilterProvider.notifier).toggleBrand(brand);
+  //           },
+  //           activeColor: AppColors.primaryLaurel,
+  //         );
+  //       }),
+  //     ],
+  //   );
+  // }
 
   Widget _buildSectionTitle(String title) {
     return Text(

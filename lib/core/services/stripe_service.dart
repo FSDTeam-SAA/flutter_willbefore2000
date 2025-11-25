@@ -66,7 +66,7 @@ class StripeService {
     }
   }
 
-  static Future<bool> processPayment({
+  static Future<Map<String, dynamic>> processPayment({
     required double amount,
     required String currency,
     Map<String, dynamic>? metadata,
@@ -76,16 +76,19 @@ class StripeService {
       final amountInCents = (amount * 100).round().toString();
 
       // Create payment intent
-      final paymentIntent = await createPaymentIntent(
+      final paymentIntentData = await createPaymentIntent(
         amount: amountInCents,
         currency: currency,
         metadata: metadata,
       );
 
+      final String clientSecret = paymentIntentData['client_secret'];
+      final String paymentIntentId = paymentIntentData['id'];
+
       // Initialize payment sheet
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
-          paymentIntentClientSecret: paymentIntent['client_secret'],
+          paymentIntentClientSecret: clientSecret,
           merchantDisplayName: 'SmilesTreats',
           style: ThemeMode.system,
         ),
@@ -93,10 +96,21 @@ class StripeService {
 
       // Present payment sheet
       await Stripe.instance.presentPaymentSheet();
-      return true;
+      return {
+        'success': true,
+        'paymentIntentId': paymentIntentId, // This is the real one
+        'clientSecret': clientSecret,
+      };
+    } on StripeException catch (e) {
+      // Handle Stripe-specific errors (declined card, etc.)
+      DPrint.error('StripeException: ${e.error.localizedMessage}');
+      return {
+        'success': false,
+        'error': e.error.localizedMessage ?? 'Payment failed',
+      };
     } catch (e) {
       DPrint.error('Payment processing error: $e');
-      return false;
+      return {'success': false, 'error': e.toString()};
     }
   }
 

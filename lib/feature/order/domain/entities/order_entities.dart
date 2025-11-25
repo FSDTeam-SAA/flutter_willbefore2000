@@ -4,7 +4,6 @@ import '../../../cart/domain/entities/cart_item.dart';
 enum OrderStatus {
   pending,
   confirmed,
-  processing,
   shipped,
   delivered,
   cancelled;
@@ -15,8 +14,6 @@ enum OrderStatus {
         return 'Pending';
       case OrderStatus.confirmed:
         return 'Confirmed';
-      case OrderStatus.processing:
-        return 'Processing';
       case OrderStatus.shipped:
         return 'Shipped';
       case OrderStatus.delivered:
@@ -32,8 +29,6 @@ enum OrderStatus {
         return Colors.orange;
       case OrderStatus.confirmed:
         return Colors.blue;
-      case OrderStatus.processing:
-        return Colors.purple;
       case OrderStatus.shipped:
         return Colors.teal;
       case OrderStatus.delivered:

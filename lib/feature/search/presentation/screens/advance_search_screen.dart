@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutx_core/flutx_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
 

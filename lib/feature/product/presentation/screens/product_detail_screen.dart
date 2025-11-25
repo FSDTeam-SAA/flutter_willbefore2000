@@ -3,16 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart'; // Added GoRouter import
 import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
-import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
-import 'package:smilestreats/feature/cart/presentation/screens/checkout_screen.dart';
 
 import '../../../../core/common/widgets/html_content_widget.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routes/route_endpoint.dart';
 import '../../../../core/utils/hero_tag_manager.dart';
-import '../../../cart/domain/entities/cart_item.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
-import '../../../cart/presentation/providers/checkout_form_proivder.dart';
 import '../providers/products_details_provider.dart';
 import '../providers/products_providers.dart';
 
@@ -557,7 +553,7 @@ class ProductDetailScreen extends ConsumerWidget {
           spacing: 12,
           runSpacing: 8,
           children: product.colors.asMap().entries.map<Widget>((entry) {
-            final index = entry.key;
+            // final index = entry.key;
             final colorName = entry.value;
             final isSelected = state.selectedColor == colorName;
 

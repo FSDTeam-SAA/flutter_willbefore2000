@@ -24,8 +24,6 @@ extension OrderExtensions on Order {
         return Colors.orange;
       case OrderStatus.confirmed:
         return Colors.blue;
-      case OrderStatus.processing:
-        return Colors.purple;
       case OrderStatus.shipped:
         return Colors.indigo;
       case OrderStatus.delivered:
@@ -41,8 +39,6 @@ extension OrderExtensions on Order {
         return 'Pending';
       case OrderStatus.confirmed:
         return 'Confirmed';
-      case OrderStatus.processing:
-        return 'Processing';
       case OrderStatus.shipped:
         return 'Shipped';
       case OrderStatus.delivered:
@@ -112,6 +108,8 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<Order>>> {
       state = AsyncValue.error(e, stackTrace);
     }
   }
+
+
 }
 
 class AdminOrderNotifier extends StateNotifier<AsyncValue<List<Order>>> {
