@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:flutx_core/flutx_core.dart';
 import 'package:http/http.dart' as http;
+import 'package:smilestreats/core/constants/shippo_key.dart';
 
 class ShippoService {
   static const String baseUrl = 'https://api.goshippo.com';
-  static const String apiToken =
-      'shippo_test_763c1b35dfa914e4695ebd890a960256bf0345d4';
+  static const String apiToken = shippoLiveKey;
 
   Future<Map<String, dynamic>?> createAddress({
     required String name,

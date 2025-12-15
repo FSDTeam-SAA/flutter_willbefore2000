@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:smilestreats/core/services/storage_service.dart';
 import 'package:smilestreats/feature/auth/domain/usecases/change_password_use_case.dart';
 

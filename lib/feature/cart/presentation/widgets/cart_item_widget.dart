@@ -103,7 +103,7 @@ class CartItemWidget extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      item.product.formattedPrice,
+                      item.product.formattedDiscountPrice.toString(),
                       style: GoogleFonts.notoSansKr(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,

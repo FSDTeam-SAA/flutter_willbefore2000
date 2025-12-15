@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutx_core/flutx_core.dart';
 import '../../data/sources/order_remote_data_source.dart';
 import '../../domain/entities/order_entities.dart';

@@ -1,6 +1,6 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../product/domain/entrity/product.dart';
 import '../../domain/entities/cart_item.dart';

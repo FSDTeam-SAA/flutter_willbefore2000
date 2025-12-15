@@ -1,5 +1,5 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import '../../data/repos/products_repository_impl.dart';
 import '../../data/sources/products_remote_data_source.dart';
