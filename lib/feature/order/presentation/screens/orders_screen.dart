@@ -6,6 +6,7 @@ import '../providers/order_provider.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class OrdersScreen extends ConsumerStatefulWidget {
   const OrdersScreen({super.key});
@@ -313,15 +314,52 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
             ),
           ),
 
-          // Total
           const SizedBox(height: 8),
           Text(
             'Total (${order.items.length} item${order.items.length > 1 ? 's' : ''}): \$${order.total.toStringAsFixed(0)}',
             style: const TextStyle(fontSize: 14, color: Colors.grey),
           ),
+          if (order.trackingNumber != null && order.trackingNumber!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: SelectableText(
+                'Tracking: ${order.trackingNumber}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
+          if (order.metadata != null && order.metadata!['label_url'] != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: TextButton.icon(
+                onPressed: () => _launchURL(order.metadata!['label_url']),
+                icon: const Icon(Icons.picture_as_pdf, size: 16),
+                label: const Text('View Shipping Label'),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  foregroundColor: Colors.teal,
+                ),
+              ),
+            ),
         ],
       ),
     );
+  }
+
+  Future<void> _launchURL(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not launch $urlString')));
+      }
+    }
   }
 
   Widget _buildOrderHistoryRow(Order order, int index) {
@@ -342,7 +380,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
             flex: 3,
             child: Text(
               mainProduct != null
-                  ? '${mainProduct.product.title.length > 15 ? '${mainProduct.product.title.substring(0, 15)}...' : mainProduct.product.title}'
+                  ? mainProduct.product.title.length > 15 ? '${mainProduct.product.title.substring(0, 15)}...' : mainProduct.product.title
                   : 'Order #${order.id.substring(0, 8)}',
               style: const TextStyle(fontSize: 13, color: Colors.black87),
             ),

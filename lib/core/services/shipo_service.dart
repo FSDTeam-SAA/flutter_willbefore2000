@@ -5,7 +5,7 @@ import 'package:smilestreats/core/constants/shippo_key.dart';
 
 class ShippoService {
   static const String baseUrl = 'https://api.goshippo.com';
-  static const String apiToken = shippoLiveKey;
+  static const String apiToken = shippoTestKey;
 
   Future<Map<String, dynamic>?> createAddress({
     required String name,
@@ -40,17 +40,22 @@ class ShippoService {
       if (email != null) 'email': email,
       if (isResidential != null) 'is_residential': isResidential,
       if (metadata != null) 'metadata': metadata,
+      'validate': true,
     });
 
     try {
       final response = await http.post(url, headers: headers, body: body);
 
-      if (response.statusCode == 201) {
-        // Success for POST
+      if (response.statusCode == 201 || response.statusCode == 400) {
+        // Success for POST or Validation Error
         return jsonDecode(response.body);
       } else {
         DPrint.error('Error: ${response.statusCode} - ${response.body}');
-        return null;
+        return {
+          'status': 'error',
+          'statusCode': response.statusCode,
+          'message': response.body,
+        };
       }
     } catch (e) {
       DPrint.error('Exception: $e');

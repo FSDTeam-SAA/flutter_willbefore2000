@@ -536,6 +536,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     try {
       // Create Shippo address
       final shippoService = ShippoService();
+      final String formattedPhone = _formatPhoneNumber(
+        formState.phoneNumber,
+        formState.country,
+      );
+
       final addressResult = await shippoService.createAddress(
         name: '${formState.firstName} ${formState.lastName}',
         street1: formState.address,
@@ -543,22 +548,105 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         state: formState.state,
         zip: formState.zipCode,
         country: _getCountryCode(formState.country),
-        phone: formState.phoneNumber,
+        phone: formattedPhone,
         email: formState.email,
         isResidential: true,
         metadata: 'Customer Order',
       );
 
-      DPrint.log('Shippo address creation success: $addressResult');
+      DPrint.log('Shippo address creation result: $addressResult');
 
-      if (addressResult == null || !addressResult['is_complete']) {
+      if (addressResult == null) {
         if (ref.context.mounted) {
           ScaffoldMessenger.of(ref.context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Failed to validate shipping address: ${addressResult?['validation_results']?['messages']?.join(', ') ?? 'Unknown error'}',
-              ),
+            const SnackBar(
+              content: Text('Failed to connect to shipping service.'),
               backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Check for explicit API errors (like 400 Bad Request results provided by Shippo)
+      if (addressResult['__all__'] != null ||
+          addressResult['status'] == 'error') {
+        String apiError = 'Validation Error';
+        if (addressResult['__all__'] != null &&
+            (addressResult['__all__'] as List).isNotEmpty) {
+          apiError = (addressResult['__all__'] as List).join('\n');
+        } else if (addressResult['message'] != null) {
+          apiError = addressResult['message'];
+        }
+
+        if (ref.context.mounted) {
+          showDialog(
+            context: ref.context,
+            builder: (context) => AlertDialog(
+              title: const Text('Shipping Service Error'),
+              content: Text(apiError),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
+        return;
+      }
+
+      // Check if address is valid. Shippo returns validation_results with messages.
+      final bool isComplete = addressResult['is_complete'] ?? false;
+      final validationResults = addressResult['validation_results'];
+
+      // If validation_results is empty (null or {}), it means validation is not available for this country.
+      // In this case, we trust is_complete.
+      final bool hasValidationResult =
+          validationResults != null && validationResults.isNotEmpty;
+      final bool isValid =
+          !hasValidationResult || (validationResults['is_valid'] ?? false);
+      final List<dynamic> messages = validationResults?['messages'] ?? [];
+
+      // Also check root level messages for errors
+      final List<dynamic> rootMessages = addressResult['messages'] ?? [];
+      final bool hasErrorInMessages =
+          messages.any(
+            (m) => m['code'] == 'user_input_problem' || m['source'] == 'error',
+          ) ||
+          rootMessages.any(
+            (m) => m['code'] == 'user_input_problem' || m['source'] == 'error',
+          );
+
+      if ((hasValidationResult && !isValid) ||
+          !isComplete ||
+          hasErrorInMessages) {
+        String errorMessage = 'Invalid shipping address.';
+        if (messages.isNotEmpty) {
+          // Join message texts. Shippo messages usually have 'text' and 'code' fields.
+          errorMessage = messages
+              .map((m) => m['text']?.toString() ?? 'Unknown error')
+              .join('\n');
+        } else if (rootMessages.isNotEmpty) {
+          // Sometimes errors are in the root messages list
+          errorMessage = rootMessages
+              .map((m) => m['text']?.toString() ?? 'Unknown error')
+              .join('\n');
+        }
+
+        if (ref.context.mounted) {
+          showDialog(
+            context: ref.context,
+            builder: (context) => AlertDialog(
+              title: const Text('Shipping Validation Error'),
+              content: Text(errorMessage),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
             ),
           );
         }
@@ -599,7 +687,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         firstName: formState.firstName,
         lastName: formState.lastName,
         email: formState.email,
-        phoneNumber: formState.phoneNumber,
+        phoneNumber: formattedPhone,
         address: formState.address,
         city: formState.city,
         state: formState.state,
@@ -644,5 +732,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     } catch (e) {
       return 'US'; // Default fallback
     }
+  }
+
+  String _formatPhoneNumber(String phone, String countryName) {
+    // Remove all non-numeric characters except +
+    String cleaned = phone.replaceAll(RegExp(r'[^0-9+]'), '');
+
+    // Handle specific cases like "00" prefix for international calls
+    if (cleaned.startsWith('00')) {
+      cleaned = '+' + cleaned.substring(2);
+    }
+
+    // If it doesn't start with + and we have a country code, we could try to prepend it.
+    // For many carriers, + is essential for international shipments.
+    // But since the user might have already typed it, we just clean it.
+
+    return cleaned;
   }
 }

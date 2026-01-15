@@ -3,6 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/routes/route_endpoint.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -115,8 +118,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       : const BorderSide(color: Colors.blue, width: 1),
                 ),
                 child: ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   leading: Icon(
                     data['type'] == 'order_shipped'
                         ? Icons.local_shipping
@@ -144,6 +149,39 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             ),
                           ),
                         ),
+                      if (data['tracking_number'] != null &&
+                          data['tracking_number'].toString().isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            'Tracking: ${data['tracking_number']}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ),
+                      if (data['metadata'] != null &&
+                          data['metadata']['label_url'] != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: TextButton.icon(
+                            onPressed: () =>
+                                _launchURL(data['metadata']['label_url']),
+                            icon: const Icon(Icons.picture_as_pdf, size: 14),
+                            label: const Text(
+                              'View Shipping Label',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              foregroundColor: Colors.teal,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                   trailing: isRead
@@ -160,13 +198,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           .update({'read': true});
                     }
 
-                    // Optional: Navigate to order detail
+                    // Navigate to orders screen
                     if (data['orderId'] != null) {
-                      Navigator.pushNamed(
-                        context,
-                        '/order-detail',
-                        arguments: data['orderId'],
-                      );
+                      context.push(RoutePaths.orders);
                     }
                   },
                 ),
@@ -176,5 +210,16 @@ class _NotificationScreenState extends State<NotificationScreen> {
         },
       ),
     );
+  }
+
+  Future<void> _launchURL(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not launch $urlString')));
+      }
+    }
   }
 }
