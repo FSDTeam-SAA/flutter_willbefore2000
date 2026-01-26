@@ -36,6 +36,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final TextEditingController _stateController = TextEditingController();
   final TextEditingController _zipCodeController = TextEditingController();
   final TextEditingController _countryController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -162,6 +163,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final formState = ref.watch(checkoutFormProvider);
     final user = ref.watch(authProvider).user;
 
+    final checkoutItems = widget.buyNowItem != null
+        ? [widget.buyNowItem!]
+        : cartState.items;
+    final double total = widget.buyNowItem != null
+        ? widget.buyNowItem!.totalPrice
+        : cartState.total;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Checkout'),
@@ -173,7 +181,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ? const Center(child: CircularProgressIndicator())
           : cartState.errorMessage != null
           ? Center(child: Text('Error: ${cartState.errorMessage}'))
-          : cartState.items.isEmpty
+          : checkoutItems.isEmpty
           ? const Center(child: Text('Your cart is empty'))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -186,12 +194,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   const SizedBox(height: 24),
                   _buildPaymentSection(),
                   const SizedBox(height: 32),
-                  _buildContinueButton(
-                    ref,
-                    cartState.items,
-                    cartState.total,
-                    formState,
-                  ),
+                  _buildContinueButton(ref, checkoutItems, total, formState),
                 ],
               ),
             ),
@@ -510,6 +513,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     return SizedBox(
       width: 181,
       child: ref.context.primaryButton(
+        isLoading: _isLoading,
         onPressed: () {
           if (formState.isValid) {
             _processPayment(ref, cartItems, total, formState);
@@ -533,6 +537,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     double total,
     CheckoutFormState formState,
   ) async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
       // Create Shippo address
       final shippoService = ShippoService();
@@ -705,8 +712,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             metadata: {'shippo_address_id': addressResult['object_id']},
           );
 
-      // Clear cart and form
-      await ref.read(cartProvider.notifier).clearCart();
+      // Clear cart ONLY if NOT a "Buy Now" order
+      if (widget.buyNowItem == null) {
+        await ref.read(cartProvider.notifier).clearCart();
+      }
       ref.read(checkoutFormProvider.notifier).reset();
 
       // Navigate to success page
@@ -721,6 +730,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             backgroundColor: Colors.red,
           ),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
