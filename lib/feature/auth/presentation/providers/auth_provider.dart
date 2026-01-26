@@ -3,6 +3,7 @@ import 'package:smilestreats/core/services/storage_service.dart';
 import 'package:smilestreats/feature/auth/domain/usecases/change_password_use_case.dart';
 
 import '../../../../core/base/base_state.dart';
+import '../../../../core/errors/auth_exception.dart';
 import '../../data/repo/auth_repository_impl.dart';
 import '../../domain/models/user_model.dart';
 import '../../domain/repo/auth_repository.dart';
@@ -128,12 +129,15 @@ class AuthProvider extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, loginError: "");
     try {
       await _loginUseCase.call(request);
+      state = state.copyWith(isLoading: false, loginError: "");
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, loginError: e.toString());
+      String message = e.toString();
+      if (e is AuthException) {
+        message = e.message;
+      }
+      state = state.copyWith(isLoading: false, loginError: message);
       return false;
-    } finally {
-      state = state.copyWith(isLoading: false);
     }
   }
 
@@ -141,12 +145,15 @@ class AuthProvider extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, signupError: "");
     try {
       await _signupUseCase.call(request);
+      state = state.copyWith(isLoading: false, signupError: "");
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, signupError: e.toString());
+      String message = e.toString();
+      if (e is AuthException) {
+        message = e.message;
+      }
+      state = state.copyWith(isLoading: false, signupError: message);
       return false;
-    } finally {
-      state = state.copyWith(isLoading: false);
     }
   }
 
@@ -154,15 +161,15 @@ class AuthProvider extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, forgotPasswordError: "");
     try {
       await _forgotPasswordUseCase.call(request);
+      state = state.copyWith(isLoading: false, forgotPasswordError: "");
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        forgotPasswordError: e.toString(),
-      );
+      String message = e.toString();
+      if (e is AuthException) {
+        message = e.message;
+      }
+      state = state.copyWith(isLoading: false, forgotPasswordError: message);
       return false;
-    } finally {
-      state = state.copyWith(isLoading: false);
     }
   }
 
@@ -170,15 +177,15 @@ class AuthProvider extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, changePasswordError: "");
     try {
       await _changePasswordUseCase.call(request);
+      state = state.copyWith(isLoading: false, changePasswordError: "");
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        changePasswordError: e.toString(),
-      );
+      String message = e.toString();
+      if (e is AuthException) {
+        message = e.message;
+      }
+      state = state.copyWith(isLoading: false, changePasswordError: message);
       return false;
-    } finally {
-      state = state.copyWith(isLoading: false);
     }
   }
 
