@@ -195,6 +195,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   _buildPaymentSection(),
                   const SizedBox(height: 32),
                   _buildContinueButton(ref, checkoutItems, total, formState),
+                  if (_isLoading) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      _loadingMessage,
+                      style: const TextStyle(
+                        color: AppColors.primaryLaurel,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
@@ -531,6 +543,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     );
   }
 
+  String _loadingMessage = 'Continue to Payment';
+
   Future<void> _processPayment(
     WidgetRef ref,
     List<CartItem> cartItems,
@@ -539,8 +553,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   ) async {
     setState(() {
       _isLoading = true;
+      _loadingMessage = 'Verifying Address...';
     });
     try {
+      DPrint.log('Step 1: Verifying Shipping Address with Shippo...');
+
       // Create Shippo address
       final shippoService = ShippoService();
       final String formattedPhone = _formatPhoneNumber(
@@ -564,15 +581,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       DPrint.log('Shippo address creation result: $addressResult');
 
       if (addressResult == null) {
-        if (ref.context.mounted) {
-          ScaffoldMessenger.of(ref.context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to connect to shipping service.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        return;
+        throw Exception(
+          'Failed to connect to shipping service. Please check your internet connection.',
+        );
       }
 
       // Check for explicit API errors (like 400 Bad Request results provided by Shippo)
@@ -585,23 +596,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         } else if (addressResult['message'] != null) {
           apiError = addressResult['message'];
         }
-
-        if (ref.context.mounted) {
-          showDialog(
-            context: ref.context,
-            builder: (context) => AlertDialog(
-              title: const Text('Shipping Service Error'),
-              content: Text(apiError),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-          );
-        }
-        return;
+        throw Exception(apiError);
       }
 
       // Check if address is valid. Shippo returns validation_results with messages.
@@ -631,34 +626,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           hasErrorInMessages) {
         String errorMessage = 'Invalid shipping address.';
         if (messages.isNotEmpty) {
-          // Join message texts. Shippo messages usually have 'text' and 'code' fields.
           errorMessage = messages
               .map((m) => m['text']?.toString() ?? 'Unknown error')
               .join('\n');
         } else if (rootMessages.isNotEmpty) {
-          // Sometimes errors are in the root messages list
           errorMessage = rootMessages
               .map((m) => m['text']?.toString() ?? 'Unknown error')
               .join('\n');
         }
-
-        if (ref.context.mounted) {
-          showDialog(
-            context: ref.context,
-            builder: (context) => AlertDialog(
-              title: const Text('Shipping Validation Error'),
-              content: Text(errorMessage),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-          );
-        }
-        return;
+        throw Exception(errorMessage);
       }
+
+      DPrint.log('Step 2: Address Verified. Proceeding to Stripe Payment...');
+      setState(() {
+        _loadingMessage = 'Processing Payment...';
+      });
 
       // Process payment with Stripe
       final paymentResult = await StripeService.processPayment(
@@ -672,15 +654,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       );
 
       if (!paymentResult['success']) {
-        if (ref.context.mounted) {
-          ScaffoldMessenger.of(ref.context).showSnackBar(
-            SnackBar(
-              content: Text(paymentResult['error'] ?? 'Payment failed'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        return;
+        throw Exception(paymentResult['error'] ?? 'Payment failed');
       }
 
       final String realPaymentIntentId = paymentResult['paymentIntentId'];
@@ -688,6 +662,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       DPrint.log(
         "Payment processed successfully. PaymentIntent ID: $realPaymentIntentId",
       );
+
+      DPrint.log('Step 3: Creating Order in Database...');
+      setState(() {
+        _loadingMessage = 'Finalizing Order...';
+      });
 
       // Create shipping address entity
       final shippingAddress = ShippingAddress(
@@ -723,11 +702,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         GoRouter.of(ref.context).go(RoutePaths.orderConfirm, extra: order);
       }
     } catch (e) {
+      DPrint.error('Checkout Error: $e');
       if (ref.context.mounted) {
-        ScaffoldMessenger.of(ref.context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red,
+        showDialog(
+          context: ref.context,
+          builder: (context) => AlertDialog(
+            title: const Text('Checkout Error'),
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
           ),
         );
       }
@@ -735,6 +722,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _loadingMessage = 'Continue to Payment';
         });
       }
     }
