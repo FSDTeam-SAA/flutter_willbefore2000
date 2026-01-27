@@ -118,10 +118,19 @@ class AppRouter {
           GoRoute(
             path: RoutePaths.search,
             name: "Search",
-            pageBuilder: (context, state) => MaterialPage(
-              key: state.pageKey,
-              child: const AdvancedSearchScreen(),
-            ),
+            pageBuilder: (context, state) {
+              // Extract query parameters for category filtering
+              final category = state.uri.queryParameters['category'];
+              final categoryId = state.uri.queryParameters['categoryId'];
+
+              return MaterialPage(
+                key: state.pageKey,
+                child: AdvancedSearchScreen(
+                  initialCategory: category,
+                  initialCategoryId: categoryId,
+                ),
+              );
+            },
           ),
           GoRoute(
             path: RoutePaths.cart,

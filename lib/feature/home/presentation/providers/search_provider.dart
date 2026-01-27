@@ -135,7 +135,7 @@ class HomeSearchNotifier extends StateNotifier<HomeSearchState> {
           HomeSearchResult(
             id: product.id,
             title: product.title,
-            subtitle: product.description,
+            subtitle: _stripHtml(product.description),
             imageUrl: product.imageUrls.first,
             type: HomeSearchResultType.product,
             matchScore: score,
@@ -232,6 +232,26 @@ class HomeSearchNotifier extends StateNotifier<HomeSearchState> {
     return matrix[s1.length][s2.length];
   }
 
+  String _stripHtml(String htmlString) {
+    // Remove HTML tags
+    String text = htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
+
+    // Decode HTML entities
+    text = text
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'")
+        .replaceAll('&apos;', "'");
+
+    // Remove extra whitespace
+    text = text.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+    return text;
+  }
+
   void clearSearch() {
     state = state.copyWith(
       query: '',
@@ -242,8 +262,7 @@ class HomeSearchNotifier extends StateNotifier<HomeSearchState> {
   }
 }
 
-final searchProvider = StateNotifierProvider<HomeSearchNotifier, HomeSearchState>((
-  ref,
-) {
-  return HomeSearchNotifier(ref);
-});
+final searchProvider =
+    StateNotifierProvider<HomeSearchNotifier, HomeSearchState>((ref) {
+      return HomeSearchNotifier(ref);
+    });

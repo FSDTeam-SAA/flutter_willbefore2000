@@ -15,22 +15,41 @@ import '../widgets/category_chips.dart';
 import '../widgets/search_suggestions_overlay.dart';
 
 class AdvancedSearchScreen extends ConsumerWidget {
-  const AdvancedSearchScreen({super.key});
+  final String? initialCategory;
+  final String? initialCategoryId;
+
+  const AdvancedSearchScreen({
+    super.key,
+    this.initialCategory,
+    this.initialCategoryId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final searchState = ref.watch(advancedSearchProvider);
     final uiState = ref.watch(searchUIProvider);
 
-    return _AdvancedSearchView(searchState: searchState, uiState: uiState);
+    return _AdvancedSearchView(
+      searchState: searchState,
+      uiState: uiState,
+      initialCategory: initialCategory,
+      initialCategoryId: initialCategoryId,
+    );
   }
 }
 
 class _AdvancedSearchView extends ConsumerStatefulWidget {
   final AdvancedSearchState searchState;
   final SearchUIState uiState;
+  final String? initialCategory;
+  final String? initialCategoryId;
 
-  const _AdvancedSearchView({required this.searchState, required this.uiState});
+  const _AdvancedSearchView({
+    required this.searchState,
+    required this.uiState,
+    this.initialCategory,
+    this.initialCategoryId,
+  });
 
   @override
   ConsumerState<_AdvancedSearchView> createState() =>
@@ -54,6 +73,16 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(advancedSearchProvider.notifier).loadInitialData();
+
+      // Apply initial category filter if provided
+      if (widget.initialCategory != null || widget.initialCategoryId != null) {
+        ref
+            .read(advancedSearchProvider.notifier)
+            .updateFilters(
+              category: widget.initialCategory,
+              categoryId: widget.initialCategoryId,
+            );
+      }
     });
   }
 

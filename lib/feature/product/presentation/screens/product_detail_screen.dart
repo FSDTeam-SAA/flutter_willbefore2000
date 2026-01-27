@@ -155,10 +155,79 @@ class ProductDetailScreen extends ConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final product = productsState.products.firstWhere(
-      (p) => p.id == productId,
-      orElse: () => throw Exception('Product not found'),
+    // If products are empty, try to fetch them
+    if (productsState.products.isEmpty) {
+      // Trigger a fetch if products are empty
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(productsProvider.notifier).fetchProducts();
+      });
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    // Debug: Print product lookup info
+    print('ProductDetailScreen - Looking for product ID: $productId');
+    print(
+      'ProductDetailScreen - Available products: ${productsState.products.map((p) => p.id).toList()}',
     );
+
+    // Try to find the product
+    final productIndex = productsState.products.indexWhere(
+      (p) => p.id == productId,
+    );
+
+    // If product is not found, show an error screen
+    if (productIndex == -1) {
+      return Scaffold(
+        appBar: AppBar(backgroundColor: Colors.white, elevation: 0),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+              const SizedBox(height: 16),
+              Text(
+                'Product Not Found',
+                style: GoogleFonts.notoSansKr(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textAppBlack,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'The product you are looking for does not exist.',
+                style: GoogleFonts.notoSansKr(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => context.go(RoutePaths.home),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryLaurel,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
+                ),
+                child: Text(
+                  'Go to Home',
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final product = productsState.products[productIndex];
 
     final effectiveHeroTag =
         heroTag ??
