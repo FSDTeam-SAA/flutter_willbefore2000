@@ -37,6 +37,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final TextEditingController _stateController = TextEditingController();
   final TextEditingController _zipCodeController = TextEditingController();
   final TextEditingController _countryController = TextEditingController();
+  String _selectedCountryCode = '+1'; // Default to US country code
   bool _isLoading = false;
 
   final GeoService _geoService = GeoService();
@@ -164,7 +165,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   void _showCountryPicker(BuildContext context) {
     showCountryPicker(
       context: context,
-      showPhoneCode: false, // Set to true if you want phone codes
+      showPhoneCode: true, // Show phone codes
       countryListTheme: CountryListThemeData(
         flagSize: 25,
         backgroundColor: Colors.white,
@@ -188,6 +189,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       onSelect: (Country country) {
         setState(() {
           _countryController.text = country.name;
+          _selectedCountryCode = '+${country.phoneCode}';
           // Reset dependent fields
           _stateController.clear();
           _cityController.clear();
@@ -460,28 +462,148 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          Row(
+          // Email and Phone Stacked
+          _buildTextField(
+            controller: _emailController,
+            field: 'email',
+            label: 'Email',
+            keyboardType: TextInputType.emailAddress,
+            isRequired: true,
+          ),
+          const SizedBox(height: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _buildTextField(
-                  controller: _emailController,
-                  field: 'email',
-                  label: 'Email',
-                  keyboardType: TextInputType.emailAddress,
-                  isRequired: true,
-                ),
+              const Row(
+                children: [
+                  Text(
+                    'Phone Number',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.iconDeselectedColor,
+                    ),
+                  ),
+                  Text(
+                    ' *',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.red,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildTextField(
-                  controller: _phoneNumberController,
-                  field: 'phoneNumber',
-                  label: 'Phone Number',
-                  keyboardType: TextInputType.phone,
-                  isRequired: true,
-                ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      showCountryPicker(
+                        context: context,
+                        showPhoneCode: true,
+                        onSelect: (Country country) {
+                          setState(() {
+                            _selectedCountryCode = '+${country.phoneCode}';
+                          });
+                        },
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: AppColors.iconDeselectedColor,
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        _selectedCountryCode,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _phoneNumberController,
+                      keyboardType: TextInputType.phone,
+                      onChanged: (value) {
+                        _updateFormField('phoneNumber', value);
+                      },
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                        isDense: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(4),
+                          borderSide: BorderSide(
+                            color: AppColors.iconDeselectedColor,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(4),
+                          borderSide: BorderSide(
+                            color: AppColors.iconDeselectedColor,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(4),
+                          borderSide: const BorderSide(
+                            color: AppColors.iconDeselectedColor,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
+          ),
+          const SizedBox(height: 16),
+          // Country moved before Address
+          const Text(
+            'Country',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: () => _showCountryPicker(context),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _countryController.text.isEmpty
+                          ? 'Select Country'
+                          : _countryController.text,
+                      style: TextStyle(
+                        color: _countryController.text.isEmpty
+                            ? Colors.grey
+                            : Colors.black,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.arrow_drop_down, color: Colors.grey[600]),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           _buildTextField(
@@ -520,45 +642,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Country',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 8),
-          GestureDetector(
-            onTap: () => _showCountryPicker(context),
-            child: Container(
-              height: 36,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[300]!),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      _countryController.text.isEmpty
-                          ? 'Select Country'
-                          : _countryController.text,
-                      style: TextStyle(
-                        color: _countryController.text.isEmpty
-                            ? Colors.grey
-                            : Colors.black,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                  Icon(Icons.arrow_drop_down, color: Colors.grey[600]),
-                ],
-              ),
-            ),
           ),
         ],
       ),
@@ -634,8 +717,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         GestureDetector(
           onTap: enabled ? onTap : null,
           child: Container(
-            height: 36,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.iconDeselectedColor),
               borderRadius: BorderRadius.circular(4),
@@ -693,8 +775,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ),
         const SizedBox(height: 8),
         Container(
-          height: 36,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(
             border: Border.all(color: AppColors.iconDeselectedColor),
             borderRadius: BorderRadius.circular(4),
@@ -759,33 +840,30 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ],
         ),
         const SizedBox(height: 8),
-        SizedBox(
-          height: 36,
-          child: TextFormField(
-            controller: controller,
-            keyboardType: keyboardType,
-            onChanged: (value) {
-              _updateFormField(field, value);
-            },
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 4,
-              ),
-              isDense: true,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(color: AppColors.iconDeselectedColor),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(color: AppColors.iconDeselectedColor),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(
-                  color: AppColors.iconDeselectedColor,
-                ),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          onChanged: (value) {
+            _updateFormField(field, value);
+          },
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
+            isDense: true,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: BorderSide(color: AppColors.iconDeselectedColor),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: BorderSide(color: AppColors.iconDeselectedColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: const BorderSide(
+                color: AppColors.iconDeselectedColor,
               ),
             ),
           ),
@@ -838,10 +916,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
       // Create Shippo address
       final shippoService = ShippoService();
-      final String formattedPhone = _formatPhoneNumber(
-        formState.phoneNumber,
-        formState.country,
-      );
+
+      // Format phone number with selected country code
+      String phoneInput = formState.phoneNumber.trim();
+      String formattedPhone;
+      if (phoneInput.startsWith('+')) {
+        formattedPhone = phoneInput; // User entered full international number
+      } else {
+        // Prepend selected country code
+        formattedPhone = '$_selectedCountryCode$phoneInput';
+      }
+      // Remove any non-numeric characters (except +)
+      formattedPhone = formattedPhone.replaceAll(RegExp(r'[^0-9+]'), '');
 
       final addressResult = await shippoService.createAddress(
         name: '${formState.firstName} ${formState.lastName}',
