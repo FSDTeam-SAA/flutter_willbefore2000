@@ -86,6 +86,14 @@ class OrderRepositoryImpl implements OrderRepository {
   }
 
   @override
+  Future<void> updateOrderPhoneNumber(
+    String orderId,
+    String phoneNumber,
+  ) async {
+    await _remoteDataSource.updateOrderPhoneNumber(orderId, phoneNumber);
+  }
+
+  @override
   Future<Order?> getOrderById(String orderId) async {
     return await _remoteDataSource.getOrderById(orderId);
   }

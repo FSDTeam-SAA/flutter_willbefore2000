@@ -110,7 +110,18 @@ class OrderNotifier extends StateNotifier<AsyncValue<List<Order>>> {
     }
   }
 
-
+  Future<void> updateOrderPhoneNumber(
+    String orderId,
+    String phoneNumber,
+  ) async {
+    try {
+      await _repository.updateOrderPhoneNumber(orderId, phoneNumber);
+      // State will be updated automatically via stream listener
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+      rethrow;
+    }
+  }
 }
 
 class AdminOrderNotifier extends StateNotifier<AsyncValue<List<Order>>> {

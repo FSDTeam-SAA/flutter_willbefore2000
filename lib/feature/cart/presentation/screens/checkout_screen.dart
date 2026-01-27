@@ -16,6 +16,7 @@ import '../../../order/domain/entities/order_entities.dart';
 import '../../../order/presentation/providers/order_provider.dart';
 import '../../../cart/domain/entities/cart_item.dart';
 import '../providers/checkout_form_proivder.dart';
+import '../../../../core/services/geo_service.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   final CartItem? buyNowItem;
@@ -37,6 +38,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final TextEditingController _zipCodeController = TextEditingController();
   final TextEditingController _countryController = TextEditingController();
   bool _isLoading = false;
+
+  final GeoService _geoService = GeoService();
+  List<String> _cities = [];
+  bool _isLoadingStates = false;
+  bool _isLoadingCities = false;
 
   @override
   void initState() {
@@ -102,6 +108,56 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       formNotifier.updateField('state', _stateController.text);
       formNotifier.updateField('zipCode', _zipCodeController.text);
       formNotifier.updateField('country', _countryController.text);
+
+      // Fetch cities if country is already pre-filled (new flow: Country -> City)
+      if (_countryController.text.isNotEmpty) {
+        _fetchAllCities(_countryController.text);
+      }
+    }
+  }
+
+  Future<void> _fetchAllCities(String countryName) async {
+    setState(() {
+      _isLoadingCities = true;
+      _cities = [];
+    });
+    final cities = await _geoService.getAllCities(countryName);
+    if (mounted) {
+      setState(() {
+        _cities = cities;
+        _isLoadingCities = false;
+      });
+    }
+  }
+
+  Future<void> _findStateForCity(String countryName, String cityName) async {
+    setState(() {
+      _isLoadingStates = true;
+    });
+
+    // Fetch all states for the country
+    final states = await _geoService.getStates(countryName);
+
+    // Check each state to find which one contains this city
+    for (final state in states) {
+      final citiesInState = await _geoService.getCities(countryName, state);
+      if (citiesInState.any((c) => c.toLowerCase() == cityName.toLowerCase())) {
+        if (mounted) {
+          setState(() {
+            _stateController.text = state;
+            _isLoadingStates = false;
+          });
+          _updateFormField('state', state);
+        }
+        return;
+      }
+    }
+
+    // If no state found, clear the loading state
+    if (mounted) {
+      setState(() {
+        _isLoadingStates = false;
+      });
     }
   }
 
@@ -132,8 +188,115 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       onSelect: (Country country) {
         setState(() {
           _countryController.text = country.name;
+          // Reset dependent fields
+          _stateController.clear();
+          _cityController.clear();
+          _cities = [];
         });
         _updateFormField('country', country.name);
+        _updateFormField('state', '');
+        _updateFormField('city', '');
+        _fetchAllCities(country.name);
+      },
+    );
+  }
+
+  void _showCityPicker() {
+    if (_countryController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a country first')),
+      );
+      return;
+    }
+
+    if (_isLoadingCities) return;
+
+    if (_cities.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No cities found for this country')),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return _buildSearchableList(
+          title: 'Select City',
+          items: _cities,
+          onSelect: (city) {
+            setState(() {
+              _cityController.text = city;
+            });
+            _updateFormField('city', city);
+            // Auto-detect state based on selected city
+            _findStateForCity(_countryController.text, city);
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSearchableList({
+    required String title,
+    required List<String> items,
+    required Function(String) onSelect,
+  }) {
+    List<String> filteredItems = List.from(items);
+    return StatefulBuilder(
+      builder: (context, setModalState) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search...',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onChanged: (value) {
+                  setModalState(() {
+                    filteredItems = items
+                        .where(
+                          (item) =>
+                              item.toLowerCase().contains(value.toLowerCase()),
+                        )
+                        .toList();
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: filteredItems.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(filteredItems[index]),
+                      onTap: () => onSelect(filteredItems[index]),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
       },
     );
   }
@@ -331,20 +494,20 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           Row(
             children: [
               Expanded(
-                child: _buildTextField(
-                  controller: _cityController,
-                  field: 'city',
+                child: _buildCascadingPicker(
                   label: 'City',
-                  isRequired: true,
+                  controller: _cityController,
+                  onTap: _showCityPicker,
+                  isLoading: _isLoadingCities,
+                  enabled: _countryController.text.isNotEmpty,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildTextField(
-                  controller: _stateController,
-                  field: 'state',
+                child: _buildReadOnlyField(
                   label: 'State',
-                  isRequired: true,
+                  controller: _stateController,
+                  isLoading: _isLoadingStates,
                 ),
               ),
               const SizedBox(width: 12),
@@ -446,6 +609,121 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCascadingPicker({
+    required String label,
+    required TextEditingController controller,
+    required VoidCallback onTap,
+    bool isLoading = false,
+    bool enabled = true,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: AppColors.iconDeselectedColor,
+          ),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: enabled ? onTap : null,
+          child: Container(
+            height: 36,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.iconDeselectedColor),
+              borderRadius: BorderRadius.circular(4),
+              color: enabled ? Colors.white : Colors.grey[100],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    controller.text.isEmpty ? 'Select $label' : controller.text,
+                    style: TextStyle(
+                      color: controller.text.isEmpty
+                          ? Colors.grey
+                          : Colors.black,
+                      fontSize: 14,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (isLoading)
+                  const SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                else
+                  Icon(
+                    Icons.arrow_drop_down,
+                    color: Colors.grey[600],
+                    size: 20,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReadOnlyField({
+    required String label,
+    required TextEditingController controller,
+    bool isLoading = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: AppColors.iconDeselectedColor,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 36,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.iconDeselectedColor),
+            borderRadius: BorderRadius.circular(4),
+            color: Colors.grey[50],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  controller.text.isEmpty ? 'Auto-filled' : controller.text,
+                  style: TextStyle(
+                    color: controller.text.isEmpty ? Colors.grey : Colors.black,
+                    fontSize: 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (isLoading)
+                const SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else if (controller.text.isNotEmpty)
+                Icon(Icons.check_circle, color: Colors.green[600], size: 16),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

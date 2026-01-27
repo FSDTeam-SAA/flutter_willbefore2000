@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'edit_phone_screen.dart';
 
 class OrdersScreen extends ConsumerStatefulWidget {
   const OrdersScreen({super.key});
@@ -235,23 +236,46 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: _getStatusColor(order.status),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  order.statusText,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+              Row(
+                children: [
+                  // Edit Phone Button
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditPhoneScreen(order: order),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.edit_outlined, size: 18),
+                    tooltip: 'Edit Phone Number',
+                    style: IconButton.styleFrom(
+                      padding: const EdgeInsets.all(4),
+                      minimumSize: const Size(32, 32),
+                      foregroundColor: Colors.blue[700],
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(order.status),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      order.statusText,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -380,7 +404,9 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
             flex: 3,
             child: Text(
               mainProduct != null
-                  ? mainProduct.product.title.length > 15 ? '${mainProduct.product.title.substring(0, 15)}...' : mainProduct.product.title
+                  ? mainProduct.product.title.length > 15
+                        ? '${mainProduct.product.title.substring(0, 15)}...'
+                        : mainProduct.product.title
                   : 'Order #${order.id.substring(0, 8)}',
               style: const TextStyle(fontSize: 13, color: Colors.black87),
             ),

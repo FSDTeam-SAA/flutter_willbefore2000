@@ -13,6 +13,7 @@ abstract class OrderRemoteDataSource {
   Future<List<Order>> getAllOrders();
   Stream<List<Order>> getAllOrdersStream();
   Future<void> updateOrderStatus(String orderId, OrderStatus status);
+  Future<void> updateOrderPhoneNumber(String orderId, String phoneNumber);
   Future<Order?> getOrderById(String orderId);
 }
 
@@ -141,6 +142,44 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       await batch.commit();
     } catch (e) {
       throw Exception('Failed to update order status: $e');
+    }
+  }
+
+  @override
+  Future<void> updateOrderPhoneNumber(
+    String orderId,
+    String phoneNumber,
+  ) async {
+    try {
+      final batch = _firestore.batch();
+
+      // Update in main orders collection
+      final mainOrderRef = _firestore.collection('orders').doc(orderId);
+      batch.update(mainOrderRef, {
+        'shippingAddress.phoneNumber': phoneNumber,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      // Find and update in user subcollection
+      final orderDoc = await mainOrderRef.get();
+      if (orderDoc.exists) {
+        final userId = orderDoc.data()?['userId'];
+        if (userId != null) {
+          final userOrderRef = _firestore
+              .collection('users')
+              .doc(userId)
+              .collection('orders')
+              .doc(orderId);
+          batch.update(userOrderRef, {
+            'shippingAddress.phoneNumber': phoneNumber,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+
+      await batch.commit();
+    } catch (e) {
+      throw Exception('Failed to update order phone number: $e');
     }
   }
 

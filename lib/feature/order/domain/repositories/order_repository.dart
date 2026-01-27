@@ -8,13 +8,14 @@ abstract class OrderRepository {
     required String paymentIntentId,
     required Map<String, dynamic> metadata,
   });
-  
+
   Future<List<Order>> getUserOrders();
   Stream<List<Order>> getUserOrdersStream();
-  
+
   Future<List<Order>> getAllOrders();
   Stream<List<Order>> getAllOrdersStream();
-  
+
   Future<void> updateOrderStatus(String orderId, OrderStatus status);
+  Future<void> updateOrderPhoneNumber(String orderId, String phoneNumber);
   Future<Order?> getOrderById(String orderId);
 }
