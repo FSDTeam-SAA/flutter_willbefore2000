@@ -72,17 +72,19 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
     _searchFocusNode.addListener(_onFocusChange);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(advancedSearchProvider.notifier).loadInitialData();
-
-      // Apply initial category filter if provided
+      // Apply initial category filter BEFORE loading data
       if (widget.initialCategory != null || widget.initialCategoryId != null) {
+        // Set the filter state first using the proper method
         ref
             .read(advancedSearchProvider.notifier)
-            .updateFilters(
-              category: widget.initialCategory,
-              categoryId: widget.initialCategoryId,
+            .setInitialFilters(
+              category: widget.initialCategory ?? 'All',
+              categoryId: widget.initialCategoryId ?? '',
             );
       }
+
+      // Now load the data with filters already set
+      ref.read(advancedSearchProvider.notifier).loadInitialData();
     });
   }
 

@@ -62,9 +62,13 @@ class CategoryChips extends ConsumerWidget {
             ),
             selected: isSelected,
             onSelected: (selected) {
+              // Update filter with both name and ID
               ref
                   .read(advancedSearchProvider.notifier)
-                  .updateFilters(category: selected ? category.name : 'All');
+                  .updateFilters(
+                    category: selected ? category.name : 'All',
+                    categoryId: selected ? (category.id ?? '') : '',
+                  );
             },
             backgroundColor: Colors.white,
             selectedColor: AppColors.primaryLaurel,

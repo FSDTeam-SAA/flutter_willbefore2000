@@ -199,6 +199,14 @@ class AdvancedSearchNotifier extends StateNotifier<AdvancedSearchState> {
     }
   }
 
+  // Set initial filters without triggering reload (use before loadInitialData)
+  void setInitialFilters({String? category, String? categoryId}) {
+    state = state.copyWith(
+      selectedCategory: category ?? state.selectedCategory,
+      selectedCategoryId: categoryId ?? state.selectedCategoryId,
+    );
+  }
+
   void updateSortBy(String sortBy) {
     state = state.copyWith(sortBy: sortBy, currentPage: 1);
 
