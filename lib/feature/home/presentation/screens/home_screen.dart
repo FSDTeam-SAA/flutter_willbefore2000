@@ -60,8 +60,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildHeader(isTablet),
-                      SizedBox(height: isTablet ? 24 : 20),
-                      const HomeBanner(),
+                      // SizedBox(height: isTablet ? 24 : 20),
+                      // const HomeBanner(),
                       SizedBox(height: isTablet ? 24 : 20),
                       Hero(
                         tag: 'search-bar',
