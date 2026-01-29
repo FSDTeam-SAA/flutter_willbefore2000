@@ -20,9 +20,9 @@ class CartRemoteDataSource {
       if (_userId == null) return [];
 
       final querySnapshot = await _firestore
-          .collection(_collection)
+          .collection('users')
           .doc(_userId)
-          .collection('items')
+          .collection('cartItems')
           .orderBy('createdAt', descending: true)
           .get();
 
@@ -39,9 +39,9 @@ class CartRemoteDataSource {
     if (_userId == null) return Stream.value([]);
 
     return _firestore
-        .collection(_collection)
+        .collection('users')
         .doc(_userId)
-        .collection('items')
+        .collection('cartItems')
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map(
@@ -57,9 +57,9 @@ class CartRemoteDataSource {
 
       final cartItemModel = CartItemModel.fromCartItem(item);
       await _firestore
-          .collection(_collection)
+          .collection('users')
           .doc(_userId)
-          .collection('items')
+          .collection('cartItems')
           .doc(item.id)
           .set(cartItemModel.toFirestore());
     } catch (e) {
@@ -73,9 +73,9 @@ class CartRemoteDataSource {
       if (_userId == null) throw Exception("User not authenticated");
 
       await _firestore
-          .collection(_collection)
+          .collection('users')
           .doc(_userId)
-          .collection('items')
+          .collection('cartItems')
           .doc(itemId)
           .update({
             'quantity': quantity,
@@ -93,9 +93,9 @@ class CartRemoteDataSource {
 
       final cartItemModel = CartItemModel.fromCartItem(item);
       await _firestore
-          .collection(_collection)
+          .collection('users')
           .doc(_userId)
-          .collection('items')
+          .collection('cartItems')
           .doc(item.id)
           .update({
             ...cartItemModel.toFirestore(),
@@ -112,9 +112,9 @@ class CartRemoteDataSource {
       if (_userId == null) throw Exception("User not authenticated");
 
       await _firestore
-          .collection(_collection)
+          .collection('users')
           .doc(_userId)
-          .collection('items')
+          .collection('cartItems')
           .doc(itemId)
           .delete();
     } catch (e) {
@@ -129,9 +129,9 @@ class CartRemoteDataSource {
 
       final batch = _firestore.batch();
       final querySnapshot = await _firestore
-          .collection(_collection)
+          .collection('users')
           .doc(_userId)
-          .collection('items')
+          .collection('cartItems')
           .get();
 
       for (final doc in querySnapshot.docs) {
@@ -154,9 +154,9 @@ class CartRemoteDataSource {
       if (_userId == null) return null;
 
       Query query = _firestore
-          .collection(_collection)
+          .collection('users')
           .doc(_userId)
-          .collection('items')
+          .collection('cartItems')
           .where('productId', isEqualTo: productId);
 
       if (size != null) {

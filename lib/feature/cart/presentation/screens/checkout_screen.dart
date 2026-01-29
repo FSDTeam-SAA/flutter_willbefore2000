@@ -1101,19 +1101,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
   }
 
-  String _formatPhoneNumber(String phone, String countryName) {
-    // Remove all non-numeric characters except +
-    String cleaned = phone.replaceAll(RegExp(r'[^0-9+]'), '');
+  // String _formatPhoneNumber(String phone, String countryName) {
+  //   // Remove all non-numeric characters except +
+  //   String cleaned = phone.replaceAll(RegExp(r'[^0-9+]'), '');
 
-    // Handle specific cases like "00" prefix for international calls
-    if (cleaned.startsWith('00')) {
-      cleaned = '+' + cleaned.substring(2);
-    }
+  //   // Handle specific cases like "00" prefix for international calls
+  //   if (cleaned.startsWith('00')) {
+  //     cleaned = '+' + cleaned.substring(2);
+  //   }
 
-    // If it doesn't start with + and we have a country code, we could try to prepend it.
-    // For many carriers, + is essential for international shipments.
-    // But since the user might have already typed it, we just clean it.
+  //   // If it doesn't start with + and we have a country code, we could try to prepend it.
+  //   // For many carriers, + is essential for international shipments.
+  //   // But since the user might have already typed it, we just clean it.
 
-    return cleaned;
-  }
+  //   return cleaned;
+  // }
 }

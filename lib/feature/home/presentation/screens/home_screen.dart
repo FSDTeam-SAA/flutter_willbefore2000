@@ -10,7 +10,6 @@ import '../../../notification/presentation/providers/notification_provider.dart'
 import '../../../product/presentation/providers/products_providers.dart';
 import '../../../product/presentation/widgets/product_selection.dart';
 import '../providers/categories_provider.dart';
-import '../widgets/home_banner.dart';
 import '../widgets/category_section.dart';
 import '../widgets/search_bar_widget.dart';
 
