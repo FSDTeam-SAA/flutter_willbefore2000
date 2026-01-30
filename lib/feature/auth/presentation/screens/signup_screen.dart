@@ -99,8 +99,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         ),
       );
 
-      // Navigate to email verification screen or home
-      context.pushReplacement(RoutePaths.home);
+      // Navigate back to login screen
+      context.go(RoutePaths.login);
     }
   }
 

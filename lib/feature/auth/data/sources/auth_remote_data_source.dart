@@ -25,13 +25,24 @@ class AuthRemoteDataSource {
         password: request.password,
       );
 
+      final user = userCredential.user!;
+
+      // Check if email is verified
+      if (!user.emailVerified) {
+        await _firebaseAuth.signOut();
+        throw AuthException('email-not-verified');
+      }
+
       DPrint.log("user credential : $userCredential");
 
       DPrint.log("Logged in credential : ${userCredential.user?.email}");
-      return userCredential.user!;
+      return user;
     } on FirebaseAuthException catch (e) {
       DPrint.error("Login error : $e");
       throw AuthException(_getAuthErrorMessage(e.code));
+    } catch (e) {
+      if (e is AuthException) rethrow;
+      throw AuthException("Login failed. Please try again.");
     }
   }
 
@@ -76,6 +87,9 @@ class AuthRemoteDataSource {
 
       // Send email verification
       await user.sendEmailVerification();
+
+      // Sign out the user immediately so they must login after verification
+      await _firebaseAuth.signOut();
 
       DPrint.log("User created successfully: ${user.email}");
       return userModel;
@@ -221,6 +235,8 @@ class AuthRemoteDataSource {
         return 'Too many failed attempts. Please try again later.';
       case 'operation-not-allowed':
         return 'This operation is not allowed. Please contact support.';
+      case 'email-not-verified':
+        return 'Your email address is not verified. Please check your inbox for a verification link.';
       default:
         return 'An error occurred. Please try again.';
     }

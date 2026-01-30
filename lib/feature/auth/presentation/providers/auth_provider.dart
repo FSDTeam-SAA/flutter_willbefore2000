@@ -111,6 +111,20 @@ class AuthProvider extends StateNotifier<AuthState> {
   Future<void> _initializeAuthState() async {
     try {
       final currentUser = await _authRepository.getCurrentUser();
+
+      // Check for email verification if user exists
+      if (currentUser != null && !currentUser.isEmailVerified) {
+        await _authRepository.logout();
+        state = state.copyWith(
+          user: null,
+          isAuthenticated: false,
+          isInitialized: true,
+          loginError:
+              'Email not verified. Please verify your email before accessing the app.',
+        );
+        return;
+      }
+
       state = state.copyWith(
         user: currentUser,
         isAuthenticated: currentUser != null,

@@ -91,14 +91,57 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           if (authState.loginError!.isNotEmpty) ...[
                             Container(
                               padding: const EdgeInsets.all(12),
+                              width: double.infinity,
                               decoration: BoxDecoration(
                                 color: Colors.red.shade50,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(color: Colors.red.shade200),
                               ),
-                              child: Text(
-                                authState.loginError.toString(),
-                                style: TextStyle(color: Colors.red.shade700),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    authState.loginError.toString(),
+                                    style: TextStyle(
+                                      color: Colors.red.shade700,
+                                    ),
+                                  ),
+                                  if (authState.loginError!.contains(
+                                    'not verified',
+                                  )) ...[
+                                    Gap.h8,
+                                    TextButton(
+                                      onPressed: () {
+                                        ref
+                                            .read(authProvider.notifier)
+                                            .sendEmailVerification();
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Verification email sent!',
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      style: TextButton.styleFrom(
+                                        padding: EdgeInsets.zero,
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      child: const Text(
+                                        'Resend Verification Email',
+                                        style: TextStyle(
+                                          color: AppColors.textAppLaurel,
+                                          fontWeight: FontWeight.bold,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
                             Gap.h16,
