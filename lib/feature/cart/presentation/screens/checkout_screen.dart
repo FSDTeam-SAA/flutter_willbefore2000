@@ -46,6 +46,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   bool _isLoadingStates = false;
   bool _isLoadingCities = false;
 
+  // Shipping Rates
+  List<dynamic> _shippingRates = [];
+  Map<String, dynamic>? _selectedRate;
+  bool _isFetchingRates = false;
+  String? _shippoAddressId;
+
   @override
   void initState() {
     super.initState();
@@ -197,7 +203,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(
             borderSide: BorderSide(
-              color: const Color(0xFF8C98A8).withOpacity(0.2),
+              color: const Color(0xFF8C98A8).withValues(alpha: 0.2),
             ),
           ),
         ),
@@ -377,6 +383,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   void _updateFormField(String field, String value) {
     ref.read(checkoutFormProvider.notifier).updateField(field, value);
+
+    // Reset shipping rates if address-related fields change
+    final addressFields = ['address', 'city', 'state', 'zipCode', 'country'];
+    if (addressFields.contains(field)) {
+      if (mounted && _shippingRates.isNotEmpty) {
+        setState(() {
+          _shippingRates = [];
+          _selectedRate = null;
+        });
+      }
+    }
   }
 
   @override
@@ -413,10 +430,23 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   // User info banner
                   if (user != null) _buildUserInfoBanner(user),
                   _buildShippingSection(ref, formState, context),
+                  if (_isFetchingRates)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: CircularProgressIndicator(),
+                    )
+                  else if (_shippingRates.isNotEmpty)
+                    _buildShippingRatesSection(),
                   const SizedBox(height: 24),
                   _buildPaymentSection(),
                   const SizedBox(height: 32),
-                  _buildContinueButton(ref, checkoutItems, total, formState),
+                  _buildContinueButton(
+                    ref,
+                    checkoutItems,
+                    total +
+                        (double.tryParse(_selectedRate?['amount'] ?? '0') ?? 0),
+                    formState,
+                  ),
                   if (_isLoading) ...[
                     const SizedBox(height: 12),
                     Text(
@@ -441,9 +471,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.primaryLaurel.withOpacity(0.1),
+        color: AppColors.primaryLaurel.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.primaryLaurel.withOpacity(0.3)),
+        border: Border.all(
+          color: AppColors.primaryLaurel.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
@@ -816,57 +848,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     );
   }
 
-  Widget _buildReadOnlyField({
-    required String label,
-    required TextEditingController controller,
-    bool isLoading = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: AppColors.iconDeselectedColor,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.iconDeselectedColor),
-            borderRadius: BorderRadius.circular(4),
-            color: Colors.grey[50],
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  controller.text.isEmpty ? 'Auto-filled' : controller.text,
-                  style: TextStyle(
-                    color: controller.text.isEmpty ? Colors.grey : Colors.black,
-                    fontSize: 14,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (isLoading)
-                const SizedBox(
-                  width: 12,
-                  height: 12,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              else if (controller.text.isNotEmpty)
-                Icon(Icons.check_circle, color: Colors.green[600], size: 16),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildTextField({
     required TextEditingController controller,
     required String field,
@@ -937,12 +918,31 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     double total,
     CheckoutFormState formState,
   ) {
+    String buttonText = 'Continue to Payment';
+    if (_isFetchingRates) {
+      buttonText = 'Checking Rates...';
+    } else if (_shippingRates.isNotEmpty && _selectedRate == null) {
+      buttonText = 'Select Shipping Method';
+    } else if (_selectedRate != null) {
+      buttonText = 'Pay ${_selectedRate!['amount']} & Place Order';
+    }
+
     return SizedBox(
-      width: 181,
+      width: 250,
       child: ref.context.primaryButton(
         isLoading: _isLoading,
         onPressed: () {
+          if (_isFetchingRates) return;
           if (formState.isValid) {
+            if (_shippingRates.isNotEmpty && _selectedRate == null) {
+              ScaffoldMessenger.of(ref.context).showSnackBar(
+                const SnackBar(
+                  content: Text('Please select a shipping method'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+              return;
+            }
             _processPayment(ref, cartItems, total, formState);
           } else {
             ScaffoldMessenger.of(ref.context).showSnackBar(
@@ -953,7 +953,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             );
           }
         },
-        text: 'Continue to Payment',
+        text: buttonText,
       ),
     );
   }
@@ -966,6 +966,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     double total,
     CheckoutFormState formState,
   ) async {
+    // If rates are already fetched we should proceed to payment
+    if (_shippingRates.isNotEmpty && _selectedRate != null) {
+      _proceedToStripePayment(ref, cartItems, total, formState);
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _loadingMessage = 'Verifying Address...';
@@ -973,19 +979,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     try {
       DPrint.log('Step 1: Verifying Shipping Address with Shippo...');
 
-      // Create Shippo address
       final shippoService = ShippoService();
 
       // Format phone number with selected country code
       String phoneInput = formState.phoneNumber.trim();
       String formattedPhone;
       if (phoneInput.startsWith('+')) {
-        formattedPhone = phoneInput; // User entered full international number
+        formattedPhone = phoneInput;
       } else {
-        // Prepend selected country code
         formattedPhone = '$_selectedCountryCode$phoneInput';
       }
-      // Remove any non-numeric characters (except +)
       formattedPhone = formattedPhone.replaceAll(RegExp(r'[^0-9+]'), '');
 
       final addressResult = await shippoService.createAddress(
@@ -1009,7 +1012,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         );
       }
 
-      // Check for explicit API errors (like 400 Bad Request results provided by Shippo)
       if (addressResult['__all__'] != null ||
           addressResult['status'] == 'error') {
         String apiError = 'Validation Error';
@@ -1022,19 +1024,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         throw Exception(apiError);
       }
 
-      // Check if address is valid. Shippo returns validation_results with messages.
       final bool isComplete = addressResult['is_complete'] ?? false;
       final validationResults = addressResult['validation_results'];
-
-      // If validation_results is empty (null or {}), it means validation is not available for this country.
-      // In this case, we trust is_complete.
       final bool hasValidationResult =
           validationResults != null && validationResults.isNotEmpty;
       final bool isValid =
           !hasValidationResult || (validationResults['is_valid'] ?? false);
       final List<dynamic> messages = validationResults?['messages'] ?? [];
-
-      // Also check root level messages for errors
       final List<dynamic> rootMessages = addressResult['messages'] ?? [];
       final bool hasErrorInMessages =
           messages.any(
@@ -1060,19 +1056,88 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         throw Exception(errorMessage);
       }
 
-      DPrint.log('Step 2: Address Verified. Proceeding to Stripe Payment...');
+      _shippoAddressId = addressResult['object_id'];
+
+      DPrint.log('Step 2: Address Verified. Fetching Shipping Rates...');
       setState(() {
-        _loadingMessage = 'Processing Payment...';
+        _isLoading = false;
+        _isFetchingRates = true;
+        _loadingMessage = 'Fetching Shipping Rates...';
       });
 
-      // Process payment with Stripe
+      final shipmentResult = await shippoService.createShipment(
+        addressToId: _shippoAddressId!,
+      );
+
+      DPrint.log('Shippo shipment result: $shipmentResult');
+
+      if (shipmentResult == null || shipmentResult['status'] == 'error') {
+        throw Exception(
+          shipmentResult?['message'] ?? 'Failed to fetch shipping rates',
+        );
+      }
+
+      final List<dynamic> rates = shipmentResult['rates'] ?? [];
+
+      if (rates.isEmpty) {
+        throw Exception('No shipping rates available for this address.');
+      }
+
+      if (mounted) {
+        setState(() {
+          _shippingRates = rates;
+          _isFetchingRates = false;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      DPrint.error('Checkout Error: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _isFetchingRates = false;
+        });
+      }
+      if (ref.context.mounted) {
+        showDialog(
+          context: ref.context,
+          builder: (context) => AlertDialog(
+            title: const Text('Checkout Error'),
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _proceedToStripePayment(
+    WidgetRef ref,
+    List<CartItem> cartItems,
+    double total,
+    CheckoutFormState formState,
+  ) async {
+    setState(() {
+      _isLoading = true;
+      _loadingMessage = 'Processing Payment...';
+    });
+
+    try {
+      DPrint.log('Proceeding to Stripe Payment with total: $total');
+
       final paymentResult = await StripeService.processPayment(
         amount: total,
         currency: 'usd',
         metadata: {
           'customer_email': formState.email,
           'order_items': cartItems.length.toString(),
-          'shippo_address_id': addressResult['object_id'],
+          'shippo_address_id': _shippoAddressId,
+          'shippo_rate_id': _selectedRate?['object_id'],
         },
       );
 
@@ -1086,12 +1151,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         "Payment processed successfully. PaymentIntent ID: $realPaymentIntentId",
       );
 
-      DPrint.log('Step 3: Creating Order in Database...');
+      DPrint.log('Creating Order in Database...');
       setState(() {
         _loadingMessage = 'Finalizing Order...';
       });
 
-      // Create shipping address entity
+      String phoneInput = formState.phoneNumber.trim();
+      String formattedPhone = phoneInput.startsWith('+')
+          ? phoneInput
+          : '$_selectedCountryCode$phoneInput';
+      formattedPhone = formattedPhone.replaceAll(RegExp(r'[^0-9+]'), '');
+
       final shippingAddress = ShippingAddress(
         firstName: formState.firstName,
         lastName: formState.lastName,
@@ -1104,33 +1174,36 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         country: formState.country,
       );
 
-      // Create order with Shippo address ID
       final order = await ref
           .read(orderProvider.notifier)
           .createOrder(
             items: cartItems,
             shippingAddress: shippingAddress,
             paymentIntentId: realPaymentIntentId,
-            metadata: {'shippo_address_id': addressResult['object_id']},
+            metadata: {
+              'shippo_address_id': _shippoAddressId,
+              'shippo_rate_id': _selectedRate?['object_id'],
+              'shipping_cost': _selectedRate?['amount'],
+              'shipping_service': _selectedRate?['servicelevel']?['name'],
+            },
           );
 
-      // Clear cart ONLY if NOT a "Buy Now" order
       if (widget.buyNowItem == null) {
         await ref.read(cartProvider.notifier).clearCart();
       }
+
       ref.read(checkoutFormProvider.notifier).reset();
 
-      // Navigate to success page
       if (ref.context.mounted) {
         GoRouter.of(ref.context).go(RoutePaths.orderConfirm, extra: order);
       }
     } catch (e) {
-      DPrint.error('Checkout Error: $e');
+      DPrint.error('Payment Error: $e');
       if (ref.context.mounted) {
         showDialog(
           context: ref.context,
           builder: (context) => AlertDialog(
-            title: const Text('Checkout Error'),
+            title: const Text('Payment Error'),
             content: Text(e.toString().replaceAll('Exception: ', '')),
             actions: [
               TextButton(
@@ -1149,6 +1222,110 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         });
       }
     }
+  }
+
+  Widget _buildShippingRatesSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(top: 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Select Shipping Method',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primaryLaurel,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ..._shippingRates.map((rate) {
+            DPrint.log('Rate: $rate');
+
+            final bool isSelected =
+                _selectedRate?['object_id'] == rate['object_id'];
+            final String serviceName =
+                rate['servicelevel']?['name'] ?? 'Standard Shipping';
+            final String amount = '\$${rate['amount']}';
+            final String duration =
+                rate['duration_terms'] ?? 'Delivery time varies';
+
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedRate = rate;
+                });
+              },
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.primaryLaurel
+                        : Colors.grey[300]!,
+                    width: isSelected ? 2 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  color: isSelected
+                      ? AppColors.primaryLaurel.withValues(alpha: 0.05)
+                      : Colors.white,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isSelected
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_off,
+                      color: isSelected ? AppColors.primaryLaurel : Colors.grey,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            serviceName,
+                            style: TextStyle(
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              fontSize: 14,
+                            ),
+                          ),
+                          Text(
+                            duration,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      amount,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: AppColors.primaryLaurel,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
   }
 
   String _getCountryCode(String countryName) {
