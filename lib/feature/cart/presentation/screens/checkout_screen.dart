@@ -42,6 +42,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   final GeoService _geoService = GeoService();
   List<String> _cities = [];
+  List<String> _states = [];
   bool _isLoadingStates = false;
   bool _isLoadingCities = false;
 
@@ -110,10 +111,25 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       formNotifier.updateField('zipCode', _zipCodeController.text);
       formNotifier.updateField('country', _countryController.text);
 
-      // Fetch cities if country is already pre-filled (new flow: Country -> City)
+      // Fetch cities and states if country is already pre-filled
       if (_countryController.text.isNotEmpty) {
         _fetchAllCities(_countryController.text);
+        _fetchAllStates(_countryController.text);
       }
+    }
+  }
+
+  Future<void> _fetchAllStates(String countryName) async {
+    setState(() {
+      _isLoadingStates = true;
+      _states = [];
+    });
+    final states = await _geoService.getStates(countryName);
+    if (mounted) {
+      setState(() {
+        _states = states;
+        _isLoadingStates = false;
+      });
     }
   }
 
@@ -194,11 +210,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           _stateController.clear();
           _cityController.clear();
           _cities = [];
+          _states = [];
         });
         _updateFormField('country', country.name);
         _updateFormField('state', '');
         _updateFormField('city', '');
         _fetchAllCities(country.name);
+        _fetchAllStates(country.name);
       },
     );
   }
@@ -237,6 +255,45 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             _updateFormField('city', city);
             // Auto-detect state based on selected city
             _findStateForCity(_countryController.text, city);
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
+  void _showStatePicker() {
+    if (_countryController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a country first')),
+      );
+      return;
+    }
+
+    if (_isLoadingStates) return;
+
+    if (_states.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No states found for this country')),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return _buildSearchableList(
+          title: 'Select State',
+          items: _states,
+          onSelect: (state) {
+            setState(() {
+              _stateController.text = state;
+            });
+            _updateFormField('state', state);
             Navigator.pop(context);
           },
         );
@@ -626,10 +683,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildReadOnlyField(
+                child: _buildCascadingPicker(
                   label: 'State',
                   controller: _stateController,
+                  onTap: _showStatePicker,
                   isLoading: _isLoadingStates,
+                  enabled: _countryController.text.isNotEmpty,
                 ),
               ),
               const SizedBox(width: 12),
