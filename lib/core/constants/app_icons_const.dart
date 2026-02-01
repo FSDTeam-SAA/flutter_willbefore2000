@@ -17,4 +17,5 @@ class AssetsPath {
   static const String search = '$_baseIconPath/search.svg';
   static const String cart = '$_baseIconPath/cart.svg';
   static const String profile = '$_baseIconPath/profile.svg';
+  static const String deleteAccount = '$_baseIconPath/delete.svg';
 }

@@ -233,6 +233,63 @@ class AuthRemoteDataSource {
     await _firebaseAuth.signOut();
   }
 
+  Future<void> deleteAccount() async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user == null) {
+        throw AuthException('User not authenticated');
+      }
+
+      final uid = user.uid;
+
+      // 1. Delete user's cart items subcollection
+      final cartItems = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('cartItems')
+          .get();
+      final cartBatch = _firestore.batch();
+      for (var doc in cartItems.docs) {
+        cartBatch.delete(doc.reference);
+      }
+      await cartBatch.commit();
+
+      // 2. Delete user's orders subcollection and related root orders
+      final userOrders = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('orders')
+          .get();
+      final orderBatch = _firestore.batch();
+      for (var doc in userOrders.docs) {
+        // Delete from user subcollection
+        orderBatch.delete(doc.reference);
+        // Delete from root orders collection
+        orderBatch.delete(_firestore.collection('orders').doc(doc.id));
+      }
+      await orderBatch.commit();
+
+      // 3. Delete user document from Firestore
+      await _firestore.collection('users').doc(uid).delete();
+
+      // 4. Delete user account from Firebase Auth
+      await user.delete();
+
+      DPrint.log("User account and data deleted successfully for: $uid");
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        throw AuthException(
+          'This operation is sensitive and requires recent authentication. Please log in again before retrying.',
+        );
+      }
+      throw AuthException(_getAuthErrorMessage(e.code));
+    } catch (e) {
+      DPrint.error("Delete account error: $e");
+      if (e is AuthException) rethrow;
+      throw AuthException("Failed to delete account. Please try again.");
+    }
+  }
+
   String _getAuthErrorMessage(String code) {
     DPrint.info("Auth Error Message code : $code");
     switch (code) {

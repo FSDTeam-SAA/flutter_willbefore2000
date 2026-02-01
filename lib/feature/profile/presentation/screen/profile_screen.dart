@@ -36,6 +36,48 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
+  void _deleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Account'),
+        content: const Text(
+          'Are you sure you want to delete your account? This action is permanent and all your data (orders, cart, etc.) will be deleted.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.errorRed),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await ref.read(authProvider.notifier).deleteAccount();
+        if (mounted) {
+          context.go(RoutePaths.home);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Account deleted successfully')),
+          );
+        }
+      } catch (e) {
+        DPrint.error("Delete account nav error : $e");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Delete account failed: ${e.toString()}')),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
@@ -160,6 +202,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               prefixIconPath: AssetsPath.logout,
               text: "Log Out",
             ),
+
+            Gap.h16,
+
+            // Delete account button
+            context.secondaryButton(
+              onPressed: () => _deleteAccount(),
+              isLoading: authState.isLoading,
+              borderRadius: 30,
+              height: 48,
+              borderColor: AppColors.errorRed,
+              textColor: AppColors.errorRed,
+              // Reuse logout icon or person_remove if available
+              prefixIconPath: AssetsPath.deleteAccount,
+              text: "Delete Account",
+            ),
+            Gap.h24,
           ],
         ),
       ),

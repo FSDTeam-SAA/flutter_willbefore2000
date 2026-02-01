@@ -73,6 +73,11 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> logout() async {
     await remoteDataSource.logout();
   }
+
+  @override
+  Future<void> deleteAccount() async {
+    await remoteDataSource.deleteAccount();
+  }
 }
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {

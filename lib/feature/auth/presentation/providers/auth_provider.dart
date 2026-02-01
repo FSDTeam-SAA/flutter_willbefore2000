@@ -279,4 +279,27 @@ class AuthProvider extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, loginError: e.toString());
     }
   }
+
+  Future<void> deleteAccount() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      await _authRepository.deleteAccount();
+      state = const AuthState(
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        isInitialized: true,
+        loginError: '',
+        signupError: '',
+        forgotPasswordError: '',
+      );
+    } catch (e) {
+      String message = e.toString();
+      if (e is AuthException) {
+        message = e.message;
+      }
+      state = state.copyWith(isLoading: false, loginError: message);
+      rethrow;
+    }
+  }
 }
