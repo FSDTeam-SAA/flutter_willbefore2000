@@ -5,9 +5,11 @@ import 'package:go_router/go_router.dart'; // Added GoRouter import
 import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
 
 import '../../../../core/common/widgets/html_content_widget.dart';
+import '../../../../core/common/widgets/login_required_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routes/route_endpoint.dart';
 import '../../../../core/utils/hero_tag_manager.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 import '../providers/products_details_provider.dart';
 import '../providers/products_providers.dart';
@@ -50,6 +52,7 @@ class ProductDetailScreen extends ConsumerWidget {
     return 'Add to Cart';
   }
 
+
   void _handleCartAction(
     BuildContext context,
     WidgetRef ref,
@@ -58,6 +61,15 @@ class ProductDetailScreen extends ConsumerWidget {
     String? selectedColor,
     int quantity,
   ) async {
+    // Check authentication
+    final authState = ref.read(authProvider);
+    if (!authState.isAuthenticated) {
+      if (context.mounted) {
+        LoginRequiredDialog.show(context);
+      }
+      return;
+    }
+
     // Validate required selections
     if (product.sizes.isNotEmpty && selectedSize == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -801,6 +813,15 @@ class ProductDetailScreen extends ConsumerWidget {
             onPressed: cartState.isLoading
                 ? null
                 : () async {
+                    // Check authentication
+                    final authState = ref.read(authProvider);
+                    if (!authState.isAuthenticated) {
+                      if (context.mounted) {
+                        LoginRequiredDialog.show(context);
+                      }
+                      return;
+                    }
+
                     // Validate required selections
                     if (product.sizes.isNotEmpty &&
                         state.selectedSize == null) {

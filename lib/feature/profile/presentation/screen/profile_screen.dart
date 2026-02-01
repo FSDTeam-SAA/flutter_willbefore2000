@@ -24,7 +24,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     try {
       await ref.read(authProvider.notifier).logout();
       if (mounted) {
-        GoRouter.of(context).goNamed(RoutePaths.login);
+        context.go(RoutePaths.home);
       }
     } catch (e) {
       DPrint.error("Logout nav error : $e");

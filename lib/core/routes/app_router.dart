@@ -53,16 +53,39 @@ final routerProvider = Provider<GoRouter>((ref) {
         RoutePaths.forgotPassword,
       ].contains(state.matchedLocation);
 
-      // If not authenticated and trying to access protected route
-      if (!authGuard.isAuthenticated &&
-          !isAuthRoute &&
-          state.matchedLocation != RoutePaths.splash) {
+      final isPublicRoute =
+          [
+            RoutePaths.splash,
+            RoutePaths.home,
+            RoutePaths.search,
+            RoutePaths.homeSearch,
+            RoutePaths.categories,
+            RoutePaths.appPrivacyPolicy,
+            RoutePaths.appTermsAndConditions,
+          ].contains(state.matchedLocation) ||
+          state.matchedLocation.startsWith(
+            RoutePaths.product,
+          ) || // Product details
+          state.matchedLocation.startsWith(
+            RoutePaths.productList,
+          ); // Product list
+
+      // If NOT authenticated
+      if (!authGuard.isAuthenticated) {
+        // Allow access to public routes or auth routes
+        if (isPublicRoute || isAuthRoute) {
+          return null;
+        }
+        // Redirect to login for any restricted route
         return RoutePaths.login;
       }
 
-      // If authenticated and trying to access auth route
-      if (authGuard.isAuthenticated && isAuthRoute) {
-        return RoutePaths.home;
+      // If authenticated
+      if (authGuard.isAuthenticated) {
+        // Redirect to home if trying to access auth routes (login/signup)
+        if (isAuthRoute) {
+          return RoutePaths.home;
+        }
       }
 
       return null;

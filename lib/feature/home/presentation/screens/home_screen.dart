@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/common/widgets/login_required_dialog.dart';
 import '../../../../core/routes/route_endpoint.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../notification/presentation/providers/notification_provider.dart';
@@ -139,7 +140,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Welcome $firstName',
+                'Welcome ${user != null ? (firstName.isNotEmpty ? firstName : 'User') : 'Guest'}',
                 style: GoogleFonts.notoSansKr(
                   fontSize: isTablet ? 28 : 24,
                   fontWeight: FontWeight.w700,
@@ -156,7 +157,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             // Orders Icon
             IconButton(
               onPressed: () {
-                context.pushNamed(RoutePaths.orders);
+                final authState = ref.read(authProvider);
+                if (!authState.isAuthenticated) {
+                  LoginRequiredDialog.show(context);
+                } else {
+                  context.pushNamed(RoutePaths.orders);
+                }
               },
               icon: Icon(
                 Icons.calendar_today_outlined,
@@ -170,7 +176,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               children: [
                 IconButton(
                   onPressed: () {
-                    context.push(RoutePaths.notification); // or your route
+                    final authState = ref.read(authProvider);
+                    if (!authState.isAuthenticated) {
+                      LoginRequiredDialog.show(context);
+                    } else {
+                      context.push(RoutePaths.notification);
+                    }
                   },
                   icon: Icon(
                     Icons.notifications_outlined,

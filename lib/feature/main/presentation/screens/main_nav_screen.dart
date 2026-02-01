@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smilestreats/core/routes/route_endpoint.dart';
+import '../../../../core/common/widgets/login_required_dialog.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../widgets/custom_bottom_navbar_widget.dart';
 import '../provider/bottom_nav_provider.dart';
 
@@ -34,7 +36,16 @@ class MainNavScreen extends ConsumerWidget {
   // }
 
   void _onItemTapped(int index, BuildContext context, WidgetRef ref) {
-    // Update Riverpod state
+    // Check authentication for restricted tabs
+    if (index == 2 || index == 3) {
+      final authState = ref.read(authProvider);
+      if (!authState.isAuthenticated) {
+        LoginRequiredDialog.show(context);
+        return;
+      }
+    }
+
+    // Update Riverpod state only if allowed
     ref.read(bottomNavIndexProvider.notifier).state = index;
 
     // Navigate using go_router

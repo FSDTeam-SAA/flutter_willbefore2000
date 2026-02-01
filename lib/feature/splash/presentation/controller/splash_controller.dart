@@ -24,10 +24,12 @@ class SplashController {
     final updatedAuthGuard = container.read(authGuardProvider);
 
     // Navigate based on authentication status
+    // For a public-first app, we always go to Home.
+    // The router will handle redirecting if they try to access restricted areas.
     if (updatedAuthGuard.isAuthenticated) {
       context.go(RoutePaths.home);
     } else {
-      context.go(RoutePaths.login);
+      context.go(RoutePaths.home);
     }
   }
 }
