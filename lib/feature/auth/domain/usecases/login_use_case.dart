@@ -1,3 +1,4 @@
+import '../models/user_model.dart';
 import '../repo/auth_repository.dart';
 import '../requests/login_request.dart';
 
@@ -6,7 +7,7 @@ class LoginUseCase {
 
   LoginUseCase(this.repository);
 
-  Future<void> call(LoginRequest request) async {
-    await repository.login(request);
+  Future<UserModel> call(LoginRequest request) async {
+    return await repository.login(request);
   }
 }

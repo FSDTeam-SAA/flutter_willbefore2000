@@ -17,23 +17,22 @@ void main() async {
 
   // Initialize Stripe
   await StripeService.init();
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
-    return ProviderScope(
-      child: MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        title: 'Flutter Demo',
-        theme: AppTheme.light,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
 
-        routerConfig: AppRouter.router,
-      ),
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      title: 'Flutter Demo',
+      theme: AppTheme.light,
+      routerConfig: router,
     );
   }
 }

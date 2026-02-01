@@ -190,12 +190,29 @@ class AuthRemoteDataSource {
     try {
       final user = _firebaseAuth.currentUser;
       if (user != null) {
+        // Force reload to get latest email verification status
+        await user.reload();
+        final updatedUser = _firebaseAuth.currentUser!;
+
         final doc = await _firestore.collection('users').doc(user.uid).get();
         if (doc.exists) {
-          return UserModel.fromFirestore(doc);
+          final userModel = UserModel.fromFirestore(doc);
+
+          // Sync email verification status if it changed
+          if (userModel.isEmailVerified != updatedUser.emailVerified) {
+            final syncedUserModel = userModel.copyWith(
+              isEmailVerified: updatedUser.emailVerified,
+            );
+            await _firestore.collection('users').doc(user.uid).update({
+              'isEmailVerified': updatedUser.emailVerified,
+            });
+            return syncedUserModel;
+          }
+
+          return userModel;
         } else {
           // Create user document if it doesn't exist
-          final userModel = UserModel.fromFirebase(user);
+          final userModel = UserModel.fromFirebase(updatedUser);
           await _firestore
               .collection('users')
               .doc(user.uid)

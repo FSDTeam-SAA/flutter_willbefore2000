@@ -15,18 +15,38 @@ class AuthGuardState {
   AuthGuardState({required this.isAuthenticated, required this.isInitialized});
 }
 
-class AppRouter {
-  static final GoRouter router = GoRouter(
+class AuthRefreshListenable extends ChangeNotifier {
+  AuthRefreshListenable(Ref ref) {
+    _subscription = ref.listen(authProvider, (previous, next) {
+      if (previous?.isAuthenticated != next.isAuthenticated ||
+          previous?.isInitialized != next.isInitialized) {
+        notifyListeners();
+      }
+    });
+  }
+
+  late final ProviderSubscription _subscription;
+
+  @override
+  void dispose() {
+    _subscription.close();
+    super.dispose();
+  }
+}
+
+final routerProvider = Provider<GoRouter>((ref) {
+  final listenable = AuthRefreshListenable(ref);
+
+  return GoRouter(
     initialLocation: RoutePaths.splash,
+    refreshListenable: listenable,
     debugLogDiagnostics: true,
     redirect: (BuildContext context, GoRouterState state) {
-      final container = ProviderScope.containerOf(context);
-      final authGuard = container.read(authGuardProvider);
+      final authGuard = ref.read(authGuardProvider);
 
       // Wait for auth to initialize
       if (!authGuard.isInitialized) return null;
 
-      // final isLoginRoute = state.matchedLocation == RouteEndpoint.login;
       final isAuthRoute = [
         RoutePaths.login,
         RoutePaths.signup,
@@ -34,7 +54,9 @@ class AppRouter {
       ].contains(state.matchedLocation);
 
       // If not authenticated and trying to access protected route
-      if (!authGuard.isAuthenticated && !isAuthRoute) {
+      if (!authGuard.isAuthenticated &&
+          !isAuthRoute &&
+          state.matchedLocation != RoutePaths.splash) {
         return RoutePaths.login;
       }
 
@@ -318,4 +340,4 @@ class AppRouter {
       state: state,
     ),
   );
-}
+});

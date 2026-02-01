@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutx_core/flutx_core.dart';
 import 'package:smilestreats/core/services/storage_service.dart';
 import 'package:smilestreats/feature/auth/domain/usecases/change_password_use_case.dart';
 
@@ -110,10 +111,16 @@ class AuthProvider extends StateNotifier<AuthState> {
 
   Future<void> _initializeAuthState() async {
     try {
+      // Add a small delay for FCM token and Firebase Auth to settle
+      await Future.delayed(const Duration(milliseconds: 500));
+
       final currentUser = await _authRepository.getCurrentUser();
 
       // Check for email verification if user exists
       if (currentUser != null && !currentUser.isEmailVerified) {
+        DPrint.info(
+          "User found but email not verified: ${currentUser.email}. Logging out.",
+        );
         await _authRepository.logout();
         state = state.copyWith(
           user: null,
@@ -125,12 +132,20 @@ class AuthProvider extends StateNotifier<AuthState> {
         return;
       }
 
+      if (currentUser != null) {
+        DPrint.info("User initialized successfully: ${currentUser.email}");
+      } else {
+        DPrint.info("No authenticated user found during initialization.");
+      }
+
       state = state.copyWith(
         user: currentUser,
         isAuthenticated: currentUser != null,
         isInitialized: true,
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      DPrint.error("Error during auth initialization: $e");
+      DPrint.error(stackTrace.toString());
       state = state.copyWith(
         isAuthenticated: false,
         isInitialized: true,
@@ -142,8 +157,13 @@ class AuthProvider extends StateNotifier<AuthState> {
   Future<bool> login(LoginRequest request) async {
     state = state.copyWith(isLoading: true, loginError: "");
     try {
-      await _loginUseCase.call(request);
-      state = state.copyWith(isLoading: false, loginError: "");
+      final user = await _loginUseCase.call(request);
+      state = state.copyWith(
+        isLoading: false,
+        loginError: "",
+        user: user,
+        isAuthenticated: true,
+      );
       return true;
     } catch (e) {
       String message = e.toString();
@@ -158,8 +178,10 @@ class AuthProvider extends StateNotifier<AuthState> {
   Future<bool> signup(SignupRequest request) async {
     state = state.copyWith(isLoading: true, signupError: "");
     try {
-      await _signupUseCase.call(request);
-      state = state.copyWith(isLoading: false, signupError: "");
+      final user = await _signupUseCase.call(request);
+      // Note: signup calls logout internally after creation to force verification,
+      // so we don't set isAuthenticated here.
+      state = state.copyWith(isLoading: false, signupError: "", user: user);
       return true;
     } catch (e) {
       String message = e.toString();
