@@ -13,10 +13,19 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  await NotificationService().initialize();
+  try {
+    await NotificationService().initialize();
+  } catch (e) {
+    debugPrint("NotificationService initialization failed: $e");
+  }
 
-  // Initialize Stripe
-  await StripeService.init();
+  try {
+    // Initialize Stripe
+    await StripeService.init();
+  } catch (e) {
+    debugPrint("StripeService initialization failed: $e");
+  }
+
   runApp(const ProviderScope(child: MyApp()));
 }
 

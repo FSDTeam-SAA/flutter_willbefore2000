@@ -39,6 +39,14 @@ class NotificationService {
     FirebaseMessaging.onBackgroundMessage(_backgroundHandler);
 
     await _requestPermissions();
+
+    // Foreground presentation options for iOS
+    await _messaging.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
     await _createNotificationChannel();
     await _initializeLocalNotifications();
 
@@ -75,17 +83,17 @@ class NotificationService {
   // ──────────────────────────────────────────────────────────────
   Future<void> _initializeLocalNotifications() async {
     const AndroidInitializationSettings android = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
+      '@mipmap/launcher_icon',
     );
 
     const DarwinInitializationSettings ios = DarwinInitializationSettings(
-      requestAlertPermission: false,
-      requestBadgePermission: false,
-      requestSoundPermission: false,
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
     );
 
     await _localNotifications.initialize(
-      const InitializationSettings(android: android, iOS: ios),
+      settings: const InitializationSettings(android: android, iOS: ios),
       onDidReceiveNotificationResponse: (response) {
         DPrint.log("Notification tapped: ${response.payload}");
       },
@@ -96,17 +104,17 @@ class NotificationService {
       if (notification == null) return;
 
       _localNotifications.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
+        id: notification.hashCode,
+        title: notification.title,
+        body: notification.body,
+        notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             _channel.id,
             _channel.name,
             channelDescription: _channel.description,
             importance: Importance.high,
             priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
+            icon: '@mipmap/launcher_icon',
           ),
           iOS: const DarwinNotificationDetails(
             presentAlert: true,
