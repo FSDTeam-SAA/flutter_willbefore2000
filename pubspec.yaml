@@ -1,10 +1,11 @@
-name: smilestreats
+name: smilestreatsapp
 description: "A new Flutter project."
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 
-version: 1.0.0+3 # Android version
+# version: 1.0.0+3 # Android version
+version: 1.0.0+8 # iOS version
 
 environment:
   sdk: ^3.8.1
@@ -18,7 +19,7 @@ dependencies:
 
   # UI
   flutx_core: ^1.1.0+1
-  google_fonts: ^8.0.2
+  # google_fonts: ^8.0.2
   flutter_svg: ^2.2.0
   pinput: ^6.0.2
   flutter_html: ^3.0.0

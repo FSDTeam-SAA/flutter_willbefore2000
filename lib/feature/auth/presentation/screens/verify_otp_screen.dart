@@ -1,7 +1,7 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutx_core/flutx_core.dart';
 // import 'package:pinput/pinput.dart';
-// import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
+// import 'package:smilestreatsapp/core/utils/extensions/button_extensions.dart';
 // import '../../../../core/common/widgets/app_logo.dart';
 // import '../../../../core/common/widgets/app_scaffold.dart';
 // import '../../../../core/constants/app_colors.dart';

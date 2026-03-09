@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:smilestreats/feature/home/presentation/providers/categories_provider.dart';
+import 'package:smilestreatsapp/feature/home/presentation/providers/categories_provider.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../providers/advance_search_provider.dart';
@@ -54,7 +53,7 @@ class CategoryChips extends ConsumerWidget {
           child: FilterChip(
             label: Text(
               category.name,
-              style: GoogleFonts.notoSansKr(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: isSelected ? Colors.white : AppColors.textAppBlack,

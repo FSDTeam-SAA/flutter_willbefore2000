@@ -1,9 +1,9 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutx_core/core/routes/services/go_next_navigation.dart';
 // import 'package:flutx_core/flutx_core.dart';
-// import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
-// import 'package:smilestreats/core/utils/extensions/input_decoration_extensions.dart';
-// import 'package:smilestreats/feature/auth/presentation/screens/verify_otp_screen.dart';
+// import 'package:smilestreatsapp/core/utils/extensions/button_extensions.dart';
+// import 'package:smilestreatsapp/core/utils/extensions/input_decoration_extensions.dart';
+// import 'package:smilestreatsapp/feature/auth/presentation/screens/verify_otp_screen.dart';
 
 // import '../../../../core/common/widgets/app_icons.dart';
 // import '../../../../core/common/widgets/app_logo.dart';

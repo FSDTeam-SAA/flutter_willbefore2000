@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutx_core/flutx_core.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
-import 'package:smilestreats/core/styles/decorations.dart';
+
+import 'package:smilestreatsapp/core/common/widgets/app_cached_image.dart';
+import 'package:smilestreatsapp/core/styles/decorations.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routes/route_endpoint.dart';
@@ -109,7 +109,7 @@ class ProductCard extends ConsumerWidget {
                               width: cardWidth - (isSmallScreen ? 60 : 72),
                               child: Text(
                                 product.title,
-                                style: GoogleFonts.notoSansKr(
+                                style: TextStyle(
                                   fontSize: isSmallScreen ? 12 : 14,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.textAppBlack,
@@ -130,7 +130,7 @@ class ProductCard extends ConsumerWidget {
                                 const SizedBox(width: 4),
                                 Text(
                                   '4.8',
-                                  style: GoogleFonts.notoSansKr(
+                                  style: TextStyle(
                                     fontSize: isSmallScreen ? 10 : 12,
                                     fontWeight: FontWeight.w500,
                                     color: AppColors.textAppBlack,
@@ -139,7 +139,7 @@ class ProductCard extends ConsumerWidget {
                                 const SizedBox(width: 4),
                                 Text(
                                   '(98)',
-                                  style: GoogleFonts.notoSansKr(
+                                  style: TextStyle(
                                     fontSize: isSmallScreen ? 10 : 12,
                                     fontWeight: FontWeight.w400,
                                     color: AppColors.textSecondaryHintColor,
@@ -157,7 +157,7 @@ class ProductCard extends ConsumerWidget {
                                     Flexible(
                                       child: Text(
                                         product.formattedDiscountPrice!,
-                                        style: GoogleFonts.notoSansKr(
+                                        style: TextStyle(
                                           fontSize: isSmallScreen ? 12 : 14,
                                           fontWeight: FontWeight.w700,
                                           color: AppColors.primaryLaurel,
@@ -174,7 +174,7 @@ class ProductCard extends ConsumerWidget {
                                     Flexible(
                                       child: Text(
                                         product.formattedPrice,
-                                        style: GoogleFonts.notoSansKr(
+                                        style: TextStyle(
                                           fontSize: isSmallScreen ? 10 : 12,
                                           fontWeight: FontWeight.w400,
                                           color:
@@ -201,7 +201,7 @@ class ProductCard extends ConsumerWidget {
                             SnackBar(
                               content: Text(
                                 '${product.title} added to cart',
-                                style: GoogleFonts.notoSansKr(),
+                                style: TextStyle(),
                               ),
                               duration: const Duration(seconds: 2),
                               backgroundColor: AppColors.primaryLaurel,
@@ -286,7 +286,7 @@ class ProductCard extends ConsumerWidget {
                           ),
                           child: Text(
                             'New',
-                            style: GoogleFonts.notoSansKr(
+                            style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -303,7 +303,7 @@ class ProductCard extends ConsumerWidget {
                 children: [
                   Text(
                     product.title,
-                    style: GoogleFonts.notoSansKr(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textAppBlack,
@@ -318,7 +318,7 @@ class ProductCard extends ConsumerWidget {
                       const SizedBox(width: 4),
                       Text(
                         '4.8',
-                        style: GoogleFonts.notoSansKr(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                           color: AppColors.textAppBlack,
@@ -327,7 +327,7 @@ class ProductCard extends ConsumerWidget {
                       const SizedBox(width: 4),
                       Text(
                         '(98)',
-                        style: GoogleFonts.notoSansKr(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
                           color: AppColors.textSecondaryHintColor,
@@ -341,7 +341,7 @@ class ProductCard extends ConsumerWidget {
                     children: [
                       Text(
                         product.formattedDiscountPrice ?? '',
-                        style: GoogleFonts.notoSansKr(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: AppColors.primaryLaurel,
@@ -351,7 +351,7 @@ class ProductCard extends ConsumerWidget {
                         Gap.w4,
                         Text(
                           product.formattedPrice,
-                          style: GoogleFonts.notoSansKr(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w400,
                             color: AppColors.textSecondaryHintColor,
@@ -372,7 +372,7 @@ class ProductCard extends ConsumerWidget {
                 SnackBar(
                   content: Text(
                     '${product.title} added to cart',
-                    style: GoogleFonts.notoSansKr(),
+                    style: TextStyle(),
                   ),
                   duration: const Duration(seconds: 2),
                   backgroundColor: AppColors.primaryLaurel,

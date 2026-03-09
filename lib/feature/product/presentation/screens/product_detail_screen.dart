@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:go_router/go_router.dart'; // Added GoRouter import
-import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
+import 'package:smilestreatsapp/core/common/widgets/app_cached_image.dart';
 
 import '../../../../core/common/widgets/html_content_widget.dart';
 import '../../../../core/common/widgets/login_required_dialog.dart';
@@ -52,7 +52,6 @@ class ProductDetailScreen extends ConsumerWidget {
     return 'Add to Cart';
   }
 
-
   void _handleCartAction(
     BuildContext context,
     WidgetRef ref,
@@ -74,10 +73,7 @@ class ProductDetailScreen extends ConsumerWidget {
     if (product.sizes.isNotEmpty && selectedSize == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Please select a size',
-            style: GoogleFonts.notoSansKr(),
-          ),
+          content: Text('Please select a size', style: TextStyle()),
           backgroundColor: Colors.red,
         ),
       );
@@ -87,10 +83,7 @@ class ProductDetailScreen extends ConsumerWidget {
     if (product.colors.isNotEmpty && selectedColor == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Please select a color',
-            style: GoogleFonts.notoSansKr(),
-          ),
+          content: Text('Please select a color', style: TextStyle()),
           backgroundColor: Colors.red,
         ),
       );
@@ -137,7 +130,7 @@ class ProductDetailScreen extends ConsumerWidget {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(actionMessage, style: GoogleFonts.notoSansKr()),
+          content: Text(actionMessage, style: TextStyle()),
           backgroundColor: AppColors.primaryLaurel,
           action: SnackBarAction(
             label: 'View Cart',
@@ -199,7 +192,7 @@ class ProductDetailScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               Text(
                 'Product Not Found',
-                style: GoogleFonts.notoSansKr(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textAppBlack,
@@ -208,10 +201,7 @@ class ProductDetailScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               Text(
                 'The product you are looking for does not exist.',
-                style: GoogleFonts.notoSansKr(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -226,7 +216,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 ),
                 child: Text(
                   'Go to Home',
-                  style: GoogleFonts.notoSansKr(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
@@ -291,7 +281,7 @@ class ProductDetailScreen extends ConsumerWidget {
                   // Title and Price
                   Text(
                     product.title,
-                    style: GoogleFonts.notoSansKr(
+                    style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textAppBlack,
@@ -302,7 +292,7 @@ class ProductDetailScreen extends ConsumerWidget {
                     children: [
                       Text(
                         product.formattedPrice,
-                        style: GoogleFonts.notoSansKr(
+                        style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w700,
                           color: AppColors.primaryLaurel,
@@ -312,7 +302,7 @@ class ProductDetailScreen extends ConsumerWidget {
                         const SizedBox(width: 12),
                         Text(
                           product.formattedDiscountPrice ?? '',
-                          style: GoogleFonts.notoSansKr(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w400,
                             color: AppColors.textSecondaryHintColor,
@@ -329,7 +319,7 @@ class ProductDetailScreen extends ConsumerWidget {
                       const SizedBox(width: 4),
                       Text(
                         '4.8',
-                        style: GoogleFonts.notoSansKr(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textAppBlack,
@@ -338,7 +328,7 @@ class ProductDetailScreen extends ConsumerWidget {
                       const SizedBox(width: 4),
                       Text(
                         '(98 reviews)',
-                        style: GoogleFonts.notoSansKr(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
                           color: AppColors.textSecondaryHintColor,
@@ -352,7 +342,7 @@ class ProductDetailScreen extends ConsumerWidget {
                   // Description
                   Text(
                     'Description',
-                    style: GoogleFonts.notoSansKr(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textAppBlack,
@@ -534,7 +524,7 @@ class ProductDetailScreen extends ConsumerWidget {
             const SizedBox(width: 12),
             Text(
               'Free shipping on orders over \$50',
-              style: GoogleFonts.notoSansKr(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textSecondaryColor,
@@ -549,7 +539,7 @@ class ProductDetailScreen extends ConsumerWidget {
             const SizedBox(width: 12),
             Text(
               '30-day free returns',
-              style: GoogleFonts.notoSansKr(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textSecondaryColor,
@@ -567,7 +557,7 @@ class ProductDetailScreen extends ConsumerWidget {
       children: [
         Text(
           'Size',
-          style: GoogleFonts.notoSansKr(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: AppColors.textAppBlack,
@@ -598,7 +588,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 child: Center(
                   child: Text(
                     size,
-                    style: GoogleFonts.notoSansKr(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: isSelected ? Colors.white : AppColors.textAppBlack,
@@ -623,7 +613,7 @@ class ProductDetailScreen extends ConsumerWidget {
       children: [
         Text(
           'Color',
-          style: GoogleFonts.notoSansKr(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: AppColors.textAppBlack,
@@ -659,7 +649,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 ),
                 child: Text(
                   colorName,
-                  style: GoogleFonts.notoSansKr(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: isSelected
@@ -689,7 +679,7 @@ class ProductDetailScreen extends ConsumerWidget {
       children: [
         Text(
           'Quantity',
-          style: GoogleFonts.notoSansKr(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: AppColors.textAppBlack,
@@ -715,7 +705,7 @@ class ProductDetailScreen extends ConsumerWidget {
             const SizedBox(width: 16),
             Text(
               state.quantity.toString(),
-              style: GoogleFonts.notoSansKr(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textAppBlack,
@@ -739,7 +729,7 @@ class ProductDetailScreen extends ConsumerWidget {
             const Spacer(),
             Text(
               'Total: \$${(product.effectivePrice * state.quantity).toStringAsFixed(2)}',
-              style: GoogleFonts.notoSansKr(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textAppBlack,
@@ -799,7 +789,7 @@ class ProductDetailScreen extends ConsumerWidget {
                   )
                 : Text(
                     buttonText,
-                    style: GoogleFonts.notoSansKr(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: AppColors.primaryLaurel,
@@ -829,7 +819,7 @@ class ProductDetailScreen extends ConsumerWidget {
                         SnackBar(
                           content: Text(
                             'Please select a size',
-                            style: GoogleFonts.notoSansKr(),
+                            style: TextStyle(),
                           ),
                           backgroundColor: Colors.red,
                         ),
@@ -843,7 +833,7 @@ class ProductDetailScreen extends ConsumerWidget {
                         SnackBar(
                           content: Text(
                             'Please select a color',
-                            style: GoogleFonts.notoSansKr(),
+                            style: TextStyle(),
                           ),
                           backgroundColor: Colors.red,
                         ),
@@ -871,10 +861,7 @@ class ProductDetailScreen extends ConsumerWidget {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(
-                              'Error: $e',
-                              style: GoogleFonts.notoSansKr(),
-                            ),
+                            content: Text('Error: $e', style: TextStyle()),
                             backgroundColor: Colors.red,
                           ),
                         );
@@ -890,7 +877,7 @@ class ProductDetailScreen extends ConsumerWidget {
             ),
             child: Text(
               'Buy Now',
-              style: GoogleFonts.notoSansKr(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,

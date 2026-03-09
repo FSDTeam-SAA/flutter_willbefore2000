@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smilestreats/core/constants/app_icons_const.dart';
+import 'package:smilestreatsapp/core/constants/app_icons_const.dart';
 
 class AppLogo extends StatelessWidget {
   final double height;

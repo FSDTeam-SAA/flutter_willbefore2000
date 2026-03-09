@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutx_core/flutx_core.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smilestreats/core/common/widgets/app_scaffold.dart';
-import 'package:smilestreats/core/constants/app_colors.dart';
-import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
-import 'package:smilestreats/core/utils/extensions/input_decoration_extensions.dart';
-import 'package:smilestreats/feature/auth/domain/requests/change_password_request.dart';
-import 'package:smilestreats/feature/auth/presentation/providers/auth_provider.dart';
+import 'package:smilestreatsapp/core/common/widgets/app_scaffold.dart';
+import 'package:smilestreatsapp/core/constants/app_colors.dart';
+import 'package:smilestreatsapp/core/utils/extensions/button_extensions.dart';
+import 'package:smilestreatsapp/core/utils/extensions/input_decoration_extensions.dart';
+import 'package:smilestreatsapp/feature/auth/domain/requests/change_password_request.dart';
+import 'package:smilestreatsapp/feature/auth/presentation/providers/auth_provider.dart';
 
 class ChangePasswordScreen extends ConsumerStatefulWidget {
   const ChangePasswordScreen({super.key});

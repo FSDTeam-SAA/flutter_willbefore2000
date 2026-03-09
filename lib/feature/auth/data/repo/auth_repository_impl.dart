@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:smilestreats/feature/auth/domain/requests/change_password_request.dart';
+import 'package:smilestreatsapp/feature/auth/domain/requests/change_password_request.dart';
 
 import '../../domain/models/user_model.dart';
 import '../../domain/repo/auth_repository.dart';

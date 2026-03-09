@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 
@@ -69,7 +68,7 @@ class HomeBanner extends StatelessWidget {
               children: [
                 Text(
                   'Special Offer',
-                  style: GoogleFonts.notoSansKr(
+                  style: TextStyle(
                     fontSize: isTablet ? 18 : 16,
                     fontWeight: FontWeight.w500,
                     color: Colors.white.withOpacity(0.9),
@@ -79,7 +78,7 @@ class HomeBanner extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'Get 30% Off\nYour First Order',
-                    style: GoogleFonts.notoSansKr(
+                    style: TextStyle(
                       fontSize: isTablet ? 28 : 24,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -106,7 +105,7 @@ class HomeBanner extends StatelessWidget {
                   ),
                   child: Text(
                     'Shop Now',
-                    style: GoogleFonts.notoSansKr(
+                    style: TextStyle(
                       fontSize: isTablet ? 16 : 14,
                       fontWeight: FontWeight.w600,
                     ),

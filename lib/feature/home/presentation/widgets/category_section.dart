@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutx_core/core/theme/extensions/string_extension.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
-import 'package:smilestreats/feature/home/domain/models/category_model.dart';
+
+import 'package:smilestreatsapp/core/common/widgets/app_cached_image.dart';
+import 'package:smilestreatsapp/feature/home/domain/models/category_model.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routes/route_endpoint.dart';
@@ -37,7 +37,7 @@ class CategorySection extends StatelessWidget {
               children: [
                 Text(
                   'Categories',
-                  style: GoogleFonts.notoSansKr(
+                  style: TextStyle(
                     fontSize: isTablet ? 24 : 20,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textAppBlack,
@@ -47,7 +47,7 @@ class CategorySection extends StatelessWidget {
                   onPressed: () => context.goNamed(RoutePaths.categories),
                   child: Text(
                     'See More',
-                    style: GoogleFonts.notoSansKr(
+                    style: TextStyle(
                       fontSize: isTablet ? 16 : 14,
                       fontWeight: FontWeight.w600,
                       color: AppColors.primaryLaurel,
@@ -115,10 +115,7 @@ class CategorySection extends StatelessWidget {
     return Center(
       child: Text(
         'No categories available',
-        style: GoogleFonts.notoSansKr(
-          fontSize: isTablet ? 16 : 14,
-          color: Colors.grey[600],
-        ),
+        style: TextStyle(fontSize: isTablet ? 16 : 14, color: Colors.grey[600]),
       ),
     );
   }
@@ -165,7 +162,7 @@ class CategorySection extends StatelessWidget {
                 SizedBox(height: isTablet ? 8 : 6),
                 Text(
                   category.name.capitalizeFirstOfEach,
-                  style: GoogleFonts.notoSansKr(
+                  style: TextStyle(
                     fontSize: isTablet ? 12 : 10,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textAppBlack,

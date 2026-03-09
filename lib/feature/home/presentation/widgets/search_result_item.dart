@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../providers/search_provider.dart';
@@ -71,12 +70,12 @@ class HomeSearchResultItem extends StatelessWidget {
                         text: _buildHighlightedText(
                           result.title,
                           query,
-                          GoogleFonts.notoSansKr(
+                          TextStyle(
                             fontSize: isTablet ? 16 : 14,
                             fontWeight: FontWeight.w600,
                             color: AppColors.textAppBlack,
                           ),
-                          GoogleFonts.notoSansKr(
+                          TextStyle(
                             fontSize: isTablet ? 16 : 14,
                             fontWeight: FontWeight.w600,
                             color: AppColors.primaryLaurel,
@@ -92,7 +91,7 @@ class HomeSearchResultItem extends StatelessWidget {
                         SizedBox(height: isTablet ? 6 : 4),
                         Text(
                           result.subtitle!,
-                          style: GoogleFonts.notoSansKr(
+                          style: TextStyle(
                             fontSize: isTablet ? 14 : 12,
                             color: Colors.grey[600],
                           ),
@@ -119,7 +118,7 @@ class HomeSearchResultItem extends StatelessWidget {
                           result.type == HomeSearchResultType.product
                               ? 'Product'
                               : 'Category',
-                          style: GoogleFonts.notoSansKr(
+                          style: TextStyle(
                             fontSize: isTablet ? 12 : 10,
                             fontWeight: FontWeight.w500,
                             color: result.type == HomeSearchResultType.product

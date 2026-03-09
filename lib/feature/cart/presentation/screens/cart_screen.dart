@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutx_core/flutx_core.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:smilestreats/core/routes/route_endpoint.dart';
-import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
+
+import 'package:smilestreatsapp/core/routes/route_endpoint.dart';
+import 'package:smilestreatsapp/core/utils/extensions/button_extensions.dart';
 
 import '../../../../core/common/widgets/app_scaffold.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -63,7 +63,7 @@ class CartScreen extends ConsumerWidget {
                       children: [
                         Text(
                           'Order Summary',
-                          style: GoogleFonts.notoSansKr(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                             color: AppColors.primaryLaurel,
@@ -75,7 +75,7 @@ class CartScreen extends ConsumerWidget {
                           children: [
                             Text(
                               'Subtotal',
-                              style: GoogleFonts.notoSansKr(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w400,
                                 color: AppColors.textSecondaryColor,
@@ -83,7 +83,7 @@ class CartScreen extends ConsumerWidget {
                             ),
                             Text(
                               '\$${cartState.subtotal.toStringAsFixed(2)}',
-                              style: GoogleFonts.notoSansKr(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textAppBlack,
@@ -97,7 +97,7 @@ class CartScreen extends ConsumerWidget {
                           children: [
                             Text(
                               'Tax',
-                              style: GoogleFonts.notoSansKr(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w400,
                                 color: AppColors.textSecondaryColor,
@@ -105,7 +105,7 @@ class CartScreen extends ConsumerWidget {
                             ),
                             Text(
                               '\$${cartState.tax.toStringAsFixed(2)}',
-                              style: GoogleFonts.notoSansKr(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textAppBlack,
@@ -119,7 +119,7 @@ class CartScreen extends ConsumerWidget {
                           children: [
                             Text(
                               'Total',
-                              style: GoogleFonts.notoSansKr(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.textAppBlack,
@@ -127,7 +127,7 @@ class CartScreen extends ConsumerWidget {
                             ),
                             Text(
                               '\$${cartState.total.toStringAsFixed(2)}',
-                              style: GoogleFonts.notoSansKr(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.primaryLaurel,
@@ -164,7 +164,7 @@ class CartScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             'Your cart is empty',
-            style: GoogleFonts.notoSansKr(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w600,
               color: AppColors.textSecondaryColor,
@@ -173,7 +173,7 @@ class CartScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           Text(
             'Add some products to get started',
-            style: GoogleFonts.notoSansKr(
+            style: TextStyle(
               fontSize: 14,
               color: AppColors.textSecondaryHintColor,
             ),

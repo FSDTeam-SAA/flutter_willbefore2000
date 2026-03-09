@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutx_core/flutx_core.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smilestreats/core/routes/route_endpoint.dart';
-import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
-import 'package:smilestreats/core/utils/extensions/input_decoration_extensions.dart';
-import 'package:smilestreats/feature/auth/domain/requests/login_request.dart';
-import 'package:smilestreats/feature/auth/presentation/providers/auth_provider.dart';
+import 'package:smilestreatsapp/core/routes/route_endpoint.dart';
+import 'package:smilestreatsapp/core/utils/extensions/button_extensions.dart';
+import 'package:smilestreatsapp/core/utils/extensions/input_decoration_extensions.dart';
+import 'package:smilestreatsapp/feature/auth/domain/requests/login_request.dart';
+import 'package:smilestreatsapp/feature/auth/presentation/providers/auth_provider.dart';
 
 import '../../../../core/common/widgets/app_icons.dart';
 import '../../../../core/common/widgets/app_logo.dart';

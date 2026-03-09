@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../providers/search_provider.dart';
@@ -28,7 +27,7 @@ class HomeRecentSearches extends ConsumerWidget {
           children: [
             Text(
               'Recent Searches',
-              style: GoogleFonts.notoSansKr(
+              style: TextStyle(
                 fontSize: isTablet ? 18 : 16,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textAppBlack,
@@ -40,7 +39,7 @@ class HomeRecentSearches extends ConsumerWidget {
               },
               child: Text(
                 'Clear All',
-                style: GoogleFonts.notoSansKr(
+                style: TextStyle(
                   fontSize: isTablet ? 14 : 12,
                   color: Colors.grey[600],
                 ),
@@ -79,7 +78,7 @@ class HomeRecentSearches extends ConsumerWidget {
                           Expanded(
                             child: Text(
                               search,
-                              style: GoogleFonts.notoSansKr(
+                              style: TextStyle(
                                 fontSize: isTablet ? 14 : 13,
                                 color: AppColors.textAppBlack,
                               ),

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutx_core/core/theme/extensions/string_extension.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:smilestreats/feature/home/presentation/providers/categories_provider.dart';
+import 'package:smilestreatsapp/feature/home/presentation/providers/categories_provider.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../providers/advance_search_provider.dart';
@@ -37,7 +36,7 @@ class SearchFilterDrawer extends ConsumerWidget {
                 children: [
                   Text(
                     'Filters',
-                    style: GoogleFonts.notoSansKr(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -92,7 +91,7 @@ class SearchFilterDrawer extends ConsumerWidget {
                       ),
                       child: Text(
                         'Reset',
-                        style: GoogleFonts.notoSansKr(
+                        style: TextStyle(
                           color: AppColors.primaryLaurel,
                           fontWeight: FontWeight.w600,
                         ),
@@ -112,7 +111,7 @@ class SearchFilterDrawer extends ConsumerWidget {
                       ),
                       child: Text(
                         'Apply Filters',
-                        style: GoogleFonts.notoSansKr(
+                        style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
@@ -216,7 +215,7 @@ class SearchFilterDrawer extends ConsumerWidget {
           children: [
             Text(
               '\$${filterState.priceRange.start.round()}',
-              style: GoogleFonts.notoSansKr(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textSecondaryColor,
@@ -224,7 +223,7 @@ class SearchFilterDrawer extends ConsumerWidget {
             ),
             Text(
               '\$${filterState.priceRange.end.round()}',
-              style: GoogleFonts.notoSansKr(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textSecondaryColor,
@@ -256,10 +255,7 @@ class SearchFilterDrawer extends ConsumerWidget {
                 );
               }),
             ),
-            title: Text(
-              '$rating & up',
-              style: GoogleFonts.notoSansKr(fontSize: 14),
-            ),
+            title: Text('$rating & up', style: TextStyle(fontSize: 14)),
             trailing: Checkbox(
               value: filterState.selectedRatings.contains(rating),
               onChanged: (value) {
@@ -282,7 +278,7 @@ class SearchFilterDrawer extends ConsumerWidget {
   //       ...['Apple', 'Samsung', 'Nike', 'Adidas', 'Sony'].map((brand) {
   //         return CheckboxListTile(
   //           contentPadding: EdgeInsets.zero,
-  //           title: Text(brand, style: GoogleFonts.notoSansKr(fontSize: 14)),
+  //           title: Text(brand, style: TextStyle(fontSize: 14)),
   //           value: filterState.selectedBrands.contains(brand),
   //           onChanged: (value) {
   //             ref.read(searchFilterProvider.notifier).toggleBrand(brand);
@@ -297,7 +293,7 @@ class SearchFilterDrawer extends ConsumerWidget {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: GoogleFonts.notoSansKr(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: AppColors.textAppBlack,
@@ -326,7 +322,7 @@ class SearchFilterDrawer extends ConsumerWidget {
         ),
         child: Text(
           category.capitalizeFirstOfEach,
-          style: GoogleFonts.notoSansKr(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: isSelected ? Colors.white : AppColors.textAppBlack,

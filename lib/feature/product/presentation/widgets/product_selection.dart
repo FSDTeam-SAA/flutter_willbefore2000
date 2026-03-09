@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:smilestreats/core/styles/decorations.dart';
+
+import 'package:smilestreatsapp/core/styles/decorations.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/hero_tag_manager.dart';
@@ -34,7 +34,7 @@ class ProductSection extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: GoogleFonts.notoSansKr(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textAppBlack,
@@ -45,7 +45,7 @@ class ProductSection extends StatelessWidget {
                   onTap: onSeeAll,
                   child: Text(
                     'See All',
-                    style: GoogleFonts.notoSansKr(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: AppColors.primaryLaurel,

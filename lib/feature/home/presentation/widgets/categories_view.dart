@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutx_core/flutx_core.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
-import 'package:smilestreats/feature/home/presentation/providers/categories_provider.dart';
-import 'package:smilestreats/core/routes/route_endpoint.dart';
+
+import 'package:smilestreatsapp/core/common/widgets/app_cached_image.dart';
+import 'package:smilestreatsapp/feature/home/presentation/providers/categories_provider.dart';
+import 'package:smilestreatsapp/core/routes/route_endpoint.dart';
 
 class CategoriesView extends ConsumerStatefulWidget {
   const CategoriesView({super.key});
@@ -84,7 +84,7 @@ class _CategoryShowsState extends ConsumerState<CategoriesView> {
                   SizedBox(height: 6),
                   Text(
                     category.name.capitalizeFirstOfEach,
-                    style: GoogleFonts.notoSansKr(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: Colors.black,

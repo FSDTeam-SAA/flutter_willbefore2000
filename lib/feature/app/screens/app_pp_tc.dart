@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:smilestreats/core/constants/app_colors.dart';
+import 'package:smilestreatsapp/core/constants/app_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
@@ -8,13 +8,13 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
   // This is your Privacy Policy converted from HTML → Markdown
   static const String privacyPolicyMarkdown = '''
-# Privacy Policy for SmilesTreats App
+# Privacy Policy for SmileStreatsApp
 
 **Effective Date:** November 22, 2025
 
-Welcome to **SmilesTreats App** (“the App”, “we”, “our”, or “us”). This Privacy Policy explains how **LFM, LLC** (“Company”) collects, uses, and protects your information when you use the SmilesTreats App, available on the Apple App Store and Google Play Store.
+Welcome to **SmileStreatsApp** (“the App”, “we”, “our”, or “us”). This Privacy Policy explains how **LFM, LLC** (“Company”) collects, uses, and protects your information when you use the SmileStreatsApp, available on the Apple App Store and Google Play Store.
 
-By using the SmilesTreats App, you agree to the terms of this Privacy Policy.
+By using the SmileStreatsApp, you agree to the terms of this Privacy Policy.
 
 ---
 
@@ -46,7 +46,7 @@ If you upload photos, profile images, or other media:
 ## 2. How We Use Your Information
 
 We use your information to:  
-- Operate, maintain, and improve the SmilesTreats App  
+- Operate, maintain, and improve the SmileStreatsApp  
 - Process transactions and fulfill orders  
 - Send important updates, push notifications, and promotional offers  
 - Manage user accounts and customer support  
@@ -94,7 +94,7 @@ To exercise these rights, please contact **support@lfmcorp.com**.
 
 ## 7. Children’s Privacy
 
-The SmilesTreats App is intended for users **18 years of age or older**.  
+The SmileStreatsApp is intended for users **18 years of age or older**.  
 We do not knowingly collect data from individuals under 18.  
 If we become aware that we have inadvertently collected information from a minor, we will delete it immediately.
 
@@ -126,7 +126,7 @@ If you have questions or concerns about this Privacy Policy or our data practice
 
 **LFM, LLC**  
 📧 **support@lfmcorp.com**  
-📱 SmilesTreats App
+📱 SmileStreatsApp
 ''';
 
   @override
@@ -176,11 +176,11 @@ class TermsAndConditionsScreen extends StatelessWidget {
   const TermsAndConditionsScreen({super.key});
 
   static const String termsMarkdown = '''
-# Terms and Conditions for SmilesTreats App
+# Terms and Conditions for SmileStreatsApp
 
 **Last Updated:** November 22, 2025
 
-Welcome to **SmilesTreats** ("the App", "we", "us", or "our"), operated by **LFM, LLC** ("Company"). By downloading, accessing, or using the SmilesTreats mobile application, you agree to be bound by these Terms and Conditions ("Terms"). If you do not agree with any part of these Terms, you must not use the App.
+Welcome to **SmileStreatsApp** ("the App", "we", "us", or "our"), operated by **LFM, LLC** ("Company"). By downloading, accessing, or using the SmileStreatsApp mobile application, you agree to be bound by these Terms and Conditions ("Terms"). If you do not agree with any part of these Terms, you must not use the App.
 
 ---
 
@@ -192,7 +192,7 @@ These Terms constitute a legally binding agreement between you and LFM, LLC. We 
 
 ## 2. Eligibility
 
-You must be at least **18 years old** or the age of majority in your jurisdiction to use the SmilesTreats App. By using the App, you represent and warrant that you meet this age requirement.
+You must be at least **18 years old** or the age of majority in your jurisdiction to use the SmileStreatsApp. By using the App, you represent and warrant that you meet this age requirement.
 
 ---
 
@@ -244,7 +244,7 @@ You agree not to:
 
 ## 7. Intellectual Property
 
-The SmilesTreats App, including its design, text, graphics, logos, and software, is owned by LFM, LLC and protected by copyright, trademark, and other laws. You are granted a limited, non-transferable license to use the App for personal, non-commercial purposes only.
+The SmileStreatsApp, including its design, text, graphics, logos, and software, is owned by LFM, LLC and protected by copyright, trademark, and other laws. You are granted a limited, non-transferable license to use the App for personal, non-commercial purposes only.
 
 ---
 
@@ -300,11 +300,11 @@ If you have any questions about these Terms and Conditions, please contact us at
 
 **LFM, LLC**  
 Email: **support@lfmcorp.com**  
-App: SmilesTreats
+App: SmileStreatsApp
 
 ---
 
-Thank you for using SmilesTreats! 
+Thank you for using SmileStreatsApp! 
 ''';
 
   @override

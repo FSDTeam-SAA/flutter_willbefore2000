@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutx_core/flutx_core.dart';
-import 'package:smilestreats/core/services/storage_service.dart';
-import 'package:smilestreats/feature/auth/domain/usecases/change_password_use_case.dart';
+import 'package:smilestreatsapp/core/services/storage_service.dart';
+import 'package:smilestreatsapp/feature/auth/domain/usecases/change_password_use_case.dart';
 
 import '../../../../core/base/base_state.dart';
 import '../../../../core/errors/auth_exception.dart';

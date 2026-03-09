@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutx_core/flutx_core.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/route_endpoint.dart';
 
@@ -55,7 +54,7 @@ class HomeSearchBarWidget extends StatelessWidget {
             Expanded(
               child: Text(
                 hintText ?? 'Search products...',
-                style: GoogleFonts.notoSansKr(
+                style: TextStyle(
                   fontSize: isTablet ? 16 : 14,
                   color: Colors.grey[500],
                 ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smilestreats/core/constants/app_colors.dart';
-import 'package:smilestreats/core/routes/route_endpoint.dart';
+import 'package:smilestreatsapp/core/constants/app_colors.dart';
+import 'package:smilestreatsapp/core/routes/route_endpoint.dart';
 
 class NotFoundScreen extends StatelessWidget {
   const NotFoundScreen({super.key});

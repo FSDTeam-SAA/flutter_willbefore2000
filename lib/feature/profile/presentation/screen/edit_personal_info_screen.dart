@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutx_core/flutx_core.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:image_picker/image_picker.dart';
-import 'package:smilestreats/feature/auth/presentation/providers/auth_provider.dart';
-import 'package:smilestreats/core/common/widgets/app_scaffold.dart';
-import 'package:smilestreats/core/constants/app_colors.dart';
-import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
-import 'package:smilestreats/core/utils/extensions/input_decoration_extensions.dart';
+import 'package:smilestreatsapp/feature/auth/presentation/providers/auth_provider.dart';
+import 'package:smilestreatsapp/core/common/widgets/app_scaffold.dart';
+import 'package:smilestreatsapp/core/constants/app_colors.dart';
+import 'package:smilestreatsapp/core/utils/extensions/button_extensions.dart';
+import 'package:smilestreatsapp/core/utils/extensions/input_decoration_extensions.dart';
 
 import '../../../../core/common/widgets/app_cached_image.dart';
 
@@ -256,7 +256,7 @@ class _EditPersonalInfoScreenState
                                 const SizedBox(height: 8),
                                 Text(
                                   user?.displayName ?? 'Guest',
-                                  style: GoogleFonts.notoSansKr(
+                                  style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.textAppBlack,
@@ -266,7 +266,7 @@ class _EditPersonalInfoScreenState
                                     user!.email!.isNotEmpty)
                                   Text(
                                     user.email!,
-                                    style: GoogleFonts.notoSansKr(
+                                    style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w400,
                                       color: AppColors.textSecondaryColor,

@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
+
+import 'package:smilestreatsapp/core/utils/extensions/button_extensions.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/hero_tag_manager.dart';
@@ -186,7 +186,7 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
                 onSubmitted: _onSearchSubmitted,
                 decoration: InputDecoration(
                   hintText: 'Search for products, brands, categories...',
-                  hintStyle: GoogleFonts.notoSansKr(
+                  hintStyle: TextStyle(
                     color: AppColors.textSecondaryHintColor,
                     fontSize: 14,
                   ),
@@ -238,18 +238,12 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
       children: [
         Text(
           '${widget.searchState.totalResults} results found',
-          style: GoogleFonts.notoSansKr(
-            fontSize: 12,
-            color: AppColors.textSecondaryColor,
-          ),
+          style: TextStyle(fontSize: 12, color: AppColors.textSecondaryColor),
         ),
         DropdownButton<String>(
           value: widget.searchState.sortBy,
           underline: const SizedBox(),
-          style: GoogleFonts.notoSansKr(
-            fontSize: 12,
-            color: AppColors.textAppBlack,
-          ),
+          style: TextStyle(fontSize: 12, color: AppColors.textAppBlack),
           items: const [
             DropdownMenuItem(value: 'relevance', child: Text('Relevance')),
             DropdownMenuItem(
@@ -285,7 +279,7 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
         children: [
           Text(
             "Menu",
-            style: GoogleFonts.notoSansKr(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: AppColors.textAppBlack,
@@ -334,7 +328,7 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
                       searchState.isSearchMode
                           ? 'Search Results (${searchState.totalResults})'
                           : 'All Products (${searchState.totalResults})',
-                      style: GoogleFonts.notoSansKr(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textAppBlack,
@@ -346,7 +340,7 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
                       onPressed: _clearSearch,
                       child: Text(
                         'View All',
-                        style: GoogleFonts.notoSansKr(
+                        style: TextStyle(
                           color: AppColors.primaryLaurel,
                           fontWeight: FontWeight.w600,
                         ),
@@ -416,7 +410,7 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
             widget.searchState.isSearchMode
                 ? 'No products found'
                 : 'No products available',
-            style: GoogleFonts.notoSansKr(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w600,
               color: AppColors.textAppBlack,
@@ -427,10 +421,7 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
             widget.searchState.isSearchMode
                 ? 'Try different keywords or check filters'
                 : 'Check back later for new products',
-            style: GoogleFonts.notoSansKr(
-              fontSize: 14,
-              color: AppColors.textSecondaryColor,
-            ),
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondaryColor),
           ),
           const SizedBox(height: 24),
           if (widget.searchState.isSearchMode)

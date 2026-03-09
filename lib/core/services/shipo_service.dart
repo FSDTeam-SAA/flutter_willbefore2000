@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutx_core/flutx_core.dart';
 import 'package:http/http.dart' as http;
-import 'package:smilestreats/core/constants/shippo_key.dart';
+import 'package:smilestreatsapp/core/constants/shippo_key.dart';
 
 class ShippoService {
   static const String baseUrl = 'https://api.goshippo.com';

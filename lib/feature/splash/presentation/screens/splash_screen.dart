@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:smilestreats/core/constants/app_icons_const.dart';
-import 'package:smilestreats/feature/splash/presentation/controller/splash_controller.dart';
+import 'package:smilestreatsapp/core/constants/app_icons_const.dart';
+import 'package:smilestreatsapp/feature/splash/presentation/controller/splash_controller.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

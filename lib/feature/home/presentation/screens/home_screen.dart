@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/common/widgets/login_required_dialog.dart';
@@ -141,7 +140,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               Text(
                 'Welcome ${user != null ? (firstName.isNotEmpty ? firstName : 'User') : 'Guest'}',
-                style: GoogleFonts.notoSansKr(
+                style: TextStyle(
                   fontSize: isTablet ? 28 : 24,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textAppBlack,

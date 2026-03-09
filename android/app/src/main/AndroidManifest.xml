@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     
     <application 
-        android:label="SmileStreats" 
+        android:label="SmileStreatsApp" 
         android:name="${applicationName}" 
         android:icon="@mipmap/launcher_icon"
         android:enableOnBackInvokedCallback="true">

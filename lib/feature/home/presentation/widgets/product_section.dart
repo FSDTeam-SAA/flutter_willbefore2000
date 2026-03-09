@@ -1,6 +1,6 @@
 // import 'package:flutter/material.dart';
-// import 'package:google_fonts/google_fonts.dart';
-// import 'package:smilestreats/core/styles/decorations.dart';
+//
+// import 'package:smilestreatsapp/core/styles/decorations.dart';
 
 // import '../../../../core/constants/app_colors.dart';
 // import '../../../product/domain/entrity/product.dart';
@@ -40,7 +40,7 @@
 //                 Flexible(
 //                   child: Text(
 //                     title,
-//                     style: GoogleFonts.notoSansKr(
+//                     style: TextStyle(
 //                       fontSize: isTablet ? 24 : 20,
 //                       fontWeight: FontWeight.w700,
 //                       color: AppColors.textAppBlack,
@@ -53,7 +53,7 @@
 //                     onPressed: onSeeAll,
 //                     child: Text(
 //                       'See All',
-//                       style: GoogleFonts.notoSansKr(
+//                       style: TextStyle(
 //                         fontSize: isTablet ? 16 : 14,
 //                         fontWeight: FontWeight.w500,
 //                         color: AppColors.primaryLaurel,
@@ -195,7 +195,7 @@
 //             SizedBox(height: isTablet ? 12 : 8),
 //             Text(
 //               'No products available',
-//               style: GoogleFonts.notoSansKr(
+//               style: TextStyle(
 //                 fontSize: isTablet ? 16 : 14,
 //                 fontWeight: FontWeight.w500,
 //                 color: Colors.grey[600],

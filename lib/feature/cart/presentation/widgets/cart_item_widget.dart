@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
+
+import 'package:smilestreatsapp/core/common/widgets/app_cached_image.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/cart_item.dart';
@@ -79,7 +79,7 @@ class CartItemWidget extends StatelessWidget {
               children: [
                 Text(
                   item.product.title,
-                  style: GoogleFonts.notoSansKr(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textAppBlack,
@@ -92,7 +92,7 @@ class CartItemWidget extends StatelessWidget {
                   Text(
                     '${item.selectedSize ?? ''} ${item.selectedColor ?? ''}'
                         .trim(),
-                    style: GoogleFonts.notoSansKr(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                       color: AppColors.textSecondaryHintColor,
@@ -104,7 +104,7 @@ class CartItemWidget extends StatelessWidget {
                   children: [
                     Text(
                       item.product.formattedDiscountPrice.toString(),
-                      style: GoogleFonts.notoSansKr(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textAppBlack,
@@ -123,7 +123,7 @@ class CartItemWidget extends StatelessWidget {
             children: [
               Text(
                 'Qty: ${item.quantity}',
-                style: GoogleFonts.notoSansKr(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondaryColor,
@@ -133,7 +133,7 @@ class CartItemWidget extends StatelessWidget {
               const SizedBox(height: 8),
               // Text(
               //   item.quantity.toString(),
-              //   style: GoogleFonts.notoSansKr(
+              //   style: TextStyle(
               //     fontSize: 16,
               //     fontWeight: FontWeight.w600,
               //     color: AppColors.textAppBlack,

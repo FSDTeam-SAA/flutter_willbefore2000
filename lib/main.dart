@@ -39,7 +39,7 @@ class MyApp extends ConsumerWidget {
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'SmileStreatsApp',
       theme: AppTheme.light,
       routerConfig: router,
     );

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routes/route_endpoint.dart';
@@ -174,14 +173,14 @@ class _SearchScreenState extends ConsumerState<HomeSearchScreen>
                                     focusNode: _focusNode,
                                     onChanged: _onSearchChanged,
                                     onSubmitted: _onSearchSubmitted,
-                                    style: GoogleFonts.notoSansKr(
+                                    style: TextStyle(
                                       fontSize: isTablet ? 16 : 14,
                                       color: AppColors.textAppBlack,
                                     ),
                                     decoration: InputDecoration(
                                       hintText:
                                           'Search products, categories...',
-                                      hintStyle: GoogleFonts.notoSansKr(
+                                      hintStyle: TextStyle(
                                         fontSize: isTablet ? 16 : 14,
                                         color: Colors.grey[500],
                                       ),
@@ -286,7 +285,7 @@ class _SearchScreenState extends ConsumerState<HomeSearchScreen>
             SizedBox(height: isTablet ? 24 : 16),
             Text(
               'No results found',
-              style: GoogleFonts.notoSansKr(
+              style: TextStyle(
                 fontSize: isTablet ? 24 : 20,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textAppBlack,
@@ -295,7 +294,7 @@ class _SearchScreenState extends ConsumerState<HomeSearchScreen>
             SizedBox(height: isTablet ? 12 : 8),
             Text(
               'Try searching with different keywords',
-              style: GoogleFonts.notoSansKr(
+              style: TextStyle(
                 fontSize: isTablet ? 16 : 14,
                 color: Colors.grey[600],
               ),

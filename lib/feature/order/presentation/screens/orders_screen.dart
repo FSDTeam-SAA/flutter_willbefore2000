@@ -227,7 +227,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
                   Icon(Icons.store, size: 16, color: Colors.grey[600]),
                   const SizedBox(width: 4),
                   const Text(
-                    'Smilestreats',
+                    'SmileStreatsApp',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -533,7 +533,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
                   children: [
                     Expanded(
                       child: const Text(
-                        'Smilestreats Order Summary',
+                        'SmileStreatsApp Order Summary',
                         maxLines: 2,
                         style: TextStyle(
                           fontSize: 18,

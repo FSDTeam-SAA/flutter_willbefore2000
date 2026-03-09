@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../home/presentation/providers/categories_provider.dart';
@@ -29,7 +28,7 @@ class HomeSearchSuggestions extends ConsumerWidget {
       children: [
         Text(
           'Popular Searches',
-          style: GoogleFonts.notoSansKr(
+          style: TextStyle(
             fontSize: isTablet ? 18 : 16,
             fontWeight: FontWeight.w600,
             color: AppColors.textAppBlack,
@@ -64,7 +63,7 @@ class HomeSearchSuggestions extends ConsumerWidget {
                     ),
                     child: Text(
                       suggestion,
-                      style: GoogleFonts.notoSansKr(
+                      style: TextStyle(
                         fontSize: isTablet ? 14 : 12,
                         color: AppColors.textAppBlack,
                         fontWeight: FontWeight.w500,

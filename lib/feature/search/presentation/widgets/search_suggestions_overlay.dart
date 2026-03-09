@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../providers/advance_search_provider.dart';
@@ -78,7 +77,7 @@ class SearchSuggestionsOverlay extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Text(
         title,
-        style: GoogleFonts.notoSansKr(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: AppColors.textSecondaryColor,
@@ -96,10 +95,11 @@ class SearchSuggestionsOverlay extends ConsumerWidget {
       leading: Icon(icon, color: AppColors.textSecondaryHintColor, size: 20),
       title: Text(
         suggestion,
-        style: GoogleFonts.notoSansKr(
-          fontSize: 14,
-          color: AppColors.textAppBlack,
-        ),
+        style: TextStyle(fontSize: 14, color: AppColors.textAppBlack),
+        // TextStyle(
+        //   fontSize: 14,
+        //   color: AppColors.textAppBlack,
+        // ),
       ),
       onTap: () => onTap(suggestion),
       dense: true,

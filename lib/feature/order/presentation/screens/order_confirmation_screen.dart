@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutx_core/flutx_core.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smilestreats/core/constants/app_colors.dart';
-import 'package:smilestreats/core/routes/route_endpoint.dart';
-import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
+import 'package:smilestreatsapp/core/constants/app_colors.dart';
+import 'package:smilestreatsapp/core/routes/route_endpoint.dart';
+import 'package:smilestreatsapp/core/utils/extensions/button_extensions.dart';
 import '../../../../core/common/widgets/app_scaffold.dart';
 import '../../domain/entities/order_entities.dart';
 import 'package:intl/intl.dart';

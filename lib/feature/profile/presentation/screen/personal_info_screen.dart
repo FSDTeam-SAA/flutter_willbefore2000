@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:smilestreats/core/common/widgets/app_cached_image.dart';
-import 'package:smilestreats/core/constants/app_colors.dart';
-import 'package:smilestreats/core/utils/extensions/button_extensions.dart';
-import 'package:smilestreats/feature/auth/presentation/providers/auth_provider.dart';
-import 'package:smilestreats/core/common/widgets/app_scaffold.dart';
+
+import 'package:smilestreatsapp/core/common/widgets/app_cached_image.dart';
+import 'package:smilestreatsapp/core/constants/app_colors.dart';
+import 'package:smilestreatsapp/core/utils/extensions/button_extensions.dart';
+import 'package:smilestreatsapp/feature/auth/presentation/providers/auth_provider.dart';
+import 'package:smilestreatsapp/core/common/widgets/app_scaffold.dart';
 
 import '../../../../core/routes/route_endpoint.dart';
 
@@ -57,7 +57,7 @@ class PersonalInfoScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                   Text(
                     user?.displayName ?? 'Guest',
-                    style: GoogleFonts.notoSansKr(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textAppBlack,
@@ -66,7 +66,7 @@ class PersonalInfoScreen extends ConsumerWidget {
                   if (user?.email != null && user!.email!.isNotEmpty)
                     Text(
                       user.email!,
-                      style: GoogleFonts.notoSansKr(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                         color: AppColors.textSecondaryColor,
@@ -79,7 +79,7 @@ class PersonalInfoScreen extends ConsumerWidget {
             // Contact Information
             Text(
               'Contact Information',
-              style: GoogleFonts.notoSansKr(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: AppColors.primaryLaurel,
@@ -113,7 +113,7 @@ class PersonalInfoScreen extends ConsumerWidget {
             // Personal Details
             Text(
               'Personal Details',
-              style: GoogleFonts.notoSansKr(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: AppColors.primaryLaurel,
@@ -156,7 +156,7 @@ class PersonalInfoScreen extends ConsumerWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.notoSansKr(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w400,
             color: AppColors.textSecondaryColor,
@@ -165,7 +165,7 @@ class PersonalInfoScreen extends ConsumerWidget {
         const SizedBox(height: 4),
         Text(
           value,
-          style: GoogleFonts.notoSansKr(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w400,
             color: AppColors.textAppBlack,

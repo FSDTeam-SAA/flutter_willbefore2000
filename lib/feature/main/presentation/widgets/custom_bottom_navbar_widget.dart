@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:smilestreats/feature/cart/presentation/providers/cart_provider.dart';
+import 'package:smilestreatsapp/feature/cart/presentation/providers/cart_provider.dart';
 
 import '../../../../core/common/widgets/app_icons.dart';
 import '../../../../core/constants/app_colors.dart';
