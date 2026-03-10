@@ -11,7 +11,7 @@ class CartRemoteDataSource {
 
   CartRemoteDataSource(this._firestore, this._auth);
 
-  static const String _collection = 'carts';
+  // static const String _collection = 'carts';
 
   String? get _userId => _auth.currentUser?.uid;
 
