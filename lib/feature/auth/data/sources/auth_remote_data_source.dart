@@ -254,6 +254,18 @@ class AuthRemoteDataSource {
       }
       await cartBatch.commit();
 
+      // Delete user's fcmTokens subcollection
+      final fcmTokens = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('fcmTokens')
+          .get();
+      final fcmBatch = _firestore.batch();
+      for (var doc in fcmTokens.docs) {
+        fcmBatch.delete(doc.reference);
+      }
+      await fcmBatch.commit();
+
       // 2. Delete user's orders subcollection and related root orders
       final userOrders = await _firestore
           .collection('users')

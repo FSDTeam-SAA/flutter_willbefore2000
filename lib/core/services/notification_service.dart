@@ -8,6 +8,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutx_core/flutx_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class NotificationService {
   NotificationService._internal();
@@ -172,16 +173,43 @@ class NotificationService {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
-          {
-            'fcmToken': token,
-            'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
-            'platform': Platform.isIOS ? 'ios' : 'android',
-          },
-          SetOptions(merge: true),
-        ); // use set+merge to avoid overwriting other fields
+        String deviceName = 'Unknown Device';
+        try {
+          final deviceInfo = DeviceInfoPlugin();
+          if (Platform.isAndroid) {
+            final androidInfo = await deviceInfo.androidInfo;
+            deviceName = '${androidInfo.brand} ${androidInfo.model}';
+          } else if (Platform.isIOS) {
+            final iosInfo = await deviceInfo.iosInfo;
+            deviceName = iosInfo.name;
+          }
+        } catch (e) {
+          DPrint.error("Failed to get device info: $e");
+        }
 
-        DPrint.log("FCM token saved to Firestore for ${user.uid}");
+        // 1. Save to the fcmTokens subcollection to keep track of multiple devices
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('fcmTokens')
+            .doc(token)
+            .set({
+              'deviceName': deviceName,
+              'platform': Platform.isIOS ? 'ios' : 'android',
+              'token': token,
+              'updatedAt': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
+
+        // 2. Also save the latest token to the main user document
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'fcmToken': token,
+          'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
+          'platform': Platform.isIOS ? 'ios' : 'android',
+        }, SetOptions(merge: true));
+
+        DPrint.log(
+          "FCM token saved to Firestore subcollection for ${user.uid}",
+        );
       } catch (e) {
         DPrint.error("Failed to save FCM token: $e");
       }

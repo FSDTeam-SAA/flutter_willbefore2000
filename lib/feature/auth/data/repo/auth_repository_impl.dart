@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smilestreatsapp/feature/auth/domain/requests/change_password_request.dart';
 
+import '../../../../core/services/notification_service.dart';
 import '../../domain/models/user_model.dart';
 import '../../domain/repo/auth_repository.dart';
 import '../../domain/requests/login_request.dart';
@@ -21,6 +22,10 @@ class AuthRepositoryImpl implements AuthRepository {
     final user = await remoteDataSource.login(request);
     // Get user data from Firestore
     final userModel = await remoteDataSource.getCurrentUser();
+
+    // Trigger FCM token storage after successful login
+    await NotificationService().getToken();
+
     return userModel ?? UserModel.fromFirebase(user);
   }
 
