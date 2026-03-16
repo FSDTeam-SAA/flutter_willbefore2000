@@ -22,12 +22,11 @@ class ProductsRemoteDataSourceImpl implements ProductsRemoteDataSource {
     try {
       final querySnapshot = await _firestore
           .collection('products')
+          // .where('isActive', isEqualTo: true)
           .orderBy('createdAt', descending: true)
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => _safeFromFirestore(doc))
-          .toList();
+      return querySnapshot.docs.map((doc) => _safeFromFirestore(doc)).toList();
     } catch (e) {
       throw Exception('Failed to get all products: $e');
     }
@@ -43,9 +42,7 @@ class ProductsRemoteDataSourceImpl implements ProductsRemoteDataSource {
           .orderBy('createdAt', descending: true)
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => _safeFromFirestore(doc))
-          .toList();
+      return querySnapshot.docs.map((doc) => _safeFromFirestore(doc)).toList();
     } catch (e) {
       throw Exception('Failed to get products by category: $e');
     }
@@ -61,9 +58,7 @@ class ProductsRemoteDataSourceImpl implements ProductsRemoteDataSource {
           .orderBy('createdAt', descending: true)
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => _safeFromFirestore(doc))
-          .toList();
+      return querySnapshot.docs.map((doc) => _safeFromFirestore(doc)).toList();
     } catch (e) {
       throw Exception('Failed to get products by promo: $e');
     }
@@ -78,9 +73,7 @@ class ProductsRemoteDataSourceImpl implements ProductsRemoteDataSource {
           .orderBy('createdAt', descending: true)
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => _safeFromFirestore(doc))
-          .toList();
+      return querySnapshot.docs.map((doc) => _safeFromFirestore(doc)).toList();
     } catch (e) {
       throw Exception('Failed to get active products: $e');
     }
@@ -90,7 +83,7 @@ class ProductsRemoteDataSourceImpl implements ProductsRemoteDataSource {
   Future<ProductModel?> getProductById(String id) async {
     try {
       final doc = await _firestore.collection('products').doc(id).get();
-      
+
       if (doc.exists) {
         return _safeFromFirestore(doc);
       }
@@ -99,7 +92,6 @@ class ProductsRemoteDataSourceImpl implements ProductsRemoteDataSource {
       throw Exception('Failed to get product by id: $e');
     }
   }
-
 
   @override
   Future<List<ProductModel>> searchProducts(String query) async {
@@ -114,9 +106,7 @@ class ProductsRemoteDataSourceImpl implements ProductsRemoteDataSource {
           .endAt(['$query\uf8ff'])
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => _safeFromFirestore(doc))
-          .toList();
+      return querySnapshot.docs.map((doc) => _safeFromFirestore(doc)).toList();
     } catch (e) {
       throw Exception('Failed to search products: $e');
     }

@@ -313,6 +313,7 @@ class ProductDetailScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       const Icon(Icons.star, size: 20, color: Colors.amber),
@@ -335,6 +336,24 @@ class ProductDetailScreen extends ConsumerWidget {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Stock Status
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: product.stockStatusColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      product.stockStatus,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: product.stockStatusColor,
+                      ),
+                    ),
                   ),
 
                   const SizedBox(height: 24),
@@ -759,16 +778,16 @@ class ProductDetailScreen extends ConsumerWidget {
       children: [
         Expanded(
           child: OutlinedButton(
-            onPressed: cartState.isLoading
+            onPressed: (cartState.isLoading || !product.isInStock)
                 ? null
                 : () => _handleCartAction(
-                    context,
-                    ref,
-                    product,
-                    state.selectedSize,
-                    state.selectedColor,
-                    state.quantity,
-                  ),
+                      context,
+                      ref,
+                      product,
+                      state.selectedSize,
+                      state.selectedColor,
+                      state.quantity,
+                    ),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               side: const BorderSide(color: AppColors.primaryLaurel),
@@ -788,11 +807,13 @@ class ProductDetailScreen extends ConsumerWidget {
                     ),
                   )
                 : Text(
-                    buttonText,
+                    !product.isInStock ? 'Out of Stock' : buttonText,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primaryLaurel,
+                      color: !product.isInStock
+                          ? Colors.grey
+                          : AppColors.primaryLaurel,
                     ),
                   ),
           ),
@@ -800,7 +821,7 @@ class ProductDetailScreen extends ConsumerWidget {
         const SizedBox(width: 16),
         Expanded(
           child: ElevatedButton(
-            onPressed: cartState.isLoading
+            onPressed: (cartState.isLoading || !product.isInStock)
                 ? null
                 : () async {
                     // Check authentication
@@ -876,7 +897,7 @@ class ProductDetailScreen extends ConsumerWidget {
               ),
             ),
             child: Text(
-              'Buy Now',
+              product.isInStock ? 'Buy Now' : 'Out of Stock',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

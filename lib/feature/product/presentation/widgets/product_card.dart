@@ -147,6 +147,17 @@ class ProductCard extends ConsumerWidget {
                                 ),
                               ],
                             ),
+                            if (product.stock <= 5) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                product.stockStatus,
+                                style: TextStyle(
+                                  fontSize: isSmallScreen ? 10 : 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: product.stockStatusColor,
+                                ),
+                              ),
+                            ],
                             SizedBox(height: isSmallScreen ? 4 : 8),
                             Flexible(
                               child: Row(
@@ -193,31 +204,37 @@ class ProductCard extends ConsumerWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () {
-                          ref
-                              .read(cartProvider.notifier)
-                              .addToCart(product, 1, null, null);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                '${product.title} added to cart',
-                                style: TextStyle(),
-                              ),
-                              duration: const Duration(seconds: 2),
-                              backgroundColor: AppColors.primaryLaurel,
-                            ),
-                          );
-                        },
+                        onTap: !product.isInStock
+                            ? null
+                            : () {
+                                ref
+                                    .read(cartProvider.notifier)
+                                    .addToCart(product, 1, null, null);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      '${product.title} added to cart',
+                                      style: TextStyle(),
+                                    ),
+                                    duration: const Duration(seconds: 2),
+                                    backgroundColor: AppColors.primaryLaurel,
+                                  ),
+                                );
+                              },
                         child: Container(
                           width: isSmallScreen ? 28 : 32,
                           height: isSmallScreen ? 28 : 32,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
-                            color: AppColors.primaryLaurel.withOpacity(0.1),
+                            color: !product.isInStock
+                                ? Colors.grey.withOpacity(0.1)
+                                : AppColors.primaryLaurel.withOpacity(0.1),
                           ),
                           child: Icon(
-                            Icons.add,
-                            color: AppColors.primaryLaurel,
+                            product.isInStock ? Icons.add : Icons.block,
+                            color: !product.isInStock
+                                ? Colors.grey
+                                : AppColors.primaryLaurel,
                             size: isSmallScreen ? 16 : 18,
                           ),
                         ),
@@ -244,149 +261,175 @@ class ProductCard extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 80,
-                width: 80,
-                child: Stack(
-                  children: [
-                    Hero(
-                      tag: uniqueHeroTag,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: Container(
-                          width: 80,
-                          clipBehavior: Clip.antiAlias,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppColors.borderColor),
-                            color: Colors.grey[100],
-                          ),
-                          child: AppCachedImage(
-                            imageUrl: product.imageUrls.first,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (product.isOnSale)
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryLaurel,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'New',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 80,
+                  width: 80,
+                  child: Stack(
+                    children: [
+                      Hero(
+                        tag: uniqueHeroTag,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: Container(
+                            width: 80,
+                            clipBehavior: Clip.antiAlias,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.borderColor),
+                              color: Colors.grey[100],
+                            ),
+                            child: AppCachedImage(
+                              imageUrl: product.imageUrls.first,
+                              fit: BoxFit.cover,
                             ),
                           ),
                         ),
                       ),
-                  ],
-                ),
-              ),
-              Gap.w20,
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.title,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textAppBlack,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, size: 14, color: Colors.amber),
-                      const SizedBox(width: 4),
-                      Text(
-                        '4.8',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textAppBlack,
+                      if (product.isOnSale)
+                        Positioned(
+                          top: 8,
+                          left: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryLaurel,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'New',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '(98)',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.textSecondaryHintColor,
-                        ),
-                      ),
                     ],
                   ),
-                  Gap.h8,
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                ),
+                Gap.w20,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        product.formattedDiscountPrice ?? '',
+                        product.title,
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.primaryLaurel,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textAppBlack,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      if (product.isOnSale) ...[
-                        Gap.w4,
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.star, size: 14, color: Colors.amber),
+                          const SizedBox(width: 4),
+                          Text(
+                            '4.8',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textAppBlack,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '(98)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.textSecondaryHintColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (product.stock <= 5) ...[
+                        Gap.h4,
                         Text(
-                          product.formattedPrice,
+                          product.stockStatus,
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.textSecondaryHintColor,
-                            decoration: TextDecoration.lineThrough,
+                            fontWeight: FontWeight.w600,
+                            color: product.stockStatusColor,
                           ),
                         ),
                       ],
+                      Gap.h8,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            product.formattedDiscountPrice ?? '',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primaryLaurel,
+                            ),
+                          ),
+                          if (product.isOnSale) ...[
+                            Gap.w4,
+                            Text(
+                              product.formattedPrice,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.textSecondaryHintColor,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
           GestureDetector(
-            onTap: () {
-              ref.read(cartProvider.notifier).addToCart(product, 1, null, null);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    '${product.title} added to cart',
-                    style: TextStyle(),
-                  ),
-                  duration: const Duration(seconds: 2),
-                  backgroundColor: AppColors.primaryLaurel,
-                ),
-              );
-            },
+            onTap: !product.isInStock
+                ? null
+                : () {
+                    ref
+                        .read(cartProvider.notifier)
+                        .addToCart(product, 1, null, null);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          '${product.title} added to cart',
+                          style: TextStyle(),
+                        ),
+                        duration: const Duration(seconds: 2),
+                        backgroundColor: AppColors.primaryLaurel,
+                      ),
+                    );
+                  },
             child: Container(
               width: 32,
               height: 32,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                color: AppColors.primaryLaurel.withOpacity(0.1),
+                color: !product.isInStock
+                    ? Colors.grey.withOpacity(0.1)
+                    : AppColors.primaryLaurel.withOpacity(0.1),
               ),
-              child: Icon(Icons.add, color: AppColors.primaryLaurel, size: 18),
+              child: Icon(
+                product.isInStock ? Icons.add : Icons.block,
+                color:
+                    !product.isInStock ? Colors.grey : AppColors.primaryLaurel,
+                size: 18,
+              ),
             ),
           ),
         ],
