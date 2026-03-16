@@ -37,88 +37,81 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth > 600;
 
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: RefreshIndicator.adaptive(
-          onRefresh: () async {
-            await ref.read(productsProvider.notifier).fetchProducts();
-            await ref.read(categoriesProvider.notifier).fetchCategories();
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header Section
-                Padding(
-                  padding: EdgeInsets.all(isTablet ? 24 : 16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildHeader(isTablet),
-                      // SizedBox(height: isTablet ? 24 : 20),
-                      // const HomeBanner(),
-                      SizedBox(height: isTablet ? 24 : 20),
-                      Hero(
-                        tag: 'search-bar',
-                        createRectTween: (begin, end) {
-                          return MaterialRectCenterArcTween(
-                            begin: begin,
-                            end: end,
-                          );
-                        },
-                        child: Material(
-                          color: Colors.transparent,
-                          child: HomeSearchBarWidget(
-                            onTap: () => context.push(RoutePaths.homeSearch),
-                          ),
-                        ),
+    return RefreshIndicator.adaptive(
+      onRefresh: () async {
+        await ref.read(productsProvider.notifier).fetchProducts();
+        await ref.read(categoriesProvider.notifier).fetchCategories();
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: isTablet ? 24 : 20),
+            // Header Section
+            Padding(
+              padding: EdgeInsets.all(isTablet ? 24 : 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(isTablet),
+                  // SizedBox(height: isTablet ? 24 : 20),
+                  // const HomeBanner(),
+                  SizedBox(height: isTablet ? 24 : 20),
+                  Hero(
+                    tag: 'search-bar',
+                    createRectTween: (begin, end) {
+                      return MaterialRectCenterArcTween(begin: begin, end: end);
+                    },
+                    child: Material(
+                      color: Colors.transparent,
+                      child: HomeSearchBarWidget(
+                        onTap: () => context.push(RoutePaths.homeSearch),
                       ),
-                    ],
+                    ),
                   ),
-                ),
-
-                // Categories Section
-                CategorySection(
-                  categories: categoriesState.categories,
-                  isLoading: categoriesState.isLoading,
-                ),
-
-                // Most Popular Section
-                ProductSection(
-                  title: 'Most Popular',
-                  products: productsState.products.take(4).toList(),
-                  isLoading: productsState.isLoading,
-                  onSeeAll: () => context.go(RoutePaths.search),
-                  isHorizontal: false,
-                ),
-
-                // New Arrivals Section
-                ProductSection(
-                  title: 'New Arrivals',
-                  products: productsState.products.take(4).toList(),
-                  isLoading: productsState.isLoading,
-                  onSeeAll: () => context.go(RoutePaths.search),
-                  isHorizontal: false,
-                ),
-
-                // For You Section
-                ProductSection(
-                  title: 'For You',
-                  products: productsState.products,
-                  isLoading: productsState.isLoading,
-                  onSeeAll: () => context.go(RoutePaths.search),
-                  isHorizontal: true,
-                ),
-
-                // Bottom padding
-                SizedBox(height: isTablet ? 120 : 100),
-              ],
+                ],
+              ),
             ),
-          ),
+
+            // Categories Section
+            CategorySection(
+              categories: categoriesState.categories,
+              isLoading: categoriesState.isLoading,
+            ),
+
+            // Most Popular Section
+            ProductSection(
+              title: 'Most Popular',
+              products: productsState.products.take(4).toList(),
+              isLoading: productsState.isLoading,
+              onSeeAll: () => context.go(RoutePaths.search),
+              isHorizontal: false,
+            ),
+
+            // New Arrivals Section
+            ProductSection(
+              title: 'New Arrivals',
+              products: productsState.products.take(4).toList(),
+              isLoading: productsState.isLoading,
+              onSeeAll: () => context.go(RoutePaths.search),
+              isHorizontal: false,
+            ),
+
+            // For You Section
+            ProductSection(
+              title: 'For You',
+              products: productsState.products,
+              isLoading: productsState.isLoading,
+              onSeeAll: () => context.go(RoutePaths.search),
+              isHorizontal: true,
+            ),
+
+            // Bottom padding
+            SizedBox(height: isTablet ? 120 : 100),
+          ],
         ),
       ),
     );

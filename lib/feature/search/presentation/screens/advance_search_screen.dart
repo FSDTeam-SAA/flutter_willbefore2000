@@ -315,6 +315,10 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
           return _buildEmptyState();
         }
 
+        final screenWidth = MediaQuery.of(context).size.width;
+        final isTablet = screenWidth > 600;
+        final childAspectRatio = isTablet ? 0.68 : 0.58;
+
         return CustomScrollView(
           controller: _scrollController,
           slivers: [
@@ -351,9 +355,9 @@ class _AdvancedSearchViewState extends ConsumerState<_AdvancedSearchView> {
             ),
 
             SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: isTablet ? 3 : 2,
+                childAspectRatio: childAspectRatio,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
               ),

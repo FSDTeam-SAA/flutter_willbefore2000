@@ -70,4 +70,9 @@ class ProductsRepositoryImpl implements ProductsRepository {
       throw Exception('Failed to search products: $e');
     }
   }
+
+  // @override
+  // Future<void> debugFixProductStatus() async {
+  //   await _remoteDataSource.debugFixProductStatus();
+  // }
 }

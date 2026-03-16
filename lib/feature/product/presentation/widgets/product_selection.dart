@@ -77,8 +77,8 @@ class ProductSection extends StatelessWidget {
         ? 3
         : 2; // 3 columns for tablets, 2 for phones
     final childAspectRatio = isTablet
-        ? 0.75
-        : 0.70; // Slightly taller cards on phones
+        ? 0.68
+        : 0.58; // Slightly taller cards on phones
     final spacing = isTablet ? 16.0 : 12.0; // Larger spacing on tablets
 
     return GridView.builder(

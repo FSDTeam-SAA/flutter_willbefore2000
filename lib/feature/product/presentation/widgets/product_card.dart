@@ -56,8 +56,8 @@ class ProductCard extends ConsumerWidget {
         final screenWidth = MediaQuery.of(context).size.width;
         final isSmallScreen = screenWidth < 360;
         final cardWidth = constraints.maxWidth;
-        // Dynamic image height based on available space
-        final imageHeight = constraints.maxHeight * 0.65; // 65% of cell height
+        // Dynamic image height based on available space - reduced to 60%
+        final imageHeight = constraints.maxHeight * 0.60;
 
         return Container(
           width: double.infinity,
@@ -148,7 +148,7 @@ class ProductCard extends ConsumerWidget {
                               ],
                             ),
                             if (product.stock <= 5) ...[
-                              const SizedBox(height: 4),
+                              SizedBox(height: isSmallScreen ? 2 : 3),
                               Text(
                                 product.stockStatus,
                                 style: TextStyle(
@@ -158,7 +158,7 @@ class ProductCard extends ConsumerWidget {
                                 ),
                               ),
                             ],
-                            SizedBox(height: isSmallScreen ? 4 : 8),
+                            SizedBox(height: isSmallScreen ? 3 : 6),
                             Flexible(
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
