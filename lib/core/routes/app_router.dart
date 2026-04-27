@@ -276,6 +276,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       GoRoute(
         path: '${RoutePaths.product}/:productId',
+        name: 'product_details',
         pageBuilder: (context, state) {
           final productId = state.pathParameters['productId']!;
           final heroTag =

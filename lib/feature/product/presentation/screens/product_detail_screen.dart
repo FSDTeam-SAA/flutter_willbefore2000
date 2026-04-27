@@ -340,8 +340,10 @@ class ProductDetailScreen extends ConsumerWidget {
                   const SizedBox(height: 12),
                   // Stock Status
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: product.stockStatusColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
@@ -781,13 +783,13 @@ class ProductDetailScreen extends ConsumerWidget {
             onPressed: (cartState.isLoading || !product.isInStock)
                 ? null
                 : () => _handleCartAction(
-                      context,
-                      ref,
-                      product,
-                      state.selectedSize,
-                      state.selectedColor,
-                      state.quantity,
-                    ),
+                    context,
+                    ref,
+                    product,
+                    state.selectedSize,
+                    state.selectedColor,
+                    state.quantity,
+                  ),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               side: const BorderSide(color: AppColors.primaryLaurel),

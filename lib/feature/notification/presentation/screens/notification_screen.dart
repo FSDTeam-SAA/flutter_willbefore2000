@@ -19,11 +19,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (user == null) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser == null) {
       return const Scaffold(
         body: Center(child: Text('Please log in to see notifications')),
       );
     }
+
+    debugPrint("NotificationScreen: Querying for user ${currentUser.uid}");
 
     return Scaffold(
       appBar: AppBar(
@@ -35,7 +39,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('users')
-                .doc(user!.uid)
+                .doc(currentUser.uid)
                 .collection('notifications')
                 .where('read', isEqualTo: false)
                 .snapshots(),
@@ -65,7 +69,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('users')
-            .doc(user!.uid)
+            .doc(currentUser.uid)
             .collection('notifications')
             .orderBy('createdAt', descending: true)
             .snapshots(),
@@ -81,15 +85,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
           final docs = snapshot.data!.docs;
 
           if (docs.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.notifications_off, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
+                  const Icon(
+                    Icons.notifications_off,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(height: 16),
                   Text(
-                    'No notifications yet',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                    'No notifications yet\nUID: ${currentUser.uid}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                 ],
               ),
@@ -125,6 +134,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   leading: Icon(
                     data['type'] == 'order_shipped'
                         ? Icons.local_shipping
+                        : data['type'] == 'new_product'
+                        ? Icons.add_shopping_cart
                         : Icons.notifications,
                     color: isRead ? Colors.grey : Colors.blue,
                   ),
@@ -192,10 +203,26 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     if (!isRead) {
                       await FirebaseFirestore.instance
                           .collection('users')
-                          .doc(user!.uid)
+                          .doc(currentUser.uid)
                           .collection('notifications')
                           .doc(docId)
                           .update({'read': true});
+                    }
+
+                    // Extract product ID from top level or metadata
+                    final productId =
+                        data['productId'] ??
+                        (data['metadata'] != null
+                            ? data['metadata']['productId']
+                            : null);
+
+                    // Navigate to product details
+                    // Navigate to product details
+                    if (productId != null && productId.isNotEmpty) {
+                      context.pushNamed(
+                        'product_details',
+                        pathParameters: {'productId': productId},
+                      );
                     }
 
                     // Navigate to orders screen
