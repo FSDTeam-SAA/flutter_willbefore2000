@@ -13,11 +13,7 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  try {
-    await NotificationService().initialize();
-  } catch (e) {
-    debugPrint("NotificationService initialization failed: $e");
-  }
+  NotificationService().initialize();
 
   try {
     // Initialize Stripe

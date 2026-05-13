@@ -22,16 +22,14 @@ class ProductsRemoteDataSourceImpl implements ProductsRemoteDataSource {
   @override
   Future<List<ProductModel>> getAllProducts() async {
     try {
-      final querySnapshot =
-          await _firestore
-              .collection('products')
-              .where('isActive', isEqualTo: true)
-              .orderBy('createdAt', descending: true)
-              .get();
+      final querySnapshot = await _firestore
+          .collection('products')
+          .where('isActive', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .get();
 
       return querySnapshot.docs.map((doc) => _safeFromFirestore(doc)).toList();
-    } 
-    catch (e) {
+    } catch (e) {
       throw Exception('Failed to get all products: $e');
     }
   }
@@ -39,27 +37,26 @@ class ProductsRemoteDataSourceImpl implements ProductsRemoteDataSource {
   @override
   Future<List<ProductModel>> getProductsByCategory(String categoryId) async {
     try {
-      final querySnapshot =
-          await _firestore
-              .collection('products')
-              .where('categoryId', isEqualTo: categoryId)
-              .where('isActive', isEqualTo: true)
-              .orderBy('createdAt', descending: true)
-              .get();
+      final querySnapshot = await _firestore
+          .collection('products')
+          .where('categoryId', isEqualTo: categoryId)
+          .where('isActive', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .get();
 
       return querySnapshot.docs.map((doc) => _safeFromFirestore(doc)).toList();
     } on FirebaseException catch (e) {
       if (e.code == 'failed-precondition') {
         DPrint.error("MISSING INDEX for Category search. Fallback active.");
-        final querySnapshot =
-            await _firestore
-                .collection('products')
-                .where('categoryId', isEqualTo: categoryId)
-                .where('isActive', isEqualTo: true)
-                .get();
+        final querySnapshot = await _firestore
+            .collection('products')
+            .where('categoryId', isEqualTo: categoryId)
+            .where('isActive', isEqualTo: true)
+            .get();
 
-        final products =
-            querySnapshot.docs.map((doc) => _safeFromFirestore(doc)).toList();
+        final products = querySnapshot.docs
+            .map((doc) => _safeFromFirestore(doc))
+            .toList();
         products.sort((a, b) => b.createdAt.compareTo(a.createdAt));
         return products;
       }

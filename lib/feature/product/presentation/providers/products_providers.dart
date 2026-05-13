@@ -55,7 +55,7 @@ class ProductsNotifier extends StateNotifier<ProductsState> {
     try {
       // Temporary: Uncomment this to fix products in Firestore
       // await _getProductsUseCase.repository.debugFixProductStatus();
-      
+
       final products = await _getProductsUseCase.call();
       state = state.copyWith(products: products, isLoading: false);
     } catch (e) {

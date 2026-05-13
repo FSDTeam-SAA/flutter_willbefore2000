@@ -210,12 +210,22 @@ class NotificationService {
         DPrint.log(
           "FCM token saved to Firestore subcollection for ${user.uid}",
         );
+
+        _subscribeTopics();
       } catch (e) {
         DPrint.error("Failed to save FCM token: $e");
       }
     }
 
     return token; // ← correct return type: Future<String?>
+  }
+
+  Future<void> _subscribeTopics() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await _messaging.subscribeToTopic('all_users');
+      // await _messaging.subscribeToTopic('user_${user.uid}');
+    }
   }
 
   // Public helpers (optional)
