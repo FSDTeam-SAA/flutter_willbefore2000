@@ -169,7 +169,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   _ProfileMenuItem(
                     icon: Icons.notifications_outlined,
                     title: 'Notifications',
-                    onTap: () {},
+                    onTap: () {
+                      context.pushNamed(RoutePaths.notification);
+                    },
                   ),
                   _ProfileMenuItem(
                     icon: Icons.privacy_tip_outlined,
