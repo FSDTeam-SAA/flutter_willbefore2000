@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -49,20 +51,36 @@ class CartState {
 
 class CartNotifier extends StateNotifier<CartState> {
   final CartRepository _repository;
+  StreamSubscription<List<CartItem>>? _cartStreamSubscription;
+  StreamSubscription? _authSubscription;
 
   CartNotifier(this._repository) : super(const CartState()) {
     _initializeCart();
-    _listenToCartChanges();
+    _listenToAuthChanges();
   }
 
   void _initializeCart() async {
     if (FirebaseAuth.instance.currentUser != null) {
       await loadCartItems();
+      _listenToCartChanges();
     }
   }
 
+  void _listenToAuthChanges() {
+    _authSubscription = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null && user.emailVerified) {
+        _cartStreamSubscription?.cancel();
+        _listenToCartChanges();
+        loadCartItems();
+      } else if (user == null) {
+        _cartStreamSubscription?.cancel();
+        state = const CartState();
+      }
+    });
+  }
+
   void _listenToCartChanges() {
-    _repository.getCartItemsStream().listen(
+    _cartStreamSubscription = _repository.getCartItemsStream().listen(
       (items) {
         state = state.copyWith(items: items, isLoading: false);
       },
@@ -73,6 +91,13 @@ class CartNotifier extends StateNotifier<CartState> {
         );
       },
     );
+  }
+
+  @override
+  void dispose() {
+    _cartStreamSubscription?.cancel();
+    _authSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> loadCartItems() async {

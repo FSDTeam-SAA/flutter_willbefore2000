@@ -6,9 +6,11 @@ import 'package:go_router/go_router.dart';
 import 'package:smilestreatsapp/core/common/widgets/app_cached_image.dart';
 import 'package:smilestreatsapp/core/styles/decorations.dart';
 
+import '../../../../core/common/widgets/login_required_dialog.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routes/route_endpoint.dart';
 import '../../../../core/utils/hero_tag_manager.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 import '../../domain/entrity/product.dart';
 
@@ -207,6 +209,10 @@ class ProductCard extends ConsumerWidget {
                         onTap: !product.isInStock
                             ? null
                             : () {
+                                if (!ref.read(authProvider).isAuthenticated) {
+                                  LoginRequiredDialog.show(context);
+                                  return;
+                                }
                                 ref
                                     .read(cartProvider.notifier)
                                     .addToCart(product, 1, null, null);
@@ -401,6 +407,10 @@ class ProductCard extends ConsumerWidget {
             onTap: !product.isInStock
                 ? null
                 : () {
+                    if (!ref.read(authProvider).isAuthenticated) {
+                      LoginRequiredDialog.show(context);
+                      return;
+                    }
                     ref
                         .read(cartProvider.notifier)
                         .addToCart(product, 1, null, null);

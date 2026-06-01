@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class Product {
@@ -122,7 +121,7 @@ class Product {
   String? get formattedDiscountPrice {
     return discountPrice != null
         ? '\$${discountPrice!.toStringAsFixed(2)}'
-        : null;
+        : actualPrice.toStringAsFixed(2);
   }
 
   // Get savings amount
