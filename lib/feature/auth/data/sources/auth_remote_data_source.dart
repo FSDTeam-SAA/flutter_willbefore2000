@@ -233,12 +233,23 @@ class AuthRemoteDataSource {
     await _firebaseAuth.signOut();
   }
 
-  Future<void> deleteAccount() async {
+  Future<void> deleteAccount(String password) async {
     try {
       final user = _firebaseAuth.currentUser;
       if (user == null) {
         throw AuthException('User not authenticated');
       }
+
+      if (user.email == null) {
+        throw AuthException('User email not found');
+      }
+
+      // Re-authenticate before the sensitive delete operation
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: password,
+      );
+      await user.reauthenticateWithCredential(credential);
 
       final uid = user.uid;
 

@@ -58,22 +58,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
     );
 
-    if (confirmed == true) {
-      try {
-        await ref.read(authProvider.notifier).deleteAccount();
-        if (mounted) {
-          context.go(RoutePaths.home);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Account deleted successfully')),
-          );
-        }
-      } catch (e) {
-        DPrint.error("Delete account nav error : $e");
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Delete account failed: ${e.toString()}')),
-          );
-        }
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    final password = await showDialog<String>(
+      context: context,
+      builder: (context) => const _PasswordConfirmDialog(),
+    );
+
+    if (password == null || password.isEmpty) return;
+
+    try {
+      await ref.read(authProvider.notifier).deleteAccount(password);
+      if (mounted) {
+        context.go(RoutePaths.home);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Account deleted successfully')),
+        );
+      }
+    } catch (e) {
+      DPrint.error("Delete account nav error : $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Delete account failed: ${e.toString()}')),
+        );
       }
     }
   }
@@ -248,6 +256,66 @@ class _ProfileMenuItem extends StatelessWidget {
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(vertical: 8),
+    );
+  }
+}
+
+class _PasswordConfirmDialog extends StatefulWidget {
+  const _PasswordConfirmDialog();
+
+  @override
+  State<_PasswordConfirmDialog> createState() => _PasswordConfirmDialogState();
+}
+
+class _PasswordConfirmDialogState extends State<_PasswordConfirmDialog> {
+  final _controller = TextEditingController();
+  bool _obscure = true;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Confirm Password'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Please enter your password to confirm account deletion.',
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _controller,
+              obscureText: _obscure,
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                  onPressed: () => setState(() => _obscure = !_obscure),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, null),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, _controller.text),
+          style: TextButton.styleFrom(foregroundColor: AppColors.errorRed),
+          child: const Text('Confirm Delete'),
+        ),
+      ],
     );
   }
 }

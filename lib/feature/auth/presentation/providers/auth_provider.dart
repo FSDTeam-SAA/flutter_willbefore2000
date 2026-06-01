@@ -284,10 +284,10 @@ class AuthProvider extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> deleteAccount() async {
+  Future<void> deleteAccount(String password) async {
     state = state.copyWith(isLoading: true);
     try {
-      await _authRepository.deleteAccount();
+      await _authRepository.deleteAccount(password);
       state = const AuthState(
         user: null,
         isAuthenticated: false,

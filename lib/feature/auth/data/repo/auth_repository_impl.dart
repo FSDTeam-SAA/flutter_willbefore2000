@@ -80,8 +80,8 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> deleteAccount() async {
-    await remoteDataSource.deleteAccount();
+  Future<void> deleteAccount(String password) async {
+    await remoteDataSource.deleteAccount(password);
   }
 }
 
