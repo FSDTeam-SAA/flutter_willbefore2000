@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:go_router/go_router.dart'; // Added GoRouter import
+import 'package:go_router/go_router.dart';
 import 'package:smilestreatsapp/core/common/widgets/app_cached_image.dart';
 
 import '../../../../core/common/widgets/html_content_widget.dart';
@@ -11,65 +11,91 @@ import '../../../../core/routes/route_endpoint.dart';
 import '../../../../core/utils/hero_tag_manager.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
+import '../../domain/entrity/product.dart';
 import '../providers/products_details_provider.dart';
 import '../providers/products_providers.dart';
 
-class ProductDetailScreen extends ConsumerWidget {
+class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
-  final String? heroTag; // Added heroTag parameter to receive from navigation
+  final String? heroTag;
 
   const ProductDetailScreen({
     super.key,
     required this.productId,
-    this.heroTag, // Optional heroTag for Hero animation
+    this.heroTag,
   });
 
+  @override
+  ConsumerState<ProductDetailScreen> createState() =>
+      _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
+  int _quantity = 1;
+
+  void _updateQuantity(Product product, int newQuantity) {
+    setState(() => _quantity = newQuantity);
+
+    // Require auth to touch the cart
+    final authState = ref.read(authProvider);
+    if (!authState.isAuthenticated) return;
+
+    final detailState = ref.read(productDetailProvider);
+
+    // Don't auto-add if required size/color selections are missing
+    if (product.sizes.isNotEmpty && detailState.selectedSize == null) return;
+    if (product.colors.isNotEmpty && detailState.selectedColor == null) return;
+
+    final cartNotifier = ref.read(cartProvider.notifier);
+    final existingItem = cartNotifier.getExistingCartItem(
+      product.id,
+      detailState.selectedSize,
+      detailState.selectedColor,
+    );
+
+    if (existingItem != null) {
+      // Item already in cart — update to the exact new quantity
+      cartNotifier.updateQuantity(existingItem.id, newQuantity);
+    } else {
+      // Item not in cart yet — add it now with the new quantity
+      cartNotifier.addToCart(
+        product,
+        newQuantity,
+        detailState.selectedSize,
+        detailState.selectedColor,
+      );
+    }
+  }
+
   String _getCartButtonText(
-    WidgetRef ref,
-    product,
+    Product product,
     String? selectedSize,
     String? selectedColor,
   ) {
     final cartNotifier = ref.read(cartProvider.notifier);
-
-    // Check if exact variant exists in cart
     final exactMatch = cartNotifier.getExistingCartItem(
       product.id,
       selectedSize,
       selectedColor,
     );
-
-    if (exactMatch != null) {
-      return 'Update Cart';
-    }
-
-    // Check if product exists with different variants
-    final hasProduct = cartNotifier.hasProductInCart(product.id);
-    if (hasProduct) {
-      return 'Add New Variant';
-    }
-
+    if (exactMatch != null) return 'Update Cart';
+    if (cartNotifier.hasProductInCart(product.id)) return 'Add New Variant';
     return 'Add to Cart';
   }
 
   void _handleCartAction(
     BuildContext context,
-    WidgetRef ref,
-    product,
+    Product product,
     String? selectedSize,
     String? selectedColor,
     int quantity,
   ) async {
-    // Check authentication
     final authState = ref.read(authProvider);
     if (!authState.isAuthenticated) {
-      if (context.mounted) {
-        LoginRequiredDialog.show(context);
-      }
+      if (context.mounted) LoginRequiredDialog.show(context);
       return;
     }
 
-    // Validate required selections
     if (product.sizes.isNotEmpty && selectedSize == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -91,8 +117,6 @@ class ProductDetailScreen extends ConsumerWidget {
     }
 
     final cartNotifier = ref.read(cartProvider.notifier);
-
-    // Check if exact variant exists in cart
     final exactMatch = cartNotifier.getExistingCartItem(
       product.id,
       selectedSize,
@@ -102,7 +126,6 @@ class ProductDetailScreen extends ConsumerWidget {
     String actionMessage;
 
     if (exactMatch != null) {
-      // Update existing item
       await cartNotifier.updateCartItemVariant(
         product.id,
         exactMatch.selectedSize,
@@ -113,14 +136,7 @@ class ProductDetailScreen extends ConsumerWidget {
       );
       actionMessage = '${product.title} updated in cart!';
     } else {
-      // Add new item or variant
-      await cartNotifier.addToCart(
-        product,
-        quantity,
-        selectedSize,
-        selectedColor,
-      );
-
+      await cartNotifier.addToCart(product, quantity, selectedSize, selectedColor);
       final hasOtherVariants = cartNotifier.hasProductInCart(product.id);
       actionMessage = hasOtherVariants
           ? '${product.title} variant added to cart!'
@@ -135,9 +151,7 @@ class ProductDetailScreen extends ConsumerWidget {
           action: SnackBarAction(
             label: 'View Cart',
             textColor: Colors.white,
-            onPressed: () {
-              context.go('/cart');
-            },
+            onPressed: () => context.go('/cart'),
           ),
         ),
       );
@@ -145,7 +159,7 @@ class ProductDetailScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final productsState = ref.watch(productsProvider);
     final cartState = ref.watch(cartProvider);
     final productDetailState = ref.watch(productDetailProvider);
@@ -160,27 +174,17 @@ class ProductDetailScreen extends ConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    // If products are empty, try to fetch them
     if (productsState.products.isEmpty) {
-      // Trigger a fetch if products are empty
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(productsProvider.notifier).fetchProducts();
       });
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    // Debug: Print product lookup info
-    print('ProductDetailScreen - Looking for product ID: $productId');
-    print(
-      'ProductDetailScreen - Available products: ${productsState.products.map((p) => p.id).toList()}',
-    );
-
-    // Try to find the product
     final productIndex = productsState.products.indexWhere(
-      (p) => p.id == productId,
+      (p) => p.id == widget.productId,
     );
 
-    // If product is not found, show an error screen
     if (productIndex == -1) {
       return Scaffold(
         appBar: AppBar(backgroundColor: Colors.white, elevation: 0),
@@ -232,7 +236,7 @@ class ProductDetailScreen extends ConsumerWidget {
     final product = productsState.products[productIndex];
 
     final effectiveHeroTag =
-        heroTag ??
+        widget.heroTag ??
         HeroTagManager.generateProductHeroTag(
           productId: product.id,
           context: 'detail-fallback',
@@ -242,43 +246,26 @@ class ProductDetailScreen extends ConsumerWidget {
       backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
-          // App Bar
           SliverAppBar(
             backgroundColor: Colors.white,
             elevation: 0,
             pinned: true,
             automaticallyImplyLeading: true,
-            // actions: [
-            //   IconButton(
-            //     onPressed: () {},
-            //     icon: const Icon(
-            //       Icons.favorite_border,
-            //       color: AppColors.textAppBlack,
-            //     ),
-            //   ),
-            //   IconButton(
-            //     onPressed: () {},
-            //     icon: const Icon(Icons.share, color: AppColors.textAppBlack),
-            //   ),
-            // ],
           ),
 
-          // Product Images
           SliverToBoxAdapter(
             child: Hero(
-              tag: effectiveHeroTag, // Use the effective hero tag
-              child: _buildImageSection(ref, product, productDetailState),
+              tag: effectiveHeroTag,
+              child: _buildImageSection(product, productDetailState),
             ),
           ),
 
-          // Product Details
           SliverToBoxAdapter(
             child: Container(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title and Price
                   Text(
                     product.title,
                     style: TextStyle(
@@ -338,7 +325,6 @@ class ProductDetailScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Stock Status
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -360,7 +346,6 @@ class ProductDetailScreen extends ConsumerWidget {
 
                   const SizedBox(height: 24),
 
-                  // Description
                   Text(
                     'Description',
                     style: TextStyle(
@@ -379,32 +364,26 @@ class ProductDetailScreen extends ConsumerWidget {
 
                   const SizedBox(height: 24),
 
-                  // Features
                   _buildFeatures(),
 
                   const SizedBox(height: 24),
 
-                  // Size Selection
                   if (product.sizes.isNotEmpty)
-                    _buildSizeSelection(ref, product, productDetailState),
+                    _buildSizeSelection(product, productDetailState),
 
                   const SizedBox(height: 24),
 
-                  // Color Selection
                   if (product.colors.isNotEmpty)
-                    _buildColorSelection(ref, product, productDetailState),
+                    _buildColorSelection(product, productDetailState),
 
                   const SizedBox(height: 24),
 
-                  // Quantity Selection
-                  _buildQuantitySelection(ref, product, productDetailState),
+                  _buildQuantitySelection(product, cartState),
 
                   const SizedBox(height: 32),
 
-                  // Action Buttons
                   _buildActionButtons(
                     context,
-                    ref,
                     product,
                     productDetailState,
                     cartState,
@@ -420,13 +399,11 @@ class ProductDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildImageSection(WidgetRef ref, product, ProductDetailState state) {
-    // Create a PageController with the initial page set to the current image index
+  Widget _buildImageSection(Product product, ProductDetailState state) {
     final PageController pageController = PageController(
       initialPage: state.currentImageIndex,
     );
 
-    // Listen to changes in currentImageIndex to update the PageView
     ref.listen(productDetailProvider, (previous, next) {
       if (previous?.currentImageIndex != next.currentImageIndex) {
         pageController.jumpToPage(next.currentImageIndex);
@@ -437,13 +414,11 @@ class ProductDetailScreen extends ConsumerWidget {
       height: 400,
       child: Column(
         children: [
-          // Main Image
           Expanded(
             child: PageView.builder(
-              controller: pageController, // Assign the PageController
-              itemCount: product.imageUrls.isNotEmpty
-                  ? product.imageUrls.length
-                  : 1,
+              controller: pageController,
+              itemCount:
+                  product.imageUrls.isNotEmpty ? product.imageUrls.length : 1,
               onPageChanged: (index) {
                 ref
                     .read(productDetailProvider.notifier)
@@ -476,7 +451,6 @@ class ProductDetailScreen extends ConsumerWidget {
 
           const SizedBox(height: 16),
 
-          // Thumbnail Images
           if (product.imageUrls.isNotEmpty)
             SizedBox(
               height: 80,
@@ -572,7 +546,7 @@ class ProductDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSizeSelection(WidgetRef ref, product, ProductDetailState state) {
+  Widget _buildSizeSelection(Product product, ProductDetailState state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -612,7 +586,8 @@ class ProductDetailScreen extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : AppColors.textAppBlack,
+                      color:
+                          isSelected ? Colors.white : AppColors.textAppBlack,
                     ),
                   ),
                 ),
@@ -624,11 +599,7 @@ class ProductDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildColorSelection(
-    WidgetRef ref,
-    product,
-    ProductDetailState state,
-  ) {
+  Widget _buildColorSelection(Product product, ProductDetailState state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -644,14 +615,13 @@ class ProductDetailScreen extends ConsumerWidget {
         Wrap(
           spacing: 12,
           runSpacing: 8,
-          children: product.colors.asMap().entries.map<Widget>((entry) {
-            // final index = entry.key;
-            final colorName = entry.value;
+          children: product.colors.map<Widget>((colorName) {
             final isSelected = state.selectedColor == colorName;
-
             return GestureDetector(
               onTap: () {
-                ref.read(productDetailProvider.notifier).selectColor(colorName);
+                ref
+                    .read(productDetailProvider.notifier)
+                    .selectColor(colorName);
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -673,9 +643,8 @@ class ProductDetailScreen extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: isSelected
-                        ? Colors.white
-                        : AppColors.textAppBlack, // Consistent text color
+                    color:
+                        isSelected ? Colors.white : AppColors.textAppBlack,
                   ),
                 ),
               ),
@@ -685,16 +654,15 @@ class ProductDetailScreen extends ConsumerWidget {
       ],
     );
   }
-  // Color _getTextColorForBackground(Color backgroundColor) {
-  //   final luminance = backgroundColor.computeLuminance();
-  //   return luminance > 0.5 ? Colors.black : Colors.white;
-  // }
 
-  Widget _buildQuantitySelection(
-    WidgetRef ref,
-    product,
-    ProductDetailState state,
-  ) {
+  Widget _buildQuantitySelection(Product product, CartState cartState) {
+    final cartQuantity = cartState.items
+        .where((item) => item.product.id == product.id)
+        .fold<int>(0, (sum, item) => sum + item.quantity);
+    final maxAdditional = product.stock - cartQuantity;
+    final canDecrement = _quantity > 1;
+    final canIncrement = _quantity < maxAdditional;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -710,22 +678,27 @@ class ProductDetailScreen extends ConsumerWidget {
         Row(
           children: [
             GestureDetector(
-              onTap: () {
-                ref.read(productDetailProvider.notifier).decrementQuantity();
-              },
+              onTap: canDecrement
+                  ? () => _updateQuantity(product, _quantity - 1)
+                  : null,
               child: Container(
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: canDecrement ? Colors.grey[100] : Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.remove, color: AppColors.textAppBlack),
+                child: Icon(
+                  Icons.remove,
+                  color: canDecrement
+                      ? AppColors.textAppBlack
+                      : Colors.grey[400],
+                ),
               ),
             ),
             const SizedBox(width: 16),
             Text(
-              state.quantity.toString(),
+              '$_quantity',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -734,22 +707,27 @@ class ProductDetailScreen extends ConsumerWidget {
             ),
             const SizedBox(width: 16),
             GestureDetector(
-              onTap: () {
-                ref.read(productDetailProvider.notifier).incrementQuantity();
-              },
+              onTap: canIncrement
+                  ? () => _updateQuantity(product, _quantity + 1)
+                  : null,
               child: Container(
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLaurel,
+                  color: canIncrement
+                      ? AppColors.primaryLaurel
+                      : Colors.grey[300],
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.add, color: Colors.white),
+                child: Icon(
+                  Icons.add,
+                  color: canIncrement ? Colors.white : Colors.grey[500],
+                ),
               ),
             ),
             const Spacer(),
             Text(
-              'Total: \$${(product.effectivePrice * state.quantity).toStringAsFixed(2)}',
+              'Total: \$${(product.effectivePrice * _quantity).toStringAsFixed(2)}',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -764,13 +742,11 @@ class ProductDetailScreen extends ConsumerWidget {
 
   Widget _buildActionButtons(
     BuildContext context,
-    WidgetRef ref,
-    product,
+    Product product,
     ProductDetailState state,
-    cartState,
+    CartState cartState,
   ) {
     final buttonText = _getCartButtonText(
-      ref,
       product,
       state.selectedSize,
       state.selectedColor,
@@ -783,13 +759,12 @@ class ProductDetailScreen extends ConsumerWidget {
             onPressed: (cartState.isLoading || !product.isInStock)
                 ? null
                 : () => _handleCartAction(
-                    context,
-                    ref,
-                    product,
-                    state.selectedSize,
-                    state.selectedColor,
-                    state.quantity,
-                  ),
+                      context,
+                      product,
+                      state.selectedSize,
+                      state.selectedColor,
+                      _quantity,
+                    ),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               side: const BorderSide(color: AppColors.primaryLaurel),
@@ -826,18 +801,13 @@ class ProductDetailScreen extends ConsumerWidget {
             onPressed: (cartState.isLoading || !product.isInStock)
                 ? null
                 : () async {
-                    // Check authentication
                     final authState = ref.read(authProvider);
                     if (!authState.isAuthenticated) {
-                      if (context.mounted) {
-                        LoginRequiredDialog.show(context);
-                      }
+                      if (context.mounted) LoginRequiredDialog.show(context);
                       return;
                     }
 
-                    // Validate required selections
-                    if (product.sizes.isNotEmpty &&
-                        state.selectedSize == null) {
+                    if (product.sizes.isNotEmpty && state.selectedSize == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
@@ -869,15 +839,14 @@ class ProductDetailScreen extends ConsumerWidget {
                           .read(cartProvider.notifier)
                           .buyNow(
                             product,
-                            state.quantity,
+                            _quantity,
                             state.selectedSize,
                             state.selectedColor,
                           );
-                      // Navigate to CheckoutScreen with the single CartItem
                       if (context.mounted) {
                         context.pushNamed(
                           RoutePaths.checkout,
-                          extra: {'buyNowItem': cartItem}, // Pass the CartItem
+                          extra: {'buyNowItem': cartItem},
                         );
                       }
                     } catch (e) {
@@ -911,4 +880,5 @@ class ProductDetailScreen extends ConsumerWidget {
       ],
     );
   }
+
 }

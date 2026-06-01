@@ -426,8 +426,9 @@ class ProductCard extends ConsumerWidget {
               ),
               child: Icon(
                 product.isInStock ? Icons.add : Icons.block,
-                color:
-                    !product.isInStock ? Colors.grey : AppColors.primaryLaurel,
+                color: !product.isInStock
+                    ? Colors.grey
+                    : AppColors.primaryLaurel,
                 size: 18,
               ),
             ),

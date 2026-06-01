@@ -58,7 +58,7 @@ class ProductDetailNotifier extends StateNotifier<ProductDetailState> {
   }
 }
 
-// Provider for product detail state
-final productDetailProvider = StateNotifierProvider.autoDispose<ProductDetailNotifier, ProductDetailState>(
+final productDetailProvider =
+    StateNotifierProvider.autoDispose<ProductDetailNotifier, ProductDetailState>(
   (ref) => ProductDetailNotifier(),
 );
