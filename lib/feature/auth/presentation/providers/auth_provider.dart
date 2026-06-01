@@ -101,6 +101,10 @@ class AuthProvider extends StateNotifier<AuthState> {
 
     /// [Listen] to auth state changes
     _authRepository.authStateChanges.listen((user) {
+      // Ignore unverified users — the signup flow signs them out immediately
+      // after creation, so this intermediate state must not trigger auth.
+      if (user != null && !user.isEmailVerified) return;
+
       state = state.copyWith(
         user: user,
         isAuthenticated: user != null,
